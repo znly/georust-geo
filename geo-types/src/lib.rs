@@ -41,6 +41,19 @@ where
     pub y: T,
 }
 
+impl<T> Coordinate<T>
+where
+    T: CoordinateType,
+{
+    pub fn cross_prod(&self, point_b: &Coordinate<T>, point_c: &Coordinate<T>) -> T
+    where
+        T: Float,
+    {
+        (point_b.x - self.x) * (point_c.y - self.y)
+            - (point_b.y - self.y) * (point_c.x - self.x)
+    }
+}
+
 impl<T: CoordinateType> From<(T, T)> for Coordinate<T> {
     fn from(coords: (T, T)) -> Self {
         Coordinate {
@@ -404,8 +417,8 @@ pub struct Line<T>
 where
     T: CoordinateType,
 {
-    pub start: Point<T>,
-    pub end: Point<T>,
+    pub start: Coordinate<T>,
+    pub end: Coordinate<T>,
 }
 
 impl<T> Line<T>
@@ -422,7 +435,7 @@ where
     /// assert_eq!(line.start, Point::new(0., 0.));
     /// assert_eq!(line.end, Point::new(1., 2.));
     /// ```
-    pub fn new(start: Point<T>, end: Point<T>) -> Line<T> {
+    pub fn new(start: Coordinate<T>, end: Coordinate<T>) -> Line<T> {
         Line {
             start: start,
             end: end,
@@ -491,7 +504,7 @@ where
 ///
 #[derive(PartialEq, Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub struct LineString<T>(pub Vec<Point<T>>)
+pub struct LineString<T>(pub Vec<Coordinate<T>>)
 where
     T: CoordinateType;
 
@@ -526,24 +539,24 @@ impl<T: CoordinateType> LineString<T> {
         })
     }
 
-    pub fn points(&self) -> ::std::slice::Iter<Point<T>> {
+    pub fn points(&self) -> ::std::slice::Iter<Coordinate<T>> {
         self.0.iter()
     }
 
-    pub fn points_mut(&mut self) -> ::std::slice::IterMut<Point<T>> {
+    pub fn points_mut(&mut self) -> ::std::slice::IterMut<Coordinate<T>> {
         self.0.iter_mut()
     }
 }
 
 /// Turn a `Vec` of `Point`-ish objects into a `LineString`.
-impl<T: CoordinateType, IP: Into<Point<T>>> From<Vec<IP>> for LineString<T> {
+impl<T: CoordinateType, IP: Into<Coordinate<T>>> From<Vec<IP>> for LineString<T> {
     fn from(v: Vec<IP>) -> Self {
         LineString(v.into_iter().map(|p| p.into()).collect())
     }
 }
 
 /// Turn a `Point`-ish iterator into a `LineString`.
-impl<T: CoordinateType, IP: Into<Point<T>>> FromIterator<IP> for LineString<T> {
+impl<T: CoordinateType, IP: Into<Coordinate<T>>> FromIterator<IP> for LineString<T> {
     fn from_iter<I: IntoIterator<Item = IP>>(iter: I) -> Self {
         LineString(iter.into_iter().map(|p| p.into()).collect())
     }
@@ -551,8 +564,8 @@ impl<T: CoordinateType, IP: Into<Point<T>>> FromIterator<IP> for LineString<T> {
 
 /// Iterate over all the [Point](struct.Point.html)s in this linestring
 impl<T: CoordinateType> IntoIterator for LineString<T> {
-    type Item = Point<T>;
-    type IntoIter = ::std::vec::IntoIter<Point<T>>;
+    type Item = Coordinate<T>;
+    type IntoIter = ::std::vec::IntoIter<Coordinate<T>>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.0.into_iter()
@@ -591,6 +604,38 @@ impl<T: CoordinateType> IntoIterator for MultiLineString<T> {
     }
 }
 
+#[derive(PartialEq, Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub struct Ring<T>(Vec<Coordinate<T>>)
+where
+    T: CoordinateType;
+
+impl<T> Ring<T>
+where
+    T: CoordinateType,
+{
+    pub fn new(mut coords: Vec<Coordinate<T>>) -> Self {
+        assert!(coords.len() > 2);
+        if coords.first().unwrap() != coords.last().unwrap() {
+            let first = coords.first().unwrap().to_owned();
+            coords.push(first);
+        }
+        Ring(coords)
+    }
+
+    pub fn as_slice(&self) -> &[Coordinate<T>] {
+        &self.0
+    }
+
+    pub fn as_mut_slice(&mut self) -> &mut [Coordinate<T>] {
+        &mut self.0
+    }
+
+    pub fn into_vec(self) -> Vec<Coordinate<T>> {
+        self.0
+    }
+}
+
 /// A representation of an area. Its outer boundary is represented by a [`LineString`](struct.LineString.html) that is both closed and simple
 ///
 /// It has one exterior *ring* or *shell*, and zero or more interior rings, representing holes.
@@ -600,8 +645,8 @@ pub struct Polygon<T>
 where
     T: CoordinateType,
 {
-    pub exterior: LineString<T>,
-    pub interiors: Vec<LineString<T>>,
+    pub exterior: Ring<T>,
+    pub interiors: Vec<Ring<T>>,
 }
 
 impl<T> Polygon<T>
@@ -621,12 +666,13 @@ where
     /// assert_eq!(p.exterior, exterior);
     /// assert_eq!(p.interiors, interiors);
     /// ```
-    pub fn new(exterior: LineString<T>, interiors: Vec<LineString<T>>) -> Polygon<T> {
+    pub fn new<G: Into<Ring<T>>>(exterior: G, interiors: Vec<G>) -> Polygon<T> {
         Polygon {
-            exterior: exterior,
-            interiors: interiors,
+            exterior: exterior.into(),
+            interiors: interiors.into_iter().map(|i| i.into()).collect(),
         }
     }
+
     /// Wrap-around previous-vertex
     fn previous_vertex(&self, current_vertex: &usize) -> usize
     where
