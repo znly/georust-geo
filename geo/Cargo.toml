@@ -21,6 +21,7 @@ rstar = { version = "0.2" }
 failure = "0.1.2"
 postgis = { version = "0.6", optional = true }
 proj = { version = "0.7", optional = true }
+rayon = "*"
 
 # Swap the next two lines when publishing
 # geo-types = { version = "0.4.2", features = ["rstar"] }
@@ -34,7 +35,7 @@ use-serde = ["serde", "geo-types/serde"]
 
 [dev-dependencies]
 approx = "0.3.0"
-criterion = { version = "0.2" }
+criterion = { version = "0.2", features = [ "real_blackbox" ] }
 
 [[bench]]
 name = "area"
@@ -66,6 +67,10 @@ harness = false
 
 [[bench]]
 name = "frechet_distance"
+harness = false
+
+[[bench]]
+name = "twice_signed_ring_area"
 harness = false
 
 [package.metadata.docs.rs]

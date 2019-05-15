@@ -2,8 +2,10 @@ use crate::utils::EitherIter;
 use crate::{CoordinateType, LineString, Point};
 use geo_types::line_string::PointsIter;
 use std::iter::Rev;
+use rayon::prelude::*;
 
-pub(crate) fn twice_signed_ring_area<T>(linestring: &LineString<T>) -> T
+// RAYON
+pub fn twice_signed_ring_area<T>(linestring: &LineString<T>) -> T
 where
     T: CoordinateType,
 {
@@ -16,6 +18,18 @@ where
     }
 
     tmp
+}
+
+pub fn twice_signed_ring_area2<T>(linestring: &LineString<T>) -> T
+where
+    T: CoordinateType + Sync + Send + ::std::iter::Sum,
+{
+    if linestring.0.is_empty() || linestring.0.len() == 1 {
+        return T::zero();
+    }
+    linestring.0.par_windows(2).map(|w|
+        unsafe { crate::Line::new(*w.get_unchecked(0), *w.get_unchecked(1)) }.determinant()
+    ).sum()
 }
 
 /// Iterates through a list of `Point`s
