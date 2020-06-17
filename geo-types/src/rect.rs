@@ -35,13 +35,12 @@ where
 }
 
 impl<T: CoordinateType> Rect<T> {
-    /// Constructor to creates a new rectangle from coordinates, where `min` denotes to the
-    /// coordinates of the bottom-left corner, and `max` denotes to the coordinates of the
-    /// top-right corner
+    /// Creates a new `Rect` from the bottom-left coordinate `min` and the
+    /// top-right coordinate `max`.
     ///
     /// # Panics
     ///
-    /// Panics if `min`'s x/y coordinate is larger than that of the `max`'s.
+    /// Panics if `min`’s x or y component is larger than that of `max`’s.
     ///
     /// # Examples
     ///
@@ -60,6 +59,37 @@ impl<T: CoordinateType> Rect<T> {
         Rect::try_new(min, max).unwrap()
     }
 
+    /// Creates a new `Rect` from the bottom-left coordinate `min` and the
+    /// top-right coordinate `max`. If `min`’s x or y component is larger than
+    /// that of `max`’s, `Result::Err` is returned.
+    ///
+    /// # Examples
+    ///
+    /// Creating a valid `Rect`:
+    ///
+    /// ```
+    /// use geo_types::{Coordinate, Rect};
+    ///
+    /// let result = Rect::try_new(
+    ///     Coordinate { x: 0., y: 0. },
+    ///     Coordinate { x: 10., y: 20. }
+    /// );
+    ///
+    /// assert!(result.is_ok());
+    /// ```
+    ///
+    /// Creating an invalid `Rect`:
+    ///
+    /// ```
+    /// use geo_types::{Coordinate, Rect};
+    ///
+    /// let result = Rect::try_new(
+    ///     Coordinate { x: 10., y: 20. },
+    ///     Coordinate { x: 0., y: 0. }
+    /// );
+    ///
+    /// assert!(result.is_err());
+    /// ```
     pub fn try_new<C>(min: C, max: C) -> Result<Rect<T>, InvalidRectCoordinatesError>
     where
         C: Into<Coordinate<T>>,
