@@ -1,0 +1,135 @@
+use super::Coordinate;
+
+// JTS: /**
+// JTS:  * Represents a point on an
+// JTS:  * edge which intersects with another edge.
+// JTS:  * <p>
+// JTS:  * The intersection may either be a single point, or a line segment
+// JTS:  * (in which case this point is the start of the line segment)
+// JTS:  * The intersection point must be precise.
+// JTS:  *
+// JTS:  * @version 1.7
+// JTS:  */
+// JTS: public class EdgeIntersection
+// JTS:     implements Comparable
+// JTS: {
+
+/// Represents a point on an edge which intersects with another edge.
+///
+/// The intersection may either be a single point, or a line segment (in which case this point is
+/// the start of the line segment)
+/// The intersection point must be precise.
+/// TODO: should we get rid of this clone?
+#[derive(Clone)]
+pub struct EdgeIntersection<F: num_traits::Float> {
+    coord: Coordinate<F>,
+    segment_index: usize,
+    dist: F,
+}
+
+// JTS:   public Coordinate coord;   // the point of intersection
+// JTS:   public int segmentIndex;   // the index of the containing line segment in the parent edge
+// JTS:   public double dist;        // the edge distance of this point along the containing line segment
+// JTS:
+impl<F: num_traits::Float> EdgeIntersection<F> {
+    // JTS:   public EdgeIntersection(Coordinate coord, int segmentIndex, double dist) {
+    pub fn new(coord: Coordinate<F>, segment_index: usize, dist: F) -> EdgeIntersection<F> {
+        // JTS:     this.coord = new Coordinate(coord);
+        // JTS:     this.segmentIndex = segmentIndex;
+        // JTS:     this.dist = dist;
+        // JTS:   }
+        EdgeIntersection {
+            coord,
+            segment_index,
+            dist,
+        }
+    }
+    // JTS:
+    // JTS:   public Coordinate getCoordinate() { return coord; }
+    // JTS:
+    // JTS:   public int getSegmentIndex() { return segmentIndex; }
+    // JTS:
+    // JTS:   public double getDistance() { return dist; }
+    // JTS:
+}
+
+impl<F: num_traits::Float> std::cmp::PartialEq for EdgeIntersection<F> {
+    fn eq(&self, other: &EdgeIntersection<F>) -> bool {
+        // BTreeMap requires nodes to be fully `Ord`, but we're comparing floats. Can we guarantee
+        // that all nodes are non-NaN?
+        debug_assert!(!self.dist.is_nan() && !other.dist.is_nan());
+
+        self.segment_index == other.segment_index && self.dist == other.dist
+    }
+}
+
+impl<F: num_traits::Float> std::cmp::Eq for EdgeIntersection<F> {}
+
+impl<F: num_traits::Float> std::cmp::PartialOrd for EdgeIntersection<F> {
+    fn partial_cmp(&self, other: &EdgeIntersection<F>) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl<F: num_traits::Float> std::cmp::Ord for EdgeIntersection<F> {
+    fn cmp(&self, other: &EdgeIntersection<F>) -> std::cmp::Ordering {
+        // JTS:   public int compareTo(Object obj)
+        // JTS:   {
+        // JTS:     EdgeIntersection other = (EdgeIntersection) obj;
+        // JTS:     return compare(other.segmentIndex, other.dist);
+        // JTS:   }
+        // JTS:   /**
+        // JTS:    * @return -1 this EdgeIntersection is located before the argument location
+        // JTS:    * @return 0 this EdgeIntersection is at the argument location
+        // JTS:    * @return 1 this EdgeIntersection is located after the argument location
+        // JTS:    */
+        // JTS:   public int compare(int segmentIndex, double dist)
+        // JTS:   {
+        // JTS:     if (this.segmentIndex < segmentIndex) return -1;
+        // JTS:     if (this.segmentIndex > segmentIndex) return 1;
+        // JTS:     if (this.dist < dist) return -1;
+        // JTS:     if (this.dist > dist) return 1;
+        // JTS:     return 0;
+        // JTS:   }
+        if self.segment_index < other.segment_index {
+            return std::cmp::Ordering::Less;
+        }
+        if self.segment_index > other.segment_index {
+            return std::cmp::Ordering::Greater;
+        }
+        if self.dist < other.dist {
+            return std::cmp::Ordering::Less;
+        }
+        if self.dist > other.dist {
+            return std::cmp::Ordering::Greater;
+        }
+
+        // BTreeMap requires nodes to be fully `Ord`, but we're comparing floats. Can we guarantee
+        // that all nodes are non-NaN?
+        debug_assert!(!self.dist.is_nan() && !other.dist.is_nan());
+
+        return std::cmp::Ordering::Equal;
+    }
+}
+
+impl<F: num_traits::Float> EdgeIntersection<F> {
+    // JTS:
+    // JTS:   public boolean isEndPoint(int maxSegmentIndex)
+    // JTS:   {
+    // JTS:     if (segmentIndex == 0 && dist == 0.0) return true;
+    // JTS:     if (segmentIndex == maxSegmentIndex) return true;
+    // JTS:     return false;
+    // JTS:   }
+    // JTS:
+    // JTS:   public void print(PrintStream out)
+    // JTS:   {
+    // JTS:     out.print(coord);
+    // JTS:     out.print(" seg # = " + segmentIndex);
+    // JTS:     out.println(" dist = " + dist);
+    // JTS:   }
+    // JTS:   public String toString()
+    // JTS:   {
+    // JTS:     return coord + " seg # = " + segmentIndex + " dist = " + dist;
+    // JTS:   }
+    // JTS: }
+}

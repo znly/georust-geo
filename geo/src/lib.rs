@@ -60,6 +60,7 @@ pub use geo_types::{
 
 /// This module includes all the functions of geometric calculations
 pub mod algorithm;
+mod geomgraph;
 mod traits;
 mod types;
 mod utils;
