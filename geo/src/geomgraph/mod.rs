@@ -1,6 +1,7 @@
 mod edge;
 mod edge_intersection;
 mod edge_intersection_list;
+mod geometry_graph;
 mod index;
 mod line_intersector;
 mod robust_line_intersector;
@@ -8,6 +9,7 @@ mod robust_line_intersector;
 use edge::Edge;
 use edge_intersection::EdgeIntersection;
 use edge_intersection_list::EdgeIntersectionList;
+use geometry_graph::GeometryGraph;
 use line_intersector::{Intersection, LineIntersector};
 use robust_line_intersector::RobustLineIntersector;
 
