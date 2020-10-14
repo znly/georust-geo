@@ -44,13 +44,21 @@ impl<F: num_traits::Float> EdgeIntersection<F> {
             dist,
         }
     }
-    // JTS:
+
     // JTS:   public Coordinate getCoordinate() { return coord; }
-    // JTS:
+    pub fn get_coordinate(&self) -> Coordinate<F> {
+        self.coord
+    }
+
     // JTS:   public int getSegmentIndex() { return segmentIndex; }
-    // JTS:
+    pub fn get_segment_index(&self) -> usize {
+        self.segment_index
+    }
+
     // JTS:   public double getDistance() { return dist; }
-    // JTS:
+    pub fn get_distance(&self) -> F {
+        self.dist
+    }
 }
 
 impl<F: num_traits::Float> std::cmp::PartialEq for EdgeIntersection<F> {

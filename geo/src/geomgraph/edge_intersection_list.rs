@@ -62,6 +62,14 @@ impl<F: num_traits::Float> EdgeIntersectionList<F> {
 // JTS:    * @return an Iterator of EdgeIntersections
 // JTS:    */
 // JTS:   public Iterator iterator() { return nodeMap.values().iterator(); }
+impl<'a, F: num_traits::Float> IntoIterator for &'a EdgeIntersectionList<F> {
+    type Item = &'a EdgeIntersection<F>;
+    type IntoIter = std::collections::btree_set::Iter<'a, EdgeIntersection<F>>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.node_set.iter()
+    }
+}
 // JTS:
 // JTS:   /**
 // JTS:    * Tests if the given point is an edge intersection

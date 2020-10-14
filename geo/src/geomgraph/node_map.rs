@@ -1,10 +1,6 @@
-use super::{Coordinate, Node};
+use super::{Coordinate, GraphComponent, Location, Node, NodeFactory};
 
 use std::collections::BTreeMap;
-
-// TODO move to it's own file
-// TODO maybe make this a trait - JTS subclasses for other purposes
-struct NodeFactory {}
 
 // JTS: import org.locationtech.jts.geom.Coordinate;
 // JTS: import org.locationtech.jts.geom.Location;
@@ -17,10 +13,12 @@ struct NodeFactory {}
 /// A map of nodes, indexed by the coordinate of the node
 pub struct NodeMap<F: num_traits::Float> {
     map: BTreeMap<NodeKey<F>, Node<F>>,
-    node_factory: NodeFactory,
+    node_factory: Box<dyn NodeFactory<F>>,
 }
 
+#[derive(Clone)]
 struct NodeKey<F: num_traits::Float>(Coordinate<F>);
+
 impl<F: num_traits::Float> std::cmp::Ord for NodeKey<F> {
     fn cmp(&self, other: &NodeKey<F>) -> std::cmp::Ordering {
         // TODO: BTree requires Ord - can we guarantee all coords in the graph are non-NaN?
@@ -61,6 +59,12 @@ impl<F: num_traits::Float> NodeMap<F> {
     // JTS:   public NodeMap(NodeFactory nodeFact) {
     // JTS:     this.nodeFact = nodeFact;
     // JTS:   }
+    pub fn new(node_factory: Box<dyn NodeFactory<F>>) -> Self {
+        NodeMap {
+            map: BTreeMap::new(),
+            node_factory,
+        }
+    }
     // JTS:
     // JTS:   /**
     // JTS:    * Factory function - subclasses can override to create their own types of nodes
@@ -83,7 +87,13 @@ impl<F: num_traits::Float> NodeMap<F> {
     // JTS:     }
     // JTS:     return node;
     // JTS:   }
-    // JTS:
+    pub fn add_node_with_coordinate(&mut self, coord: Coordinate<F>) -> &mut Node<F> {
+        let key = NodeKey(coord);
+        self.map
+            .entry(key)
+            .or_insert(self.node_factory.create_node(coord))
+    }
+
     // JTS:   public Node addNode(Node n)
     // JTS:   {
     // JTS:     Node node = (Node) nodeMap.get(n.getCoordinate());
@@ -94,8 +104,7 @@ impl<F: num_traits::Float> NodeMap<F> {
     // JTS:     node.mergeLabel(n);
     // JTS:     return node;
     // JTS:   }
-    // JTS:
-    // JTS:   /**
+
     // JTS:    * Adds a node for the start point of this EdgeEnd
     // JTS:    * (if one does not already exist in this map).
     // JTS:    * Adds the EdgeEnd to the (possibly new) node.
@@ -106,6 +115,7 @@ impl<F: num_traits::Float> NodeMap<F> {
     // JTS:     Node n = addNode(p);
     // JTS:     n.add(e);
     // JTS:   }
+
     // JTS:   /**
     // JTS:    * @return the node if found; null otherwise
     // JTS:    */
@@ -135,6 +145,21 @@ impl<F: num_traits::Float> NodeMap<F> {
     // JTS:     }
     // JTS:     return bdyNodes;
     // JTS:   }
+    pub fn get_boundary_nodes(&self, geom_index: usize) -> Vec<&Node<F>> {
+        // CLEANUP: `unwrap` - nodes *always* have a label. edges sometimes do not, but they
+        // inherit the same `get_label` API via GraphComponent. Might be nice to separate them
+        // to remove this unwrap
+        self.map
+            .values()
+            .filter(|node| {
+                matches!(
+                    node.get_label().unwrap().get_on_location(geom_index),
+                    Some(Location::Boundary)
+                )
+            })
+            .collect()
+    }
+
     // JTS:
     // JTS:   public void print(PrintStream out)
     // JTS:   {

@@ -1,5 +1,6 @@
 use super::super::Edge;
 use super::{EdgeSetIntersector, SegmentIntersector};
+
 use std::cell::RefCell;
 
 // JTS: /**
@@ -9,7 +10,7 @@ use std::cell::RefCell;
 // JTS:  * This algorithm is too slow for production use, but is useful for testing purposes.
 // JTS:  * @version 1.7
 // JTS:  */
-pub(crate) struct SimpleEdgeSetIntersector {
+pub struct SimpleEdgeSetIntersector {
     overlap_count: u32,
 }
 
@@ -44,6 +45,9 @@ impl<F: num_traits::Float> EdgeSetIntersector<F> for SimpleEdgeSetIntersector {
         // JTS:     }
         for edge0 in edges.iter() {
             for edge1 in edges.iter() {
+                // TODO: I expect this to explode if test_all_segments is true, due to the RefCell
+                //       being borrowed twice simultaneously
+                //
                 if test_all_segments || edge0 != edge1 {
                     self.compute_intersects(edge0, edge1, segment_intersector);
                 }
@@ -56,7 +60,8 @@ impl<F: num_traits::Float> EdgeSetIntersector<F> for SimpleEdgeSetIntersector {
     // JTS:   {
     fn compute_intersections_testing_all_segments(
         &mut self,
-        edges: &[RefCell<Edge<F>>],
+        edges0: &[RefCell<Edge<F>>],
+        edges1: &[RefCell<Edge<F>>],
         segment_intersector: &mut SegmentIntersector<F>,
     ) {
         // JTS:     nOverlaps = 0;
@@ -69,8 +74,8 @@ impl<F: num_traits::Float> EdgeSetIntersector<F> for SimpleEdgeSetIntersector {
         // JTS:         computeIntersects(edge0, edge1, si);
         // JTS:       }
         // JTS:     }
-        for edge0 in edges {
-            for edge1 in edges {
+        for edge0 in edges0 {
+            for edge1 in edges1 {
                 self.compute_intersects(edge0, edge1, segment_intersector);
             }
         }
@@ -79,6 +84,10 @@ impl<F: num_traits::Float> EdgeSetIntersector<F> for SimpleEdgeSetIntersector {
 }
 
 impl SimpleEdgeSetIntersector {
+    pub fn new() -> Self {
+        SimpleEdgeSetIntersector { overlap_count: 0 }
+    }
+
     // JTS:
     // JTS:   /**
     // JTS:    * Performs a brute-force comparison of every segment in each Edge.

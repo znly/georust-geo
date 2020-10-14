@@ -47,7 +47,7 @@ pub enum Intersection {
 // JTS: public abstract class LineIntersector
 // JTS: {
 
-pub(crate) trait LineIntersector<F: num_traits::Float> {
+pub trait LineIntersector<F: num_traits::Float> {
     // JTS: /**
     // JTS:  * These are deprecated, due to ambiguous naming
     // JTS:  */

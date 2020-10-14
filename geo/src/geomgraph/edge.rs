@@ -1,13 +1,28 @@
-use super::{EdgeIntersectionList, LineIntersector};
+use super::{EdgeIntersectionList, GraphComponent, Label, LineIntersector};
 use geo_types::Coordinate;
 
 // TODO: investigate how isEqual should be implented - not sure it makes sense
 // to derive equality, since it compares a bunch of vec's
-#[derive(PartialEq)]
-pub(crate) struct Edge<F: num_traits::Float> {
+pub struct Edge<F: num_traits::Float> {
     coords: Vec<Coordinate<F>>,
     is_isolated: bool,
     edge_intersections: EdgeIntersectionList<F>,
+    // CLEANUP: does this need to be Option?
+    label: Option<Label>,
+}
+
+impl<F: num_traits::Float> GraphComponent for Edge<F> {
+    fn get_label(&self) -> Option<&Label> {
+        self.label.as_ref()
+    }
+
+    fn get_label_mut(&mut self) -> Option<&mut Label> {
+        self.label.as_mut()
+    }
+
+    fn set_label(&mut self, new_value: Label) {
+        self.label = Some(new_value)
+    }
 }
 
 // JTS: /**
@@ -99,7 +114,12 @@ impl<F: num_traits::Float> Edge<F> {
     // JTS:   {
     // JTS:     return pts.length - 1;
     // JTS:   }
+
     // JTS:   public EdgeIntersectionList getEdgeIntersectionList() { return eiList; }
+    pub fn get_edge_intersections(&self) -> &EdgeIntersectionList<F> {
+        &self.edge_intersections
+    }
+
     // JTS:
     // JTS:   public MonotoneChainEdge getMonotoneChainEdge()
     // JTS:   {
@@ -232,7 +252,9 @@ impl<F: num_traits::Float> Edge<F> {
     // JTS:   {
     // JTS:     updateIM(label, im);
     // JTS:   }
-    // JTS:
+}
+
+impl<F: num_traits::Float> std::cmp::PartialEq for Edge<F> {
     // JTS:   /**
     // JTS:    * equals is defined to be:
     // JTS:    * <p>
@@ -242,26 +264,51 @@ impl<F: num_traits::Float> Edge<F> {
     // JTS:    */
     // JTS:   public boolean equals(Object o)
     // JTS:   {
-    // JTS:     if (! (o instanceof Edge)) return false;
-    // JTS:     Edge e = (Edge) o;
-    // JTS:
-    // JTS:     if (pts.length != e.pts.length) return false;
-    // JTS:
-    // JTS:     boolean isEqualForward = true;
-    // JTS:     boolean isEqualReverse = true;
-    // JTS:     int iRev = pts.length;
-    // JTS:     for (int i = 0; i < pts.length; i++) {
-    // JTS:       if (! pts[i].equals2D(e.pts[i])) {
-    // JTS:          isEqualForward = false;
-    // JTS:       }
-    // JTS:       if (! pts[i].equals2D(e.pts[--iRev])) {
-    // JTS:          isEqualReverse = false;
-    // JTS:       }
-    // JTS:       if (! isEqualForward && ! isEqualReverse) return false;
-    // JTS:     }
-    // JTS:     return true;
-    // JTS:   }
-    // JTS:
+    fn eq(&self, other: &Edge<F>) -> bool {
+        // JTS:     if (! (o instanceof Edge)) return false;
+        // JTS:     Edge e = (Edge) o;
+        // JTS:
+        // JTS:     if (pts.length != e.pts.length) return false;
+        if self.coords.len() != other.coords.len() {
+            return false;
+        }
+
+        // JTS:     boolean isEqualForward = true;
+        // JTS:     boolean isEqualReverse = true;
+        // JTS:     int iRev = pts.length;
+        // JTS:     for (int i = 0; i < pts.length; i++) {
+        // JTS:       if (! pts[i].equals2D(e.pts[i])) {
+        // JTS:          isEqualForward = false;
+        // JTS:       }
+        // JTS:       if (! pts[i].equals2D(e.pts[--iRev])) {
+        // JTS:          isEqualReverse = false;
+        // JTS:       }
+        // JTS:       if (! isEqualForward && ! isEqualReverse) return false;
+        // JTS:     }
+        let mut is_equal_forward = true;
+        let mut is_equal_reverse = true;
+        let coords_len = self.coords.len();
+        for i in 0..coords_len {
+            if self.get_coords()[i] != other.get_coords()[i] {
+                is_equal_forward = false;
+            }
+
+            if self.get_coords()[i] != other.get_coords()[coords_len - i] {
+                is_equal_reverse = false;
+            }
+
+            if !is_equal_forward && !is_equal_reverse {
+                return false;
+            }
+        }
+
+        // JTS:     return true;
+        return true;
+        // JTS:   }
+    }
+}
+
+impl<F: num_traits::Float> Edge<F> {
     // JTS:   /**
     // JTS:    * @return true if the coordinate sequences of the Edges are identical
     // JTS:    */

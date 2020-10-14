@@ -9,9 +9,10 @@ use std::cell::{Ref, RefCell};
 // JTS:  * @version 1.7
 // JTS:  */
 // JTS: public class SegmentIntersector
+// JTS: {
 /// Computes the intersection of line segments,
 /// and adds the intersection to the edges containing the segments.
-pub(crate) struct SegmentIntersector<F: num_traits::Float> {
+pub struct SegmentIntersector<F: num_traits::Float> {
     // TODO is it worth making this generic?
     // Though JTS leaves this abstract - we might consider hard coding it to a RobustLineIntersector
     // TODO benchmark to see if there is an appreciable perf difference
@@ -25,11 +26,10 @@ pub(crate) struct SegmentIntersector<F: num_traits::Float> {
     has_proper_interior: bool,
     is_done_when_proper_intersection: bool,
     is_done: bool,
-    boundary_nodes: Option<[[Node<F>; 2]; 2]>,
+    boundary_nodes: Option<[Vec<Node<F>>; 2]>,
 }
 
 impl<F: num_traits::Float> SegmentIntersector<F> {
-    // JTS: {
     // JTS:
     // JTS:   public static boolean isAdjacentSegments(int i1, int i2)
     // JTS:   {
@@ -72,6 +72,24 @@ impl<F: num_traits::Float> SegmentIntersector<F> {
     // JTS:     this.includeProper = includeProper;
     // JTS:     this.recordIsolated = recordIsolated;
     // JTS:   }
+    pub fn new(
+        line_intersector: Box<dyn LineIntersector<F>>,
+        include_proper: bool,
+        record_isolated: bool,
+    ) -> SegmentIntersector<F> {
+        SegmentIntersector {
+            line_intersector,
+            include_proper,
+            record_isolated,
+            has_intersection: false,
+            has_proper: false,
+            has_proper_interior: false,
+            proper_intersection_point: None,
+            is_done: false,
+            is_done_when_proper_intersection: false,
+            boundary_nodes: None,
+        }
+    }
     // JTS:
     // JTS:   public void setBoundaryNodes( Collection bdyNodes0,
     // JTS:                               Collection bdyNodes1)
@@ -80,21 +98,23 @@ impl<F: num_traits::Float> SegmentIntersector<F> {
     // JTS:       bdyNodes[0] = bdyNodes0;
     // JTS:       bdyNodes[1] = bdyNodes1;
     // JTS:   }
-    // CLEANUP: just have this take a [[Node<F>; 2]; 2], but for now matching JTS more
-    fn set_boundary_nodes(
+    pub fn set_boundary_nodes(
         &mut self,
-        boundary_nodes_0: [Node<F>; 2],
-        boundary_nodes_1: [Node<F>; 2],
+        boundary_nodes_0: Vec<Node<F>>,
+        boundary_nodes_1: Vec<Node<F>>,
     ) {
         // this might be an overzelous assert - JTS doesn't leverage Option types...
         debug_assert!(self.boundary_nodes.is_none());
         self.boundary_nodes = Some([boundary_nodes_0, boundary_nodes_1]);
     }
 
-    // JTS:
     // JTS:   public void setIsDoneIfProperInt(boolean isDoneWhenProperInt) {
     // JTS: 	  this.isDoneWhenProperInt = isDoneWhenProperInt;
     // JTS:   }
+    pub fn set_is_done_when_proper_intersection(&mut self, new_value: bool) {
+        self.is_done_when_proper_intersection = new_value
+    }
+
     // JTS:
     // JTS:   public boolean isDone() {
     // JTS: 	  return isDone;
@@ -296,7 +316,7 @@ impl<F: num_traits::Float> SegmentIntersector<F> {
     fn is_boundary_point(
         &self,
         line_intersector: &Box<dyn LineIntersector<F>>,
-        boundary_nodes: &Option<[[Node<F>; 2]; 2]>,
+        boundary_nodes: &Option<[Vec<Node<F>>; 2]>,
     ) -> bool {
         // JTS:     if (bdyNodes == null) return false;
         // JTS:     if (isBoundaryPointInternal(li, bdyNodes[0])) return true;
@@ -317,7 +337,7 @@ impl<F: num_traits::Float> SegmentIntersector<F> {
     fn is_boundary_point_internal(
         &self,
         line_intersector: &Box<dyn LineIntersector<F>>,
-        boundary_nodes: &[Node<F>; 2],
+        boundary_nodes: &Vec<Node<F>>,
     ) -> bool {
         // JTS:     for (Iterator i = bdyNodes.iterator(); i.hasNext(); ) {
         // JTS:       Node node = (Node) i.next();
