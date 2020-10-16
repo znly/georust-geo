@@ -205,7 +205,10 @@ impl<'a, F: num_traits::Float> GeometryGraph<'a, F> {
     // JTS:   public Coordinate getInvalidPoint() { return invalidPoint; }
     // JTS:
     // JTS:   public Geometry getGeometry() { return parentGeom; }
-    // JTS:
+    pub fn get_geometry(&self) -> &Geometry<F> {
+        self.parent_geometry
+    }
+
     // JTS:   public BoundaryNodeRule getBoundaryNodeRule() { return boundaryNodeRule; }
     // JTS:
     // JTS:   public Collection getBoundaryNodes()

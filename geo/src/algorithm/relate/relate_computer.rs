@@ -75,18 +75,39 @@ impl<'a, F: num_traits::Float> RelateComputer<'a, F> {
     // JTS:   {
     pub fn compute_intersection_matrix(&self) -> IntersectionMatrix {
         // JTS:     IntersectionMatrix im = new IntersectionMatrix();
-        let mut matrix = IntersectionMatrix::new();
+        let mut intersection_matrix = IntersectionMatrix::new();
         // JTS:     // since Geometries are finite and embedded in a 2-D space, the EE element must always be 2
         // JTS:     im.set(Location.EXTERIOR, Location.EXTERIOR, 2);
-        matrix.set(Location::Exterior, Location::Exterior, 2);
-        todo!();
-        // JTS:
+        // since Geometries are finite and embedded in a 2-D space, the EE element must always be 2
+        intersection_matrix.set(Location::Exterior, Location::Exterior, 2);
+
         // JTS:     // if the Geometries don't overlap there is nothing to do
         // JTS:     if (! arg[0].getGeometry().getEnvelopeInternal().intersects(
         // JTS:             arg[1].getGeometry().getEnvelopeInternal()) ) {
         // JTS:       computeDisjointIM(im);
         // JTS:       return im;
         // JTS:     }
+
+        // if the Geometries don't overlap there is nothing to do
+        use crate::algorithm::bounding_rect::BoundingRect;
+        match (
+            self.graph0.get_geometry().bounding_rect(),
+            self.graph1.get_geometry().bounding_rect(),
+        ) {
+            (Some(bounding_rect_0), Some(bounding_rect_1)) => {
+                use crate::algorithm::intersects::Intersects;
+                if !bounding_rect_0.intersects(&bounding_rect_1) {
+                    self.compute_disjoint_intersection_matrix(&mut intersection_matrix);
+                    return intersection_matrix;
+                }
+            }
+            _ => {
+                self.compute_disjoint_intersection_matrix(&mut intersection_matrix);
+                return intersection_matrix;
+            }
+        }
+
+        todo!();
         // JTS:     arg[0].computeSelfNodes(li, false);
         // JTS:     arg[1].computeSelfNodes(li, false);
         // JTS:
@@ -147,254 +168,269 @@ impl<'a, F: num_traits::Float> RelateComputer<'a, F> {
         // JTS:     updateIM(im);
         // JTS:     return im;
         // JTS:   }
-        matrix
+        intersection_matrix
     }
+    // JTS:
+    // JTS:   private void insertEdgeEnds(List ee)
+    // JTS:   {
+    // JTS:     for (Iterator i = ee.iterator(); i.hasNext(); ) {
+    // JTS:       EdgeEnd e = (EdgeEnd) i.next();
+    // JTS:       nodes.add(e);
+    // JTS:     }
+    // JTS:   }
+    // JTS:
+    // JTS:   private void computeProperIntersectionIM(SegmentIntersector intersector, IntersectionMatrix im)
+    // JTS:   {
+    // JTS:     // If a proper intersection is found, we can set a lower bound on the IM.
+    // JTS:     int dimA = arg[0].getGeometry().getDimension();
+    // JTS:     int dimB = arg[1].getGeometry().getDimension();
+    // JTS:     boolean hasProper         = intersector.hasProperIntersection();
+    // JTS:     boolean hasProperInterior = intersector.hasProperInteriorIntersection();
+    // JTS:
+    // JTS:       // For Geometry's of dim 0 there can never be proper intersections.
+    // JTS:
+    // JTS:       /**
+    // JTS:        * If edge segments of Areas properly intersect, the areas must properly overlap.
+    // JTS:        */
+    // JTS:     if (dimA == 2 && dimB == 2) {
+    // JTS:       if (hasProper) im.setAtLeast("212101212");
+    // JTS:     }
+    // JTS:       /**
+    // JTS:        * If an Line segment properly intersects an edge segment of an Area,
+    // JTS:        * it follows that the Interior of the Line intersects the Boundary of the Area.
+    // JTS:        * If the intersection is a proper <i>interior</i> intersection, then
+    // JTS:        * there is an Interior-Interior intersection too.
+    // JTS:        * Note that it does not follow that the Interior of the Line intersects the Exterior
+    // JTS:        * of the Area, since there may be another Area component which contains the rest of the Line.
+    // JTS:        */
+    // JTS:     else if (dimA == 2 && dimB == 1) {
+    // JTS:       if (hasProper)          im.setAtLeast("FFF0FFFF2");
+    // JTS:       if (hasProperInterior)  im.setAtLeast("1FFFFF1FF");
+    // JTS:     }
+    // JTS:     else if (dimA == 1 && dimB == 2) {
+    // JTS:       if (hasProper)          im.setAtLeast("F0FFFFFF2");
+    // JTS:       if (hasProperInterior)  im.setAtLeast("1F1FFFFFF");
+    // JTS:     }
+    // JTS:     /* If edges of LineStrings properly intersect *in an interior point*, all
+    // JTS:         we can deduce is that
+    // JTS:         the interiors intersect.  (We can NOT deduce that the exteriors intersect,
+    // JTS:         since some other segments in the geometries might cover the points in the
+    // JTS:         neighbourhood of the intersection.)
+    // JTS:         It is important that the point be known to be an interior point of
+    // JTS:         both Geometries, since it is possible in a self-intersecting geometry to
+    // JTS:         have a proper intersection on one segment that is also a boundary point of another segment.
+    // JTS:     */
+    // JTS:     else if (dimA == 1 && dimB == 1) {
+    // JTS:       if (hasProperInterior)    im.setAtLeast("0FFFFFFFF");
+    // JTS:     }
+    // JTS:   }
+    // JTS:
+    // JTS:     /**
+    // JTS:      * Copy all nodes from an arg geometry into this graph.
+    // JTS:      * The node label in the arg geometry overrides any previously computed
+    // JTS:      * label for that argIndex.
+    // JTS:      * (E.g. a node may be an intersection node with
+    // JTS:      * a computed label of BOUNDARY,
+    // JTS:      * but in the original arg Geometry it is actually
+    // JTS:      * in the interior due to the Boundary Determination Rule)
+    // JTS:      */
+    // JTS:   private void copyNodesAndLabels(int argIndex)
+    // JTS:   {
+    // JTS:     for (Iterator i = arg[argIndex].getNodeIterator(); i.hasNext(); ) {
+    // JTS:       Node graphNode = (Node) i.next();
+    // JTS:       Node newNode = nodes.addNode(graphNode.getCoordinate());
+    // JTS:       newNode.setLabel(argIndex, graphNode.getLabel().getLocation(argIndex));
+    // JTS: //node.print(System.out);
+    // JTS:     }
+    // JTS:   }
+    // JTS:   /**
+    // JTS:    * Insert nodes for all intersections on the edges of a Geometry.
+    // JTS:    * Label the created nodes the same as the edge label if they do not already have a label.
+    // JTS:    * This allows nodes created by either self-intersections or
+    // JTS:    * mutual intersections to be labelled.
+    // JTS:    * Endpoint nodes will already be labelled from when they were inserted.
+    // JTS:    */
+    // JTS:   private void computeIntersectionNodes(int argIndex)
+    // JTS:   {
+    // JTS:     for (Iterator i = arg[argIndex].getEdgeIterator(); i.hasNext(); ) {
+    // JTS:       Edge e = (Edge) i.next();
+    // JTS:       int eLoc = e.getLabel().getLocation(argIndex);
+    // JTS:       for (Iterator eiIt = e.getEdgeIntersectionList().iterator(); eiIt.hasNext(); ) {
+    // JTS:         EdgeIntersection ei = (EdgeIntersection) eiIt.next();
+    // JTS:         RelateNode n = (RelateNode) nodes.addNode(ei.coord);
+    // JTS:         if (eLoc == Location.BOUNDARY)
+    // JTS:           n.setLabelBoundary(argIndex);
+    // JTS:         else {
+    // JTS:           if (n.getLabel().isNull(argIndex))
+    // JTS:             n.setLabel(argIndex, Location.INTERIOR);
+    // JTS:         }
+    // JTS: //Debug.println(n);
+    // JTS:       }
+    // JTS:     }
+    // JTS:   }
+    // JTS:   /**
+    // JTS:    * For all intersections on the edges of a Geometry,
+    // JTS:    * label the corresponding node IF it doesn't already have a label.
+    // JTS:    * This allows nodes created by either self-intersections or
+    // JTS:    * mutual intersections to be labelled.
+    // JTS:    * Endpoint nodes will already be labelled from when they were inserted.
+    // JTS:    */
+    // JTS:   private void labelIntersectionNodes(int argIndex)
+    // JTS:   {
+    // JTS:     for (Iterator i = arg[argIndex].getEdgeIterator(); i.hasNext(); ) {
+    // JTS:       Edge e = (Edge) i.next();
+    // JTS:       int eLoc = e.getLabel().getLocation(argIndex);
+    // JTS:       for (Iterator eiIt = e.getEdgeIntersectionList().iterator(); eiIt.hasNext(); ) {
+    // JTS:         EdgeIntersection ei = (EdgeIntersection) eiIt.next();
+    // JTS:         RelateNode n = (RelateNode) nodes.find(ei.coord);
+    // JTS:         if (n.getLabel().isNull(argIndex)) {
+    // JTS:           if (eLoc == Location.BOUNDARY)
+    // JTS:             n.setLabelBoundary(argIndex);
+    // JTS:           else
+    // JTS:             n.setLabel(argIndex, Location.INTERIOR);
+    // JTS:         }
+    // JTS: //n.print(System.out);
+    // JTS:       }
+    // JTS:     }
+    // JTS:   }
+    // JTS:   /**
+    // JTS:    * If the Geometries are disjoint, we need to enter their dimension and
+    // JTS:    * boundary dimension in the Ext rows in the IM
+    // JTS:    */
+    // JTS:   private void computeDisjointIM(IntersectionMatrix im)
+    // JTS:   {
+    /// If the Geometries are disjoint, we need to enter their dimension and boundary dimension in
+    /// the Ext rows in the IM
+    fn compute_disjoint_intersection_matrix(&self, intersection_matrix: &mut IntersectionMatrix) {
+        let geometry_a = self.graph0.get_geometry();
+        use crate::algorithm::empty::Empty;
+        if !geometry_a.is_empty() {
+            intersection_matrix.set(Location::Interior, Location::Exterior, todo!());
+            intersection_matrix.set(Location::Boundary, Location::Exterior, todo!());
+        }
+
+        let geometry_b = self.graph1.get_geometry();
+
+        // JTS:     Geometry ga = arg[0].getGeometry();
+        // JTS:     if (! ga.isEmpty()) {
+        // JTS:       im.set(Location.INTERIOR, Location.EXTERIOR, ga.getDimension());
+        // JTS:       im.set(Location.BOUNDARY, Location.EXTERIOR, ga.getBoundaryDimension());
+        // JTS:     }
+        // JTS:     Geometry gb = arg[1].getGeometry();
+        // JTS:     if (! gb.isEmpty()) {
+        // JTS:       im.set(Location.EXTERIOR, Location.INTERIOR, gb.getDimension());
+        // JTS:       im.set(Location.EXTERIOR, Location.BOUNDARY, gb.getBoundaryDimension());
+        // JTS:     }
+        // JTS:   }
+        todo!();
+    }
+
+    // JTS:   private void labelNodeEdges()
+    // JTS:   {
+    // JTS:     for (Iterator ni = nodes.iterator(); ni.hasNext(); ) {
+    // JTS:       RelateNode node = (RelateNode) ni.next();
+    // JTS:       node.getEdges().computeLabelling(arg);
+    // JTS: //Debug.print(node.getEdges());
+    // JTS: //node.print(System.out);
+    // JTS:     }
+    // JTS:   }
+    // JTS:
+    // JTS:   /**
+    // JTS:    * update the IM with the sum of the IMs for each component
+    // JTS:    */
+    // JTS:   private void updateIM(IntersectionMatrix im)
+    // JTS:   {
+    // JTS: //Debug.println(im);
+    // JTS:     for (Iterator ei = isolatedEdges.iterator(); ei.hasNext(); ) {
+    // JTS:       Edge e = (Edge) ei.next();
+    // JTS:       e.updateIM(im);
+    // JTS: //Debug.println(im);
+    // JTS:     }
+    // JTS:     for (Iterator ni = nodes.iterator(); ni.hasNext(); ) {
+    // JTS:       RelateNode node = (RelateNode) ni.next();
+    // JTS:       node.updateIM(im);
+    // JTS: //Debug.println(im);
+    // JTS:       node.updateIMFromEdges(im);
+    // JTS: //Debug.println(im);
+    // JTS: //node.print(System.out);
+    // JTS:     }
+    // JTS:   }
+    // JTS:
+    // JTS:   /**
+    // JTS:    * Processes isolated edges by computing their labelling and adding them
+    // JTS:    * to the isolated edges list.
+    // JTS:    * Isolated edges are guaranteed not to touch the boundary of the target (since if they
+    // JTS:    * did, they would have caused an intersection to be computed and hence would
+    // JTS:    * not be isolated)
+    // JTS:    */
+    // JTS:   private void labelIsolatedEdges(int thisIndex, int targetIndex)
+    // JTS:   {
+    // JTS:     for (Iterator ei = arg[thisIndex].getEdgeIterator(); ei.hasNext(); ) {
+    // JTS:       Edge e = (Edge) ei.next();
+    // JTS:       if (e.isIsolated()) {
+    // JTS:         labelIsolatedEdge(e, targetIndex, arg[targetIndex].getGeometry());
+    // JTS:         isolatedEdges.add(e);
+    // JTS:       }
+    // JTS:     }
+    // JTS:   }
+    // JTS:   /**
+    // JTS:    * Label an isolated edge of a graph with its relationship to the target geometry.
+    // JTS:    * If the target has dim 2 or 1, the edge can either be in the interior or the exterior.
+    // JTS:    * If the target has dim 0, the edge must be in the exterior
+    // JTS:    */
+    // JTS:   private void labelIsolatedEdge(Edge e, int targetIndex, Geometry target)
+    // JTS:   {
+    // JTS:     // this won't work for GeometryCollections with both dim 2 and 1 geoms
+    // JTS:     if ( target.getDimension() > 0) {
+    // JTS:     // since edge is not in boundary, may not need the full generality of PointLocator?
+    // JTS:     // Possibly should use ptInArea locator instead?  We probably know here
+    // JTS:     // that the edge does not touch the bdy of the target Geometry
+    // JTS:       int loc = ptLocator.locate(e.getCoordinate(), target);
+    // JTS:       e.getLabel().setAllLocations(targetIndex, loc);
+    // JTS:     }
+    // JTS:     else {
+    // JTS:       e.getLabel().setAllLocations(targetIndex, Location.EXTERIOR);
+    // JTS:     }
+    // JTS: //System.out.println(e.getLabel());
+    // JTS:   }
+    // JTS:
+    // JTS:   /**
+    // JTS:    * Isolated nodes are nodes whose labels are incomplete
+    // JTS:    * (e.g. the location for one Geometry is null).
+    // JTS:    * This is the case because nodes in one graph which don't intersect
+    // JTS:    * nodes in the other are not completely labelled by the initial process
+    // JTS:    * of adding nodes to the nodeList.
+    // JTS:    * To complete the labelling we need to check for nodes that lie in the
+    // JTS:    * interior of edges, and in the interior of areas.
+    // JTS:    */
+    // JTS:   private void labelIsolatedNodes()
+    // JTS:   {
+    // JTS:     for (Iterator ni = nodes.iterator(); ni.hasNext(); ) {
+    // JTS:       Node n = (Node) ni.next();
+    // JTS:       Label label = n.getLabel();
+    // JTS:       // isolated nodes should always have at least one geometry in their label
+    // JTS:       Assert.isTrue(label.getGeometryCount() > 0, "node with empty label found");
+    // JTS:       if (n.isIsolated()) {
+    // JTS:         if (label.isNull(0))
+    // JTS:           labelIsolatedNode(n, 0);
+    // JTS:         else
+    // JTS:           labelIsolatedNode(n, 1);
+    // JTS:       }
+    // JTS:     }
+    // JTS:   }
+    // JTS:
+    // JTS:   /**
+    // JTS:    * Label an isolated node with its relationship to the target geometry.
+    // JTS:    */
+    // JTS:   private void labelIsolatedNode(Node n, int targetIndex)
+    // JTS:   {
+    // JTS:     int loc = ptLocator.locate(n.getCoordinate(), arg[targetIndex].getGeometry());
+    // JTS:     n.getLabel().setAllLocations(targetIndex, loc);
+    // JTS: //debugPrintln(n.getLabel());
+    // JTS:   }
+    // JTS: }
 }
-// JTS:
-// JTS:   private void insertEdgeEnds(List ee)
-// JTS:   {
-// JTS:     for (Iterator i = ee.iterator(); i.hasNext(); ) {
-// JTS:       EdgeEnd e = (EdgeEnd) i.next();
-// JTS:       nodes.add(e);
-// JTS:     }
-// JTS:   }
-// JTS:
-// JTS:   private void computeProperIntersectionIM(SegmentIntersector intersector, IntersectionMatrix im)
-// JTS:   {
-// JTS:     // If a proper intersection is found, we can set a lower bound on the IM.
-// JTS:     int dimA = arg[0].getGeometry().getDimension();
-// JTS:     int dimB = arg[1].getGeometry().getDimension();
-// JTS:     boolean hasProper         = intersector.hasProperIntersection();
-// JTS:     boolean hasProperInterior = intersector.hasProperInteriorIntersection();
-// JTS:
-// JTS:       // For Geometry's of dim 0 there can never be proper intersections.
-// JTS:
-// JTS:       /**
-// JTS:        * If edge segments of Areas properly intersect, the areas must properly overlap.
-// JTS:        */
-// JTS:     if (dimA == 2 && dimB == 2) {
-// JTS:       if (hasProper) im.setAtLeast("212101212");
-// JTS:     }
-// JTS:       /**
-// JTS:        * If an Line segment properly intersects an edge segment of an Area,
-// JTS:        * it follows that the Interior of the Line intersects the Boundary of the Area.
-// JTS:        * If the intersection is a proper <i>interior</i> intersection, then
-// JTS:        * there is an Interior-Interior intersection too.
-// JTS:        * Note that it does not follow that the Interior of the Line intersects the Exterior
-// JTS:        * of the Area, since there may be another Area component which contains the rest of the Line.
-// JTS:        */
-// JTS:     else if (dimA == 2 && dimB == 1) {
-// JTS:       if (hasProper)          im.setAtLeast("FFF0FFFF2");
-// JTS:       if (hasProperInterior)  im.setAtLeast("1FFFFF1FF");
-// JTS:     }
-// JTS:     else if (dimA == 1 && dimB == 2) {
-// JTS:       if (hasProper)          im.setAtLeast("F0FFFFFF2");
-// JTS:       if (hasProperInterior)  im.setAtLeast("1F1FFFFFF");
-// JTS:     }
-// JTS:     /* If edges of LineStrings properly intersect *in an interior point*, all
-// JTS:         we can deduce is that
-// JTS:         the interiors intersect.  (We can NOT deduce that the exteriors intersect,
-// JTS:         since some other segments in the geometries might cover the points in the
-// JTS:         neighbourhood of the intersection.)
-// JTS:         It is important that the point be known to be an interior point of
-// JTS:         both Geometries, since it is possible in a self-intersecting geometry to
-// JTS:         have a proper intersection on one segment that is also a boundary point of another segment.
-// JTS:     */
-// JTS:     else if (dimA == 1 && dimB == 1) {
-// JTS:       if (hasProperInterior)    im.setAtLeast("0FFFFFFFF");
-// JTS:     }
-// JTS:   }
-// JTS:
-// JTS:     /**
-// JTS:      * Copy all nodes from an arg geometry into this graph.
-// JTS:      * The node label in the arg geometry overrides any previously computed
-// JTS:      * label for that argIndex.
-// JTS:      * (E.g. a node may be an intersection node with
-// JTS:      * a computed label of BOUNDARY,
-// JTS:      * but in the original arg Geometry it is actually
-// JTS:      * in the interior due to the Boundary Determination Rule)
-// JTS:      */
-// JTS:   private void copyNodesAndLabels(int argIndex)
-// JTS:   {
-// JTS:     for (Iterator i = arg[argIndex].getNodeIterator(); i.hasNext(); ) {
-// JTS:       Node graphNode = (Node) i.next();
-// JTS:       Node newNode = nodes.addNode(graphNode.getCoordinate());
-// JTS:       newNode.setLabel(argIndex, graphNode.getLabel().getLocation(argIndex));
-// JTS: //node.print(System.out);
-// JTS:     }
-// JTS:   }
-// JTS:   /**
-// JTS:    * Insert nodes for all intersections on the edges of a Geometry.
-// JTS:    * Label the created nodes the same as the edge label if they do not already have a label.
-// JTS:    * This allows nodes created by either self-intersections or
-// JTS:    * mutual intersections to be labelled.
-// JTS:    * Endpoint nodes will already be labelled from when they were inserted.
-// JTS:    */
-// JTS:   private void computeIntersectionNodes(int argIndex)
-// JTS:   {
-// JTS:     for (Iterator i = arg[argIndex].getEdgeIterator(); i.hasNext(); ) {
-// JTS:       Edge e = (Edge) i.next();
-// JTS:       int eLoc = e.getLabel().getLocation(argIndex);
-// JTS:       for (Iterator eiIt = e.getEdgeIntersectionList().iterator(); eiIt.hasNext(); ) {
-// JTS:         EdgeIntersection ei = (EdgeIntersection) eiIt.next();
-// JTS:         RelateNode n = (RelateNode) nodes.addNode(ei.coord);
-// JTS:         if (eLoc == Location.BOUNDARY)
-// JTS:           n.setLabelBoundary(argIndex);
-// JTS:         else {
-// JTS:           if (n.getLabel().isNull(argIndex))
-// JTS:             n.setLabel(argIndex, Location.INTERIOR);
-// JTS:         }
-// JTS: //Debug.println(n);
-// JTS:       }
-// JTS:     }
-// JTS:   }
-// JTS:   /**
-// JTS:    * For all intersections on the edges of a Geometry,
-// JTS:    * label the corresponding node IF it doesn't already have a label.
-// JTS:    * This allows nodes created by either self-intersections or
-// JTS:    * mutual intersections to be labelled.
-// JTS:    * Endpoint nodes will already be labelled from when they were inserted.
-// JTS:    */
-// JTS:   private void labelIntersectionNodes(int argIndex)
-// JTS:   {
-// JTS:     for (Iterator i = arg[argIndex].getEdgeIterator(); i.hasNext(); ) {
-// JTS:       Edge e = (Edge) i.next();
-// JTS:       int eLoc = e.getLabel().getLocation(argIndex);
-// JTS:       for (Iterator eiIt = e.getEdgeIntersectionList().iterator(); eiIt.hasNext(); ) {
-// JTS:         EdgeIntersection ei = (EdgeIntersection) eiIt.next();
-// JTS:         RelateNode n = (RelateNode) nodes.find(ei.coord);
-// JTS:         if (n.getLabel().isNull(argIndex)) {
-// JTS:           if (eLoc == Location.BOUNDARY)
-// JTS:             n.setLabelBoundary(argIndex);
-// JTS:           else
-// JTS:             n.setLabel(argIndex, Location.INTERIOR);
-// JTS:         }
-// JTS: //n.print(System.out);
-// JTS:       }
-// JTS:     }
-// JTS:   }
-// JTS:   /**
-// JTS:    * If the Geometries are disjoint, we need to enter their dimension and
-// JTS:    * boundary dimension in the Ext rows in the IM
-// JTS:    */
-// JTS:   private void computeDisjointIM(IntersectionMatrix im)
-// JTS:   {
-// JTS:     Geometry ga = arg[0].getGeometry();
-// JTS:     if (! ga.isEmpty()) {
-// JTS:       im.set(Location.INTERIOR, Location.EXTERIOR, ga.getDimension());
-// JTS:       im.set(Location.BOUNDARY, Location.EXTERIOR, ga.getBoundaryDimension());
-// JTS:     }
-// JTS:     Geometry gb = arg[1].getGeometry();
-// JTS:     if (! gb.isEmpty()) {
-// JTS:       im.set(Location.EXTERIOR, Location.INTERIOR, gb.getDimension());
-// JTS:       im.set(Location.EXTERIOR, Location.BOUNDARY, gb.getBoundaryDimension());
-// JTS:     }
-// JTS:   }
-// JTS:
-// JTS:   private void labelNodeEdges()
-// JTS:   {
-// JTS:     for (Iterator ni = nodes.iterator(); ni.hasNext(); ) {
-// JTS:       RelateNode node = (RelateNode) ni.next();
-// JTS:       node.getEdges().computeLabelling(arg);
-// JTS: //Debug.print(node.getEdges());
-// JTS: //node.print(System.out);
-// JTS:     }
-// JTS:   }
-// JTS:
-// JTS:   /**
-// JTS:    * update the IM with the sum of the IMs for each component
-// JTS:    */
-// JTS:   private void updateIM(IntersectionMatrix im)
-// JTS:   {
-// JTS: //Debug.println(im);
-// JTS:     for (Iterator ei = isolatedEdges.iterator(); ei.hasNext(); ) {
-// JTS:       Edge e = (Edge) ei.next();
-// JTS:       e.updateIM(im);
-// JTS: //Debug.println(im);
-// JTS:     }
-// JTS:     for (Iterator ni = nodes.iterator(); ni.hasNext(); ) {
-// JTS:       RelateNode node = (RelateNode) ni.next();
-// JTS:       node.updateIM(im);
-// JTS: //Debug.println(im);
-// JTS:       node.updateIMFromEdges(im);
-// JTS: //Debug.println(im);
-// JTS: //node.print(System.out);
-// JTS:     }
-// JTS:   }
-// JTS:
-// JTS:   /**
-// JTS:    * Processes isolated edges by computing their labelling and adding them
-// JTS:    * to the isolated edges list.
-// JTS:    * Isolated edges are guaranteed not to touch the boundary of the target (since if they
-// JTS:    * did, they would have caused an intersection to be computed and hence would
-// JTS:    * not be isolated)
-// JTS:    */
-// JTS:   private void labelIsolatedEdges(int thisIndex, int targetIndex)
-// JTS:   {
-// JTS:     for (Iterator ei = arg[thisIndex].getEdgeIterator(); ei.hasNext(); ) {
-// JTS:       Edge e = (Edge) ei.next();
-// JTS:       if (e.isIsolated()) {
-// JTS:         labelIsolatedEdge(e, targetIndex, arg[targetIndex].getGeometry());
-// JTS:         isolatedEdges.add(e);
-// JTS:       }
-// JTS:     }
-// JTS:   }
-// JTS:   /**
-// JTS:    * Label an isolated edge of a graph with its relationship to the target geometry.
-// JTS:    * If the target has dim 2 or 1, the edge can either be in the interior or the exterior.
-// JTS:    * If the target has dim 0, the edge must be in the exterior
-// JTS:    */
-// JTS:   private void labelIsolatedEdge(Edge e, int targetIndex, Geometry target)
-// JTS:   {
-// JTS:     // this won't work for GeometryCollections with both dim 2 and 1 geoms
-// JTS:     if ( target.getDimension() > 0) {
-// JTS:     // since edge is not in boundary, may not need the full generality of PointLocator?
-// JTS:     // Possibly should use ptInArea locator instead?  We probably know here
-// JTS:     // that the edge does not touch the bdy of the target Geometry
-// JTS:       int loc = ptLocator.locate(e.getCoordinate(), target);
-// JTS:       e.getLabel().setAllLocations(targetIndex, loc);
-// JTS:     }
-// JTS:     else {
-// JTS:       e.getLabel().setAllLocations(targetIndex, Location.EXTERIOR);
-// JTS:     }
-// JTS: //System.out.println(e.getLabel());
-// JTS:   }
-// JTS:
-// JTS:   /**
-// JTS:    * Isolated nodes are nodes whose labels are incomplete
-// JTS:    * (e.g. the location for one Geometry is null).
-// JTS:    * This is the case because nodes in one graph which don't intersect
-// JTS:    * nodes in the other are not completely labelled by the initial process
-// JTS:    * of adding nodes to the nodeList.
-// JTS:    * To complete the labelling we need to check for nodes that lie in the
-// JTS:    * interior of edges, and in the interior of areas.
-// JTS:    */
-// JTS:   private void labelIsolatedNodes()
-// JTS:   {
-// JTS:     for (Iterator ni = nodes.iterator(); ni.hasNext(); ) {
-// JTS:       Node n = (Node) ni.next();
-// JTS:       Label label = n.getLabel();
-// JTS:       // isolated nodes should always have at least one geometry in their label
-// JTS:       Assert.isTrue(label.getGeometryCount() > 0, "node with empty label found");
-// JTS:       if (n.isIsolated()) {
-// JTS:         if (label.isNull(0))
-// JTS:           labelIsolatedNode(n, 0);
-// JTS:         else
-// JTS:           labelIsolatedNode(n, 1);
-// JTS:       }
-// JTS:     }
-// JTS:   }
-// JTS:
-// JTS:   /**
-// JTS:    * Label an isolated node with its relationship to the target geometry.
-// JTS:    */
-// JTS:   private void labelIsolatedNode(Node n, int targetIndex)
-// JTS:   {
-// JTS:     int loc = ptLocator.locate(n.getCoordinate(), arg[targetIndex].getGeometry());
-// JTS:     n.getLabel().setAllLocations(targetIndex, loc);
-// JTS: //debugPrintln(n.getLabel());
-// JTS:   }
-// JTS: }
+
 #[cfg(test)]
 mod test {
     use super::*;
