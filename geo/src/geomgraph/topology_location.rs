@@ -28,7 +28,9 @@ use super::{Location, Position};
 
 #[derive(Clone)]
 pub struct TopologyLocation {
-    // CLEANUP: can we make this non-optional?
+    // CLEANUP: location is between 1-3, maybe cleaner to just have 3 separate Option<Location>
+    // attributes, one for each: [on_location, (left_location, right_location]
+    // CLEANUP: can we make this non-optional (or some of them, if we split up properties)?
     location: Vec<Option<Location>>,
 }
 
@@ -58,6 +60,12 @@ impl TopologyLocation {
     // JTS:    init(1);
     // JTS:    location[Position.ON] = on;
     // JTS:   }
+    pub fn new(on_location: Option<Location>) -> TopologyLocation {
+        TopologyLocation {
+            location: vec![on_location],
+        }
+    }
+
     // JTS:   public TopologyLocation(TopologyLocation gl) {
     // JTS:     init(gl.location.length);
     // JTS:     if (gl != null) {
@@ -145,6 +153,10 @@ impl TopologyLocation {
     // JTS:   {
     // JTS:     setLocation(Position.ON, locValue);
     // JTS:   }
+    pub fn set_on_location(&mut self, location: Location) {
+        self.location[Position::On as usize] = Some(location);
+    }
+
     // JTS:   public int[] getLocations() { return location; }
     // JTS:   public void setLocations(int on, int left, int right) {
     // JTS:       location[Position.ON] = on;

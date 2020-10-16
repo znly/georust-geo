@@ -1,7 +1,7 @@
 // JTS: import org.locationtech.jts.geom.Coordinate;
 // JTS: import org.locationtech.jts.geom.IntersectionMatrix;
 // JTS: import org.locationtech.jts.geom.Location;
-use super::{Coordinate, GraphComponent, Label};
+use super::{Coordinate, EdgeEndStar, GraphComponent, Label};
 
 // JTS: /**
 // JTS:  * @version 1.7
@@ -12,6 +12,8 @@ use super::{Coordinate, GraphComponent, Label};
 #[derive(Clone)]
 pub struct Node<F: num_traits::Float> {
     coordinate: Coordinate<F>,
+    // CLEANUP: should we get rid of this Option and have a Node trait?
+    edges: Option<EdgeEndStar>,
     label: Label,
 }
 
@@ -42,6 +44,14 @@ impl<F: num_traits::Float> Node<F> {
     // JTS:     this.edges = edges;
     // JTS:     label = new Label(0, Location.NONE);
     // JTS:   }
+    pub fn new(coordinate: Coordinate<F>, edges: Option<EdgeEndStar>) -> Node<F> {
+        Node {
+            coordinate,
+            edges,
+            label: Label::new(0, None),
+        }
+    }
+
     // JTS:
     // JTS:   public Coordinate getCoordinate() { return coord; }
     // JTS:   public EdgeEndStar getEdges() { return edges; }

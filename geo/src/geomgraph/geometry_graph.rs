@@ -9,7 +9,8 @@ use super::{
         LineIntersector,
     },
     index::{EdgeSetIntersector, SegmentIntersector, SimpleEdgeSetIntersector},
-    Coordinate, Edge, GraphComponent, Label, Location, Node, NodeFactory, PlanarGraph, Position,
+    BasicNodeFactory, Coordinate, Edge, Geometry, GraphComponent, Label, Location, Node,
+    NodeFactory, PlanarGraph, Position,
 };
 
 use std::cell::RefCell;
@@ -46,15 +47,16 @@ use std::cell::RefCell;
 // JTS:   extends PlanarGraph
 // JTS: {
 /// A GeometryGraph is a graph that models a given Geometry
-pub struct GeometryGraph<F: num_traits::Float> {
-    planar_graph: PlanarGraph<F>,
+pub struct GeometryGraph<'a, F: num_traits::Float> {
     arg_index: usize,
+    parent_geometry: &'a Geometry<F>,
     use_boundary_determination_rule: bool,
+    planar_graph: PlanarGraph<F>,
 }
 
 // PlanarGraph delegations
 // In JTS this is achieved through inheritance - GeometryGraph inherits from PlanarGraph
-impl<F: num_traits::Float> GeometryGraph<F> {
+impl<F: num_traits::Float> GeometryGraph<'_, F> {
     fn get_edges(&self) -> &[RefCell<Edge<F>>] {
         self.planar_graph.get_edges()
     }
@@ -68,15 +70,7 @@ impl<F: num_traits::Float> GeometryGraph<F> {
     }
 }
 
-impl<F: num_traits::Float> GeometryGraph<F> {
-    pub fn new(arg_index: usize, node_factory: Box<dyn NodeFactory<F>>) -> Self {
-        GeometryGraph {
-            planar_graph: PlanarGraph::new(node_factory),
-            arg_index,
-            use_boundary_determination_rule: true,
-        }
-    }
-
+impl<'a, F: num_traits::Float> GeometryGraph<'a, F> {
     // JTS: /**
     // JTS:  * This method implements the Boundary Determination Rule
     // JTS:  * for determining whether
@@ -179,6 +173,16 @@ impl<F: num_traits::Float> GeometryGraph<F> {
     // JTS:       add(parentGeom);
     // JTS:     }
     // JTS:   }
+    pub fn new(arg_index: usize, parent_geometry: &'a Geometry<F>) -> Self {
+        let node_factory = Box::new(BasicNodeFactory);
+        GeometryGraph {
+            arg_index,
+            parent_geometry,
+            use_boundary_determination_rule: true,
+            planar_graph: PlanarGraph::new(node_factory),
+        }
+    }
+
     // JTS:
     // JTS:   /**
     // JTS:    * This constructor is used by clients that wish to add Edges explicitly,

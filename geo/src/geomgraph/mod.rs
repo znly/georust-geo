@@ -21,7 +21,7 @@ pub use geometry_graph::GeometryGraph;
 use graph_component::GraphComponent;
 use label::Label;
 use node::Node;
-use node_factory::NodeFactory;
+use node_factory::{BasicNodeFactory, NodeFactory};
 use node_map::NodeMap;
 use planar_graph::PlanarGraph;
 use topology_location::TopologyLocation;
@@ -31,7 +31,7 @@ mod algorithm;
 // CLEANUP: remove these convenience accessors to clarify package dependencies?
 use algorithm::{Intersection, LineIntersector, RobustLineIntersector};
 
-use geo_types::Coordinate;
+use geo_types::{Coordinate, Geometry};
 
 // CLEANUP: use geo::kernels::Orientation instead?
 #[derive(Copy, Clone, PartialEq, Eq)]
@@ -50,3 +50,7 @@ pub enum Location {
     Boundary = 1,
     Exterior = 2,
 }
+
+/// TODO: actually implement EdgeEndStar for incident edge intersections
+#[derive(Clone)]
+pub struct EdgeEndStar;

@@ -66,6 +66,17 @@ impl Label {
     // JTS:     elt[1] = new TopologyLocation(Location.NONE);
     // JTS:     elt[geomIndex].setLocation(onLoc);
     // JTS:   }
+    pub fn new(geom_index: usize, location: Option<Location>) -> Label {
+        let mut label = Label {
+            elt: [TopologyLocation::new(None), TopologyLocation::new(None)],
+        };
+        if let Some(location) = location {
+            label.elt[geom_index].set_on_location(location);
+        }
+
+        label
+    }
+
     // JTS:   /**
     // JTS:    * Construct a Label with On, Left and Right locations for both Geometries.
     // JTS:    * Initialize the locations for both Geometries to the given values.

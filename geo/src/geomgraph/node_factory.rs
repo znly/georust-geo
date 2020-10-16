@@ -13,3 +13,12 @@ use super::{Coordinate, Node};
 pub trait NodeFactory<F: num_traits::Float> {
     fn create_node(&self, coordinate: Coordinate<F>) -> Node<F>;
 }
+
+pub struct BasicNodeFactory;
+
+/// The basic node constructor does not allow for incident edges
+impl<F: num_traits::Float> NodeFactory<F> for BasicNodeFactory {
+    fn create_node(&self, coordinate: Coordinate<F>) -> Node<F> {
+        Node::new(coordinate, None)
+    }
+}
