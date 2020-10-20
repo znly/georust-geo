@@ -1,4 +1,5 @@
 use super::IntersectionMatrix;
+use crate::algorithm::dimensions::Dimensions;
 use crate::geomgraph::{GeometryGraph, Location};
 
 use geo_types::Geometry;
@@ -79,7 +80,11 @@ impl<'a, F: num_traits::Float> RelateComputer<'a, F> {
         // JTS:     // since Geometries are finite and embedded in a 2-D space, the EE element must always be 2
         // JTS:     im.set(Location.EXTERIOR, Location.EXTERIOR, 2);
         // since Geometries are finite and embedded in a 2-D space, the EE element must always be 2
-        intersection_matrix.set(Location::Exterior, Location::Exterior, 2);
+        intersection_matrix.set(
+            Location::Exterior,
+            Location::Exterior,
+            Dimensions::TwoDimensional,
+        );
 
         // JTS:     // if the Geometries don't overlap there is nothing to do
         // JTS:     if (! arg[0].getGeometry().getEnvelopeInternal().intersects(
@@ -88,7 +93,7 @@ impl<'a, F: num_traits::Float> RelateComputer<'a, F> {
         // JTS:       return im;
         // JTS:     }
 
-        // if the Geometries don't overlap there is nothing to do
+        // if the Geometries don't overlap, we can skip most of the work
         use crate::algorithm::bounding_rect::BoundingRect;
         match (
             self.graph0.get_geometry().bounding_rect(),
@@ -302,27 +307,51 @@ impl<'a, F: num_traits::Float> RelateComputer<'a, F> {
     /// If the Geometries are disjoint, we need to enter their dimension and boundary dimension in
     /// the Ext rows in the IM
     fn compute_disjoint_intersection_matrix(&self, intersection_matrix: &mut IntersectionMatrix) {
-        let geometry_a = self.graph0.get_geometry();
-        use crate::algorithm::empty::Empty;
-        if !geometry_a.is_empty() {
-            intersection_matrix.set(Location::Interior, Location::Exterior, todo!());
-            intersection_matrix.set(Location::Boundary, Location::Exterior, todo!());
-        }
-
-        let geometry_b = self.graph1.get_geometry();
-
+        use crate::algorithm::dimensions::HasDimensions;
         // JTS:     Geometry ga = arg[0].getGeometry();
         // JTS:     if (! ga.isEmpty()) {
         // JTS:       im.set(Location.INTERIOR, Location.EXTERIOR, ga.getDimension());
         // JTS:       im.set(Location.BOUNDARY, Location.EXTERIOR, ga.getBoundaryDimension());
         // JTS:     }
+        {
+            let geometry_a = self.graph0.get_geometry();
+            let dimensions = geometry_a.get_dimensions();
+            if dimensions != Dimensions::Empty {
+                intersection_matrix.set(Location::Interior, Location::Exterior, dimensions);
+
+                let boundary_dimensions = geometry_a.get_boundary_dimensions();
+                if boundary_dimensions != Dimensions::Empty {
+                    intersection_matrix.set(
+                        Location::Boundary,
+                        Location::Exterior,
+                        boundary_dimensions,
+                    );
+                }
+            }
+        }
+
         // JTS:     Geometry gb = arg[1].getGeometry();
         // JTS:     if (! gb.isEmpty()) {
         // JTS:       im.set(Location.EXTERIOR, Location.INTERIOR, gb.getDimension());
         // JTS:       im.set(Location.EXTERIOR, Location.BOUNDARY, gb.getBoundaryDimension());
         // JTS:     }
         // JTS:   }
-        todo!();
+        {
+            let geometry_b = self.graph1.get_geometry();
+            let dimensions = geometry_b.get_dimensions();
+            if dimensions != Dimensions::Empty {
+                intersection_matrix.set(Location::Exterior, Location::Interior, dimensions);
+
+                let boundary_dimensions = geometry_b.get_boundary_dimensions();
+                if boundary_dimensions != Dimensions::Empty {
+                    intersection_matrix.set(
+                        Location::Exterior,
+                        Location::Boundary,
+                        boundary_dimensions,
+                    );
+                }
+            }
+        }
     }
 
     // JTS:   private void labelNodeEdges()
@@ -437,6 +466,48 @@ mod test {
     use geo_types::{polygon, Geometry};
 
     #[test]
+    fn test_disjoint() {
+        let square0: Geometry<f64> = polygon![
+            (x: 0., y: 0.),
+            (x: 0., y: 20.),
+            (x: 20., y: 20.),
+            (x: 20., y: 0.),
+            (x: 0., y: 0.),
+        ]
+        .into();
+
+        let square1: Geometry<f64> = polygon![
+            (x: 55., y: 55.),
+            (x: 50., y: 60.),
+            (x: 60., y: 60.),
+            (x: 60., y: 55.),
+            (x: 55., y: 55.),
+        ]
+        .into();
+
+        let relate_computer = RelateComputer::new(&square0, &square1);
+        let intersection_matrix = relate_computer.compute_intersection_matrix();
+        let expected = [
+            [
+                Dimensions::Empty,
+                Dimensions::Empty,
+                Dimensions::TwoDimensional,
+            ],
+            [
+                Dimensions::Empty,
+                Dimensions::Empty,
+                Dimensions::OneDimensional,
+            ],
+            [
+                Dimensions::TwoDimensional,
+                Dimensions::OneDimensional,
+                Dimensions::TwoDimensional,
+            ],
+        ];
+        assert_eq!(intersection_matrix.0, expected);
+    }
+
+    #[test]
     fn test_wip() {
         let square0: Geometry<f64> = polygon![
             (x: 0., y: 0.),
@@ -458,6 +529,15 @@ mod test {
 
         let relate_computer = RelateComputer::new(&square0, &square1);
         let intersection_matrix = relate_computer.compute_intersection_matrix();
-        assert_eq!(intersection_matrix.0, [[0, 0, 0], [0, 0, 0], [0, 0, 2]]);
+        let expected = [
+            [Dimensions::Empty, Dimensions::Empty, Dimensions::Empty],
+            [Dimensions::Empty, Dimensions::Empty, Dimensions::Empty],
+            [
+                Dimensions::Empty,
+                Dimensions::Empty,
+                Dimensions::TwoDimensional,
+            ],
+        ];
+        assert_eq!(intersection_matrix.0, expected);
     }
 }
