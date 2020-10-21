@@ -57,8 +57,8 @@ pub struct GeometryGraph<'a, F: num_traits::Float> {
 // PlanarGraph delegations
 // In JTS this is achieved through inheritance - GeometryGraph inherits from PlanarGraph
 impl<F: num_traits::Float> GeometryGraph<'_, F> {
-    fn get_edges(&self) -> &[RefCell<Edge<F>>] {
-        self.planar_graph.get_edges()
+    fn edges(&self) -> &[RefCell<Edge<F>>] {
+        self.planar_graph.edges()
     }
 
     pub fn is_boundary_node(&self, geom_index: usize, coord: Coordinate<F>) -> bool {
@@ -205,7 +205,7 @@ impl<'a, F: num_traits::Float> GeometryGraph<'a, F> {
     // JTS:   public Coordinate getInvalidPoint() { return invalidPoint; }
     // JTS:
     // JTS:   public Geometry getGeometry() { return parentGeom; }
-    pub fn get_geometry(&self) -> &Geometry<F> {
+    pub fn geometry(&self) -> &Geometry<F> {
         self.parent_geometry
     }
 
@@ -217,9 +217,9 @@ impl<'a, F: num_traits::Float> GeometryGraph<'a, F> {
     // JTS:       boundaryNodes = nodes.getBoundaryNodes(argIndex);
     // JTS:     return boundaryNodes;
     // JTS:   }
-    fn get_boundary_nodes(&self) -> Vec<&Node<F>> {
+    fn boundary_nodes(&self) -> Vec<&Node<F>> {
         // TODO: should we need to memoize this like JTS does?
-        self.planar_graph.nodes.get_boundary_nodes(self.arg_index)
+        self.planar_graph.nodes.boundary_nodes(self.arg_index)
     }
     // JTS:
     // JTS:   public Coordinate[] getBoundaryPoints()
@@ -445,7 +445,7 @@ impl<'a, F: num_traits::Float> GeometryGraph<'a, F> {
 
         // JTS:     esi.computeIntersections(edges, si, computeAllSegments);
         edge_set_intersector.compute_intersections(
-            self.get_edges(),
+            self.edges(),
             &mut segment_intersector,
             compute_all_segments,
         );
@@ -478,12 +478,12 @@ impl<'a, F: num_traits::Float> GeometryGraph<'a, F> {
             SegmentIntersector::new(line_intersector, include_proper, true);
         segment_intersector.set_boundary_nodes(
             // CLEANUP: surely there's a nicer way to: `Vec<&Node> -> Vec<Node>`
-            self.get_boundary_nodes()
+            self.boundary_nodes()
                 .into_iter()
                 .map(|n| n.clone())
                 .collect(),
             other
-                .get_boundary_nodes()
+                .boundary_nodes()
                 .into_iter()
                 .map(|n| n.clone())
                 .collect(),
@@ -494,8 +494,8 @@ impl<'a, F: num_traits::Float> GeometryGraph<'a, F> {
         // JTS:     esi.computeIntersections(edges, g.edges, si);
         let mut edge_set_intersector = Self::create_edge_set_intersector();
         edge_set_intersector.compute_intersections_testing_all_segments(
-            self.get_edges(),
-            other.get_edges(),
+            self.edges(),
+            other.edges(),
             &mut segment_intersector,
         );
 
@@ -524,7 +524,7 @@ impl<'a, F: num_traits::Float> GeometryGraph<'a, F> {
         let node: &mut Node<F> = self.add_node_with_coordinate(coord);
         // CLEANUP: can we get rid of the Option? Or do we need Edges to maintain Option and share GraphComponent trait
         // VERIFY: JTS does a null check here, but not for boundary points. Can we safely skip it?
-        let label: &mut Label = node.get_label_mut().unwrap();
+        let label: &mut Label = node.label_mut().unwrap();
         label.set_on_location(arg_index, location)
     }
 
@@ -545,7 +545,7 @@ impl<'a, F: num_traits::Float> GeometryGraph<'a, F> {
         // JTS:     Label lbl = n.getLabel();
         // nodes always have labels
         // CLEANUP: can we get rid of the Option? Or do we need Edges to maintain Option and share GraphComponent trait
-        let label: &mut Label = node.get_label_mut().unwrap();
+        let label: &mut Label = node.label_mut().unwrap();
 
         // JTS:     // the new point to insert is on a boundary
         // JTS:     int boundaryCount = 1;
@@ -556,7 +556,7 @@ impl<'a, F: num_traits::Float> GeometryGraph<'a, F> {
         // the new point to insert is on a boundary
         let mut boundary_count = 1;
         // determine the current location for the point (if any)
-        let location = label.get_location(arg_index, Position::On);
+        let location = label.location(arg_index, Position::On);
         if let Some(Location::Boundary) = location {
             boundary_count += 1;
         }
@@ -585,18 +585,16 @@ impl<'a, F: num_traits::Float> GeometryGraph<'a, F> {
         // JTS:   }
 
         let locations_and_intersections: Vec<(Option<Location>, Vec<Coordinate<F>>)> = self
-            .get_edges()
+            .edges()
             .into_iter()
             .map(RefCell::borrow)
             .map(|edge| {
-                let location = edge
-                    .get_label()
-                    .and_then(|label| label.get_on_location(arg_index));
+                let location = edge.label().and_then(|label| label.on_location(arg_index));
 
                 let coordinates = edge
-                    .get_edge_intersections()
+                    .edge_intersections()
                     .into_iter()
-                    .map(|edge_intersection| edge_intersection.get_coordinate());
+                    .map(|edge_intersection| edge_intersection.coordinate());
 
                 (location, coordinates.collect())
             })

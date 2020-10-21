@@ -13,11 +13,11 @@ pub struct Edge<F: num_traits::Float> {
 }
 
 impl<F: num_traits::Float> GraphComponent for Edge<F> {
-    fn get_label(&self) -> Option<&Label> {
+    fn label(&self) -> Option<&Label> {
         self.label.as_ref()
     }
 
-    fn get_label_mut(&mut self) -> Option<&mut Label> {
+    fn label_mut(&mut self) -> Option<&mut Label> {
         self.label.as_mut()
     }
 
@@ -48,7 +48,7 @@ impl<F: num_traits::Float> GraphComponent for Edge<F> {
 // JTS:
 impl<F: num_traits::Float> Edge<F> {
     // JTS:   Coordinate[] pts;
-    pub fn get_coords(&self) -> &[Coordinate<F>] {
+    pub fn coords(&self) -> &[Coordinate<F>] {
         &self.coords
     }
 
@@ -58,7 +58,7 @@ impl<F: num_traits::Float> Edge<F> {
     // JTS:   private MonotoneChainEdge mce;
 
     // JTS:   private boolean isIsolated = true;
-    pub fn get_is_isolated(&self) -> bool {
+    pub fn is_isolated(&self) -> bool {
         self.is_isolated
     }
     pub fn set_is_isolated(&mut self, new_value: bool) {
@@ -117,7 +117,7 @@ impl<F: num_traits::Float> Edge<F> {
     // JTS:   }
 
     // JTS:   public EdgeIntersectionList getEdgeIntersectionList() { return eiList; }
-    pub fn get_edge_intersections(&self) -> &EdgeIntersectionList<F> {
+    pub fn edge_intersections(&self) -> &EdgeIntersectionList<F> {
         &self.edge_intersections
     }
 
@@ -133,7 +133,7 @@ impl<F: num_traits::Float> Edge<F> {
     // JTS:     return pts[0].equals(pts[pts.length - 1]);
     // JTS:   }
     pub fn is_closed(&self) -> bool {
-        self.get_coords().first() == self.get_coords().last()
+        self.coords().first() == self.coords().last()
     }
     // JTS:   /**
     // JTS:    * An Edge is collapsed if it is an Area edge and it consists of
@@ -182,7 +182,7 @@ impl<F: num_traits::Float> Edge<F> {
         segment_index: usize,
         geom_index: usize,
     ) {
-        for i in 0..line_intersector.get_intersection_num() {
+        for i in 0..line_intersector.intersection_num() {
             self.add_intersection(line_intersector, segment_index, geom_index, i);
         }
     }
@@ -205,12 +205,12 @@ impl<F: num_traits::Float> Edge<F> {
         intersection_index: usize,
     ) {
         // JTS:       Coordinate intPt = new Coordinate(li.getIntersection(intIndex));
-        let intersection_coord = line_intersector.get_intersection(intersection_index);
+        let intersection_coord = line_intersector.intersection(intersection_index);
 
         // JTS:       int normalizedSegmentIndex = segmentIndex;
         // JTS:       double dist = li.getEdgeDistance(geomIndex, intIndex);
         let mut normalized_segment_index = segment_index;
-        let mut distance = line_intersector.get_edge_distance(geom_index, intersection_index);
+        let mut distance = line_intersector.edge_distance(geom_index, intersection_index);
 
         // JTS: //Debug.println("edge intpt: " + intPt + " dist: " + dist);
         // JTS:       // normalize the intersection point location
@@ -290,11 +290,11 @@ impl<F: num_traits::Float> std::cmp::PartialEq for Edge<F> {
         let mut is_equal_reverse = true;
         let coords_len = self.coords.len();
         for i in 0..coords_len {
-            if self.get_coords()[i] != other.get_coords()[i] {
+            if self.coords()[i] != other.coords()[i] {
                 is_equal_forward = false;
             }
 
-            if self.get_coords()[i] != other.get_coords()[coords_len - i] {
+            if self.coords()[i] != other.coords()[coords_len - i] {
                 is_equal_reverse = false;
             }
 

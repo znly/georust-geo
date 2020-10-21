@@ -164,7 +164,7 @@ impl<F: num_traits::Float> SegmentIntersector<F> {
         // JTS:       if (li.getIntersectionNum() == 1) {
         // REVIEW: Why is this only applicable when comparing the same edge?
         if *edge0 == *edge1 {
-            if self.line_intersector.get_result() == Intersection::PointIntersection {
+            if self.line_intersector.result() == Intersection::PointIntersection {
                 // JTS:         if (isAdjacentSegments(segIndex0, segIndex1))
                 // JTS:           return true;
                 if self.is_adjacent_segments(segment_index_0, segment_index_1) {
@@ -179,7 +179,7 @@ impl<F: num_traits::Float> SegmentIntersector<F> {
                 // JTS:           }
                 // JTS:         }
                 if edge0.is_closed() {
-                    let max_segment_index = edge0.get_coords().len() - 1;
+                    let max_segment_index = edge0.coords().len() - 1;
                     if (segment_index_0 == 0 && segment_index_1 == max_segment_index)
                         || (segment_index_1 == 0 && segment_index_0 == max_segment_index)
                     {
@@ -224,10 +224,10 @@ impl<F: num_traits::Float> SegmentIntersector<F> {
         // JTS:     Coordinate p01 = e0.getCoordinates()[segIndex0 + 1];
         // JTS:     Coordinate p10 = e1.getCoordinates()[segIndex1];
         // JTS:     Coordinate p11 = e1.getCoordinates()[segIndex1 + 1];
-        let p00 = edge0.borrow().get_coords()[segment_index_0];
-        let p01 = edge0.borrow().get_coords()[segment_index_0 + 1];
-        let p10 = edge1.borrow().get_coords()[segment_index_1];
-        let p11 = edge1.borrow().get_coords()[segment_index_1 + 1];
+        let p00 = edge0.borrow().coords()[segment_index_0];
+        let p01 = edge0.borrow().coords()[segment_index_0 + 1];
+        let p10 = edge1.borrow().coords()[segment_index_1];
+        let p11 = edge1.borrow().coords()[segment_index_1 + 1];
 
         // JTS:     li.computeIntersection(p00, p01, p10, p11);
         self.line_intersector
@@ -286,8 +286,7 @@ impl<F: num_traits::Float> SegmentIntersector<F> {
                 if self.line_intersector.is_proper() {
                     // JTS:           properIntersectionPoint = li.getIntersection(0).copy();
                     // JTS:           hasProper = true;
-                    self.proper_intersection_point =
-                        Some(self.line_intersector.get_intersection(0));
+                    self.proper_intersection_point = Some(self.line_intersector.intersection(0));
                     self.has_proper = true;
 
                     // JTS:           if (isDoneWhenProperInt) {
@@ -349,7 +348,7 @@ impl<F: num_traits::Float> SegmentIntersector<F> {
         // JTS:     return false;
         boundary_nodes
             .iter()
-            .any(|node| line_intersector.is_intersection(node.get_coordinate()))
+            .any(|node| line_intersector.is_intersection(node.coordinate()))
         // JTS:   }
     }
     // JTS: }

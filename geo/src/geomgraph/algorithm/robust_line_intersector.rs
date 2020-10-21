@@ -40,11 +40,11 @@ impl<F: num_traits::Float> RobustLineIntersector<F> {
 }
 
 impl<F: num_traits::Float> LineIntersector<F> for RobustLineIntersector<F> {
-    fn get_intersection(&self, intersection_index: usize) -> Coordinate<F> {
+    fn intersection(&self, intersection_index: usize) -> Coordinate<F> {
         self.int_pt[intersection_index]
     }
 
-    fn get_result(&self) -> Intersection {
+    fn result(&self) -> Intersection {
         match self.result {
             None => {
                 // JTS initializes result to `NoIntersection`, but it seems like in practice it
@@ -62,7 +62,7 @@ impl<F: num_traits::Float> LineIntersector<F> for RobustLineIntersector<F> {
         self.result = Some(result);
     }
 
-    fn get_input_lines(&self) -> [[Coordinate<F>; 2]; 2] {
+    fn input_lines(&self) -> [[Coordinate<F>; 2]; 2] {
         self.input_lines
     }
 

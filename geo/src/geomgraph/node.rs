@@ -18,11 +18,11 @@ pub struct Node<F: num_traits::Float> {
 }
 
 impl<F: num_traits::Float> GraphComponent for Node<F> {
-    fn get_label(&self) -> Option<&Label> {
+    fn label(&self) -> Option<&Label> {
         Some(&self.label)
     }
 
-    fn get_label_mut(&mut self) -> Option<&mut Label> {
+    fn label_mut(&mut self) -> Option<&mut Label> {
         Some(&mut self.label)
     }
 
@@ -33,7 +33,7 @@ impl<F: num_traits::Float> GraphComponent for Node<F> {
 
 impl<F: num_traits::Float> Node<F> {
     // JTS:   protected Coordinate coord; // only non-null if this node is precise
-    pub fn get_coordinate(&self) -> &Coordinate<F> {
+    pub fn coordinate(&self) -> &Coordinate<F> {
         &self.coordinate
     }
     // JTS:   protected EdgeEndStar edges;

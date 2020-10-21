@@ -46,17 +46,17 @@ impl<F: num_traits::Float> EdgeIntersection<F> {
     }
 
     // JTS:   public Coordinate getCoordinate() { return coord; }
-    pub fn get_coordinate(&self) -> Coordinate<F> {
+    pub fn coordinate(&self) -> Coordinate<F> {
         self.coord
     }
 
     // JTS:   public int getSegmentIndex() { return segmentIndex; }
-    pub fn get_segment_index(&self) -> usize {
+    pub fn segment_index(&self) -> usize {
         self.segment_index
     }
 
     // JTS:   public double getDistance() { return dist; }
-    pub fn get_distance(&self) -> F {
+    pub fn distance(&self) -> F {
         self.dist
     }
 }

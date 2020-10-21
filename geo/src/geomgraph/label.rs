@@ -112,12 +112,12 @@ impl Label {
     // JTS:   }
 
     // JTS:   public int getLocation(int geomIndex, int posIndex) { return elt[geomIndex].get(posIndex); }
-    pub fn get_location(&self, geom_index: usize, position: Position) -> Option<Location> {
+    pub fn location(&self, geom_index: usize, position: Position) -> Option<Location> {
         self.elt[geom_index].get(position)
     }
 
     // JTS:   public int getLocation(int geomIndex) { return elt[geomIndex].get(Position.ON); }
-    pub fn get_on_location(&self, geom_index: usize) -> Option<Location> {
+    pub fn on_location(&self, geom_index: usize) -> Option<Location> {
         self.elt[geom_index].get(Position::On)
     }
 

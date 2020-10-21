@@ -32,8 +32,8 @@ pub trait GraphComponent {
     // JTS:
     // JTS:   public Label getLabel() { return label; }
     // JTS:   public void setLabel(Label label) { this.label = label; }
-    fn get_label(&self) -> Option<&Label>;
-    fn get_label_mut(&mut self) -> Option<&mut Label>;
+    fn label(&self) -> Option<&Label>;
+    fn label_mut(&mut self) -> Option<&mut Label>;
     fn set_label(&mut self, new_value: Label);
 
     // JTS:   public void setInResult(boolean isInResult) { this.isInResult = isInResult; }

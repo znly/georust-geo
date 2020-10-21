@@ -60,7 +60,7 @@ impl<F: num_traits::Float> PlanarGraph<F> {
     // JTS:   }
     // JTS:
     // JTS:   protected List edges        = new ArrayList();
-    pub fn get_edges(&self) -> &[RefCell<Edge<F>>] {
+    pub fn edges(&self) -> &[RefCell<Edge<F>>] {
         &self.edges
     }
 
@@ -97,8 +97,8 @@ impl<F: num_traits::Float> PlanarGraph<F> {
     pub fn is_boundary_node(&self, geom_index: usize, coord: Coordinate<F>) -> bool {
         self.nodes
             .find(coord)
-            .and_then(Node::get_label)
-            .and_then(|label: &Label| label.get_on_location(geom_index))
+            .and_then(Node::label)
+            .and_then(|label: &Label| label.on_location(geom_index))
             .map(|location| location == Location::Boundary)
             .unwrap_or(false)
     }

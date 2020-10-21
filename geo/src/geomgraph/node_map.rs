@@ -145,15 +145,15 @@ impl<F: num_traits::Float> NodeMap<F> {
     // JTS:     }
     // JTS:     return bdyNodes;
     // JTS:   }
-    pub fn get_boundary_nodes(&self, geom_index: usize) -> Vec<&Node<F>> {
+    pub fn boundary_nodes(&self, geom_index: usize) -> Vec<&Node<F>> {
         // CLEANUP: `unwrap` - nodes *always* have a label. edges sometimes do not, but they
-        // inherit the same `get_label` API via GraphComponent. Might be nice to separate them
+        // inherit the same `label` API via GraphComponent. Might be nice to separate them
         // to remove this unwrap
         self.map
             .values()
             .filter(|node| {
                 matches!(
-                    node.get_label().unwrap().get_on_location(geom_index),
+                    node.label().unwrap().on_location(geom_index),
                     Some(Location::Boundary)
                 )
             })

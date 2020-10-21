@@ -103,8 +103,8 @@ impl<'a, F: 'static + num_traits::Float> RelateComputer<'a, F> {
         // if the Geometries don't overlap, we can skip most of the work
         use crate::algorithm::bounding_rect::BoundingRect;
         match (
-            self.graph_a.get_geometry().bounding_rect(),
-            self.graph_b.get_geometry().bounding_rect(),
+            self.graph_a.geometry().bounding_rect(),
+            self.graph_b.geometry().bounding_rect(),
         ) {
             (Some(bounding_rect_a), Some(bounding_rect_b)) => {
                 use crate::algorithm::intersects::Intersects;
@@ -329,12 +329,12 @@ impl<'a, F: 'static + num_traits::Float> RelateComputer<'a, F> {
         // JTS:       im.set(Location.BOUNDARY, Location.EXTERIOR, ga.getBoundaryDimension());
         // JTS:     }
         {
-            let geometry_a = self.graph_a.get_geometry();
-            let dimensions = geometry_a.get_dimensions();
+            let geometry_a = self.graph_a.geometry();
+            let dimensions = geometry_a.dimensions();
             if dimensions != Dimensions::Empty {
                 intersection_matrix.set(Location::Interior, Location::Exterior, dimensions);
 
-                let boundary_dimensions = geometry_a.get_boundary_dimensions();
+                let boundary_dimensions = geometry_a.boundary_dimensions();
                 if boundary_dimensions != Dimensions::Empty {
                     intersection_matrix.set(
                         Location::Boundary,
@@ -352,12 +352,12 @@ impl<'a, F: 'static + num_traits::Float> RelateComputer<'a, F> {
         // JTS:     }
         // JTS:   }
         {
-            let geometry_b = self.graph_b.get_geometry();
-            let dimensions = geometry_b.get_dimensions();
+            let geometry_b = self.graph_b.geometry();
+            let dimensions = geometry_b.dimensions();
             if dimensions != Dimensions::Empty {
                 intersection_matrix.set(Location::Exterior, Location::Interior, dimensions);
 
-                let boundary_dimensions = geometry_b.get_boundary_dimensions();
+                let boundary_dimensions = geometry_b.boundary_dimensions();
                 if boundary_dimensions != Dimensions::Empty {
                     intersection_matrix.set(
                         Location::Exterior,

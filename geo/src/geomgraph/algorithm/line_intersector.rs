@@ -169,11 +169,11 @@ pub trait LineIntersector<F: num_traits::Float> {
     // JTS:
 
     // JTS:   protected int result;
-    fn get_result(&self) -> Intersection;
+    fn result(&self) -> Intersection;
     fn set_result(&mut self, intersection: Intersection);
 
     // JTS:   protected Coordinate[][] inputLines = new Coordinate[2][2];
-    fn get_input_lines(&self) -> [[Coordinate<F>; 2]; 2];
+    fn input_lines(&self) -> [[Coordinate<F>; 2]; 2];
     fn set_input_lines(&mut self, line: usize, start_or_end: usize, coord: Coordinate<F>);
 
     // JTS:   protected Coordinate[] intPt = new Coordinate[2];
@@ -335,7 +335,7 @@ pub trait LineIntersector<F: num_traits::Float> {
 
     /// Tests whether the input geometries intersect.
     fn has_intersection(&self) -> bool {
-        self.get_result() != Intersection::NoIntersection
+        self.result() != Intersection::NoIntersection
     }
 
     // JTS:
@@ -348,8 +348,8 @@ pub trait LineIntersector<F: num_traits::Float> {
     /// Returns the number of intersection points found.  This will be either 0, 1 or 2.
     ///
     /// @return the number of intersection points found (0, 1, or 2)
-    fn get_intersection_num(&self) -> usize {
-        match self.get_result() {
+    fn intersection_num(&self) -> usize {
+        match self.result() {
             Intersection::NoIntersection => 0,
             Intersection::PointIntersection => 1,
             Intersection::CollinearIntersection => 2,
@@ -365,7 +365,7 @@ pub trait LineIntersector<F: num_traits::Float> {
     // JTS:    * @return the intIndex'th intersection point
     // JTS:    */
     // JTS:   public Coordinate getIntersection(int intIndex)  { return intPt[intIndex]; }
-    fn get_intersection(&self, intersection_index: usize) -> Coordinate<F>;
+    fn intersection(&self, intersection_index: usize) -> Coordinate<F>;
 
     // JTS:
     // JTS:   protected void computeIntLineIndex() {
@@ -402,8 +402,8 @@ pub trait LineIntersector<F: num_traits::Float> {
     ///
     /// @return true if the input point is one of the intersection points.
     fn is_intersection(&self, coord: &Coordinate<F>) -> bool {
-        for i in 0..self.get_intersection_num() {
-            if self.get_intersection(i) == *coord {
+        for i in 0..self.intersection_num() {
+            if self.intersection(i) == *coord {
                 return true;
             }
         }
@@ -513,11 +513,11 @@ pub trait LineIntersector<F: num_traits::Float> {
     // JTS:         inputLines[segmentIndex][1]);
     // JTS:     return dist;
     // JTS:   }
-    fn get_edge_distance(&self, segment_index: usize, intersection_index: usize) -> F {
+    fn edge_distance(&self, segment_index: usize, intersection_index: usize) -> F {
         self.compute_edge_distance(
-            self.get_intersection(intersection_index),
-            self.get_input_lines()[segment_index][0],
-            self.get_input_lines()[segment_index][1],
+            self.intersection(intersection_index),
+            self.input_lines()[segment_index][0],
+            self.input_lines()[segment_index][1],
         )
     }
     // JTS: }
