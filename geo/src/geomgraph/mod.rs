@@ -18,11 +18,11 @@ use edge::Edge;
 use edge_intersection::EdgeIntersection;
 use edge_intersection_list::EdgeIntersectionList;
 pub use geometry_graph::GeometryGraph;
-use graph_component::GraphComponent;
-use label::Label;
-use node::Node;
-use node_factory::{BasicNodeFactory, NodeFactory};
-use node_map::NodeMap;
+pub use graph_component::GraphComponent;
+pub(crate) use label::Label;
+pub(crate) use node::{BasicNode, Node};
+pub(crate) use node_factory::{BasicNodeFactory, NodeFactory};
+pub use node_map::NodeMap;
 use planar_graph::PlanarGraph;
 use topology_location::TopologyLocation;
 

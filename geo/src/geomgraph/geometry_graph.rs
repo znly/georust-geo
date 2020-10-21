@@ -9,7 +9,7 @@ use super::{
         LineIntersector,
     },
     index::{EdgeSetIntersector, SegmentIntersector, SimpleEdgeSetIntersector},
-    BasicNodeFactory, Coordinate, Edge, Geometry, GraphComponent, Label, Location, Node,
+    BasicNode, BasicNodeFactory, Coordinate, Edge, Geometry, GraphComponent, Label, Location,
     NodeFactory, PlanarGraph, Position,
 };
 
@@ -57,7 +57,7 @@ pub struct GeometryGraph<'a, F: num_traits::Float> {
 // PlanarGraph delegations
 // In JTS this is achieved through inheritance - GeometryGraph inherits from PlanarGraph
 impl<F: num_traits::Float> GeometryGraph<'_, F> {
-    fn edges(&self) -> &[RefCell<Edge<F>>] {
+    pub fn edges(&self) -> &[RefCell<Edge<F>>] {
         self.planar_graph.edges()
     }
 
@@ -65,7 +65,7 @@ impl<F: num_traits::Float> GeometryGraph<'_, F> {
         self.planar_graph.is_boundary_node(geom_index, coord)
     }
 
-    pub fn add_node_with_coordinate(&mut self, coord: Coordinate<F>) -> &mut Node<F> {
+    pub fn add_node_with_coordinate(&mut self, coord: Coordinate<F>) -> &mut BasicNode<F> {
         self.planar_graph.add_node_with_coordinate(coord)
     }
 }
@@ -174,12 +174,11 @@ impl<'a, F: num_traits::Float> GeometryGraph<'a, F> {
     // JTS:     }
     // JTS:   }
     pub fn new(arg_index: usize, parent_geometry: &'a Geometry<F>) -> Self {
-        let node_factory = Box::new(BasicNodeFactory);
         GeometryGraph {
             arg_index,
             parent_geometry,
             use_boundary_determination_rule: true,
-            planar_graph: PlanarGraph::new(node_factory),
+            planar_graph: PlanarGraph::new(BasicNodeFactory),
         }
     }
 
@@ -217,7 +216,7 @@ impl<'a, F: num_traits::Float> GeometryGraph<'a, F> {
     // JTS:       boundaryNodes = nodes.getBoundaryNodes(argIndex);
     // JTS:     return boundaryNodes;
     // JTS:   }
-    fn boundary_nodes(&self) -> Vec<&Node<F>> {
+    fn boundary_nodes(&self) -> Vec<&BasicNode<F>> {
         // TODO: should we need to memoize this like JTS does?
         self.planar_graph.nodes.boundary_nodes(self.arg_index)
     }
@@ -521,7 +520,7 @@ impl<'a, F: num_traits::Float> GeometryGraph<'a, F> {
     // JTS:       lbl.setLocation(argIndex, onLocation);
     // JTS:   }
     fn insert_point(&mut self, arg_index: usize, coord: Coordinate<F>, location: Location) {
-        let node: &mut Node<F> = self.add_node_with_coordinate(coord);
+        let node: &mut BasicNode<F> = self.add_node_with_coordinate(coord);
         // CLEANUP: can we get rid of the Option? Or do we need Edges to maintain Option and share GraphComponent trait
         // VERIFY: JTS does a null check here, but not for boundary points. Can we safely skip it?
         let label: &mut Label = node.label_mut().unwrap();
@@ -539,7 +538,7 @@ impl<'a, F: num_traits::Float> GeometryGraph<'a, F> {
     /// This is used to add the boundary points of dim-1 geometries (Curves/MultiCurves).
     fn insert_boundary_point(&mut self, arg_index: usize, coord: Coordinate<F>) {
         // JTS:     Node n = nodes.addNode(coord);
-        let node: &mut Node<F> = self.add_node_with_coordinate(coord);
+        let node: &mut BasicNode<F> = self.add_node_with_coordinate(coord);
 
         // JTS:     // nodes always have labels
         // JTS:     Label lbl = n.getLabel();

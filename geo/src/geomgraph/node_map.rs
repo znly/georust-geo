@@ -1,6 +1,7 @@
 use super::{Coordinate, GraphComponent, Location, Node, NodeFactory};
 
 use std::collections::BTreeMap;
+use std::marker::PhantomData;
 
 // JTS: import org.locationtech.jts.geom.Coordinate;
 // JTS: import org.locationtech.jts.geom.Location;
@@ -11,9 +12,9 @@ use std::collections::BTreeMap;
 // JTS:  */
 // JTS: public class NodeMap
 /// A map of nodes, indexed by the coordinate of the node
-pub struct NodeMap<F: num_traits::Float> {
-    map: BTreeMap<NodeKey<F>, Node<F>>,
-    node_factory: Box<dyn NodeFactory<F>>,
+pub struct NodeMap<F: num_traits::Float, N: Node<F>, NF: NodeFactory<F, N>> {
+    map: BTreeMap<NodeKey<F>, N>,
+    _node_factory: PhantomData<NF>,
 }
 
 #[derive(Clone)]
@@ -50,7 +51,7 @@ impl<F: num_traits::Float> std::cmp::PartialEq for NodeKey<F> {
 
 impl<F: num_traits::Float> std::cmp::Eq for NodeKey<F> {}
 
-impl<F: num_traits::Float> NodeMap<F> {
+impl<F: num_traits::Float, N: Node<F>, NF: NodeFactory<F, N>> NodeMap<F, N, NF> {
     // JTS: {
     // JTS:   //Map nodeMap = new HashMap();
     // JTS:   Map nodeMap = new TreeMap();
@@ -59,10 +60,10 @@ impl<F: num_traits::Float> NodeMap<F> {
     // JTS:   public NodeMap(NodeFactory nodeFact) {
     // JTS:     this.nodeFact = nodeFact;
     // JTS:   }
-    pub fn new(node_factory: Box<dyn NodeFactory<F>>) -> Self {
+    pub fn new() -> Self {
         NodeMap {
             map: BTreeMap::new(),
-            node_factory,
+            _node_factory: PhantomData,
         }
     }
     // JTS:
@@ -87,11 +88,9 @@ impl<F: num_traits::Float> NodeMap<F> {
     // JTS:     }
     // JTS:     return node;
     // JTS:   }
-    pub fn add_node_with_coordinate(&mut self, coord: Coordinate<F>) -> &mut Node<F> {
+    pub fn add_node_with_coordinate(&mut self, coord: Coordinate<F>) -> &mut N {
         let key = NodeKey(coord);
-        self.map
-            .entry(key)
-            .or_insert(self.node_factory.create_node(coord))
+        self.map.entry(key).or_insert(NF::create_node(coord))
     }
 
     // JTS:   public Node addNode(Node n)
@@ -121,7 +120,7 @@ impl<F: num_traits::Float> NodeMap<F> {
     // JTS:    */
     // JTS:   public Node find(Coordinate coord)  {    return (Node) nodeMap.get(coord);  }
     /// returns the node if found
-    pub fn find(&self, coord: Coordinate<F>) -> Option<&Node<F>> {
+    pub fn find(&self, coord: Coordinate<F>) -> Option<&N> {
         self.map.get(&NodeKey(coord))
     }
 
@@ -145,7 +144,7 @@ impl<F: num_traits::Float> NodeMap<F> {
     // JTS:     }
     // JTS:     return bdyNodes;
     // JTS:   }
-    pub fn boundary_nodes(&self, geom_index: usize) -> Vec<&Node<F>> {
+    pub fn boundary_nodes(&self, geom_index: usize) -> Vec<&N> {
         // CLEANUP: `unwrap` - nodes *always* have a label. edges sometimes do not, but they
         // inherit the same `label` API via GraphComponent. Might be nice to separate them
         // to remove this unwrap

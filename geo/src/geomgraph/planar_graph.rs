@@ -1,4 +1,6 @@
-use super::{Coordinate, Edge, GraphComponent, Label, Location, Node, NodeFactory, NodeMap};
+use super::{
+    BasicNode, BasicNodeFactory, Coordinate, Edge, GraphComponent, Label, Location, Node, NodeMap,
+};
 
 use std::cell::RefCell;
 
@@ -41,7 +43,7 @@ use std::cell::RefCell;
 ///   - Computing the intersections between all the edges and nodes of a single graph
 ///   - Computing the intersections between the edges and nodes of two different graphs
 pub struct PlanarGraph<F: num_traits::Float> {
-    pub(crate) nodes: NodeMap<F>,
+    pub(crate) nodes: NodeMap<F, BasicNode<F>, BasicNodeFactory>,
     edges: Vec<RefCell<Edge<F>>>,
 }
 
@@ -70,21 +72,18 @@ impl<F: num_traits::Float> PlanarGraph<F> {
     // JTS:   public PlanarGraph(NodeFactory nodeFact) {
     // JTS:     nodes = new NodeMap(nodeFact);
     // JTS:   }
-    pub fn new(node_factory: Box<dyn NodeFactory<F>>) -> Self {
+    // JTS:   public PlanarGraph() {
+    // JTS:     nodes = new NodeMap(new NodeFactory());
+    // JTS:   }
+    pub fn new(node_factory: BasicNodeFactory) -> Self {
         PlanarGraph {
-            nodes: NodeMap::new(node_factory),
+            nodes: NodeMap::new(),
             edges: vec![],
         }
     }
 
-    // JTS:
-    // JTS:   public PlanarGraph() {
-    // JTS:     nodes = new NodeMap(new NodeFactory());
-    // JTS:   }
-    // JTS:
     // JTS:   public Iterator getEdgeIterator() { return edges.iterator(); }
     // JTS:   public Collection getEdgeEnds() { return edgeEndList; }
-    // JTS:
 
     // JTS:   public boolean isBoundaryNode(int geomIndex, Coordinate coord)
     // JTS:   {
@@ -97,7 +96,7 @@ impl<F: num_traits::Float> PlanarGraph<F> {
     pub fn is_boundary_node(&self, geom_index: usize, coord: Coordinate<F>) -> bool {
         self.nodes
             .find(coord)
-            .and_then(Node::label)
+            .and_then(BasicNode::label)
             .and_then(|label: &Label| label.on_location(geom_index))
             .map(|location| location == Location::Boundary)
             .unwrap_or(false)
@@ -121,7 +120,7 @@ impl<F: num_traits::Float> PlanarGraph<F> {
     // JTS:   public Collection getNodes() { return nodes.values(); }
     // JTS:   public Node addNode(Node node) { return nodes.addNode(node); }
     // JTS:   public Node addNode(Coordinate coord) { return nodes.addNode(coord); }
-    pub fn add_node_with_coordinate(&mut self, coord: Coordinate<F>) -> &mut Node<F> {
+    pub fn add_node_with_coordinate(&mut self, coord: Coordinate<F>) -> &mut BasicNode<F> {
         self.nodes.add_node_with_coordinate(coord)
     }
 

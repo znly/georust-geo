@@ -1,7 +1,7 @@
-use super::IntersectionMatrix;
+use super::{IntersectionMatrix, RelateNode, RelateNodeFactory};
 use crate::algorithm::dimensions::Dimensions;
 use crate::geomgraph::algorithm::RobustLineIntersector;
-use crate::geomgraph::{GeometryGraph, Location};
+use crate::geomgraph::{GeometryGraph, Location, NodeMap};
 
 use geo_types::Geometry;
 
@@ -50,6 +50,7 @@ pub struct RelateComputer<'a, F: num_traits::Float> {
     graph_a: GeometryGraph<'a, F>,
     graph_b: GeometryGraph<'a, F>,
     line_intersector: RobustLineIntersector<F>,
+    node_map: NodeMap<F, RelateNode<F>, RelateNodeFactory>,
 }
 
 impl<'a, F: 'static + num_traits::Float> RelateComputer<'a, F> {
@@ -61,6 +62,7 @@ impl<'a, F: 'static + num_traits::Float> RelateComputer<'a, F> {
             graph_a,
             graph_b,
             line_intersector,
+            node_map: NodeMap::new(),
         }
     }
 
@@ -129,13 +131,21 @@ impl<'a, F: 'static + num_traits::Float> RelateComputer<'a, F> {
         self.graph_b
             .compute_self_nodes(Box::new(self.line_intersector.clone()), false, false);
 
-        todo!();
-        // JTS:
         // JTS:     // compute intersections between edges of the two input geometries
         // JTS:     SegmentIntersector intersector = arg[0].computeEdgeIntersections(arg[1], li, false);
+        // compute intersections between edges of the two input geometries
+        let segment_intersector = self.graph_a.compute_edge_intersections(
+            &self.graph_b,
+            Box::new(self.line_intersector.clone()),
+            false,
+        );
+
         // JTS: //System.out.println("computeIM: # segment intersection tests: " + intersector.numTests);
         // JTS:     computeIntersectionNodes(0);
         // JTS:     computeIntersectionNodes(1);
+        self.compute_intersection_nodes(0);
+        self.compute_intersection_nodes(1);
+        todo!();
         // JTS:     /**
         // JTS:      * Copy the labelling for the nodes in the parent Geometries.  These override
         // JTS:      * any labels determined by intersections between the geometries.
@@ -263,6 +273,7 @@ impl<'a, F: 'static + num_traits::Float> RelateComputer<'a, F> {
     // JTS: //node.print(System.out);
     // JTS:     }
     // JTS:   }
+
     // JTS:   /**
     // JTS:    * Insert nodes for all intersections on the edges of a Geometry.
     // JTS:    * Label the created nodes the same as the edge label if they do not already have a label.
@@ -272,22 +283,52 @@ impl<'a, F: 'static + num_traits::Float> RelateComputer<'a, F> {
     // JTS:    */
     // JTS:   private void computeIntersectionNodes(int argIndex)
     // JTS:   {
-    // JTS:     for (Iterator i = arg[argIndex].getEdgeIterator(); i.hasNext(); ) {
-    // JTS:       Edge e = (Edge) i.next();
-    // JTS:       int eLoc = e.getLabel().getLocation(argIndex);
-    // JTS:       for (Iterator eiIt = e.getEdgeIntersectionList().iterator(); eiIt.hasNext(); ) {
-    // JTS:         EdgeIntersection ei = (EdgeIntersection) eiIt.next();
-    // JTS:         RelateNode n = (RelateNode) nodes.addNode(ei.coord);
-    // JTS:         if (eLoc == Location.BOUNDARY)
-    // JTS:           n.setLabelBoundary(argIndex);
-    // JTS:         else {
-    // JTS:           if (n.getLabel().isNull(argIndex))
-    // JTS:             n.setLabel(argIndex, Location.INTERIOR);
-    // JTS:         }
-    // JTS: //Debug.println(n);
-    // JTS:       }
-    // JTS:     }
-    // JTS:   }
+
+    /// Insert nodes for all intersections on the edges of a Geometry.  
+    ///
+    /// Label the created nodes the same as the edge label if they do not already have a label.
+    /// This allows nodes created by either self-intersections or mutual intersections to be
+    /// labelled.  
+    ///
+    /// Endpoint nodes will already be labeled from when they were inserted.
+    fn compute_intersection_nodes(&mut self, arg_index: usize) {
+        let graph = if arg_index == 0 {
+            &self.graph_a
+        } else {
+            assert!(arg_index == 1);
+            &self.graph_b
+        };
+
+        // JTS:     for (Iterator i = arg[argIndex].getEdgeIterator(); i.hasNext(); ) {
+        // JTS:       Edge e = (Edge) i.next();
+        for edge in graph.edges() {
+            use crate::geomgraph::GraphComponent;
+            let edge = edge.borrow();
+
+            // JTS:       int eLoc = e.getLabel().getLocation(argIndex);
+            // CLEANUP: `unwrap` - I believe label is *always* `Some` for edges.
+            let edge_location = edge.label().unwrap().on_location(arg_index);
+            // JTS:       for (Iterator eiIt = e.getEdgeIntersectionList().iterator(); eiIt.hasNext(); ) {
+            for edge_intersection in edge.edge_intersections() {
+                // JTS:         EdgeIntersection ei = (EdgeIntersection) eiIt.next();
+                // JTS:         RelateNode n = (RelateNode) nodes.addNode(ei.coord);
+                self.node_map
+                    .add_node_with_coordinate(edge_intersection.coordinate());
+                todo!();
+                // JTS:         if (eLoc == Location.BOUNDARY)
+                // JTS:           n.setLabelBoundary(argIndex);
+                // JTS:         else {
+                // JTS:           if (n.getLabel().isNull(argIndex))
+                // JTS:             n.setLabel(argIndex, Location.INTERIOR);
+                // JTS:         }
+                // JTS: //Debug.println(n);
+                // JTS:       }
+                // JTS:     }
+                // JTS:   }
+            }
+        }
+    }
+
     // JTS:   /**
     // JTS:    * For all intersections on the edges of a Geometry,
     // JTS:    * label the corresponding node IF it doesn't already have a label.

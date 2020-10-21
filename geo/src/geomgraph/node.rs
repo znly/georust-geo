@@ -3,6 +3,10 @@
 // JTS: import org.locationtech.jts.geom.Location;
 use super::{Coordinate, EdgeEndStar, GraphComponent, Label};
 
+pub trait Node<F: num_traits::Float>: GraphComponent {
+    fn coordinate(&self) -> &Coordinate<F>;
+}
+
 // JTS: /**
 // JTS:  * @version 1.7
 // JTS:  */
@@ -10,14 +14,14 @@ use super::{Coordinate, EdgeEndStar, GraphComponent, Label};
 // JTS:   extends GraphComponent
 // JTS: {
 #[derive(Clone)]
-pub struct Node<F: num_traits::Float> {
+pub struct BasicNode<F: num_traits::Float> {
     coordinate: Coordinate<F>,
     // CLEANUP: should we get rid of this Option and have a Node trait?
     edges: Option<EdgeEndStar>,
     label: Label,
 }
 
-impl<F: num_traits::Float> GraphComponent for Node<F> {
+impl<F: num_traits::Float> GraphComponent for BasicNode<F> {
     fn label(&self) -> Option<&Label> {
         Some(&self.label)
     }
@@ -31,11 +35,14 @@ impl<F: num_traits::Float> GraphComponent for Node<F> {
     }
 }
 
-impl<F: num_traits::Float> Node<F> {
+impl<F: num_traits::Float> Node<F> for BasicNode<F> {
     // JTS:   protected Coordinate coord; // only non-null if this node is precise
-    pub fn coordinate(&self) -> &Coordinate<F> {
+    fn coordinate(&self) -> &Coordinate<F> {
         &self.coordinate
     }
+}
+
+impl<F: num_traits::Float> BasicNode<F> {
     // JTS:   protected EdgeEndStar edges;
     // JTS:
     // JTS:   public Node(Coordinate coord, EdgeEndStar edges)
@@ -44,8 +51,8 @@ impl<F: num_traits::Float> Node<F> {
     // JTS:     this.edges = edges;
     // JTS:     label = new Label(0, Location.NONE);
     // JTS:   }
-    pub fn new(coordinate: Coordinate<F>, edges: Option<EdgeEndStar>) -> Node<F> {
-        Node {
+    pub fn new(coordinate: Coordinate<F>, edges: Option<EdgeEndStar>) -> BasicNode<F> {
+        BasicNode {
             coordinate,
             edges,
             label: Label::new(0, None),
