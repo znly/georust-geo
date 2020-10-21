@@ -2,7 +2,7 @@ use super::{Intersection, LineIntersector};
 use crate::algorithm::kernels::{Kernel, Orientation, RobustKernel};
 use crate::contains::Contains;
 use crate::intersects::Intersects;
-
+use crate::num_traits::Zero;
 use geo_types::{Coordinate, Rect};
 
 // JTS: /**
@@ -14,6 +14,7 @@ use geo_types::{Coordinate, Rect};
 // JTS:     extends LineIntersector
 // JTS: {
 /// A robust version of [LineIntersector](traits.LineIntersector).
+#[derive(Clone)]
 pub struct RobustLineIntersector<F: num_traits::Float> {
     // TODO: JTS captures some state in the LineIntersector. I'm not sure if it's helpful. Roughly it
     // seems to be mid-computation state and result state. Perhaps that could be better modeled and
@@ -23,6 +24,19 @@ pub struct RobustLineIntersector<F: num_traits::Float> {
     is_proper: bool,
     input_lines: [[Coordinate<F>; 2]; 2],
     int_pt: [Coordinate<F>; 2],
+}
+
+impl<F: num_traits::Float> RobustLineIntersector<F> {
+    // JTS:   public RobustLineIntersector() {
+    // JTS:   }
+    pub fn new() -> RobustLineIntersector<F> {
+        RobustLineIntersector {
+            result: None,
+            is_proper: false,
+            input_lines: [[Coordinate::zero(); 2]; 2],
+            int_pt: [Coordinate::zero(); 2],
+        }
+    }
 }
 
 impl<F: num_traits::Float> LineIntersector<F> for RobustLineIntersector<F> {
@@ -62,9 +76,6 @@ impl<F: num_traits::Float> LineIntersector<F> for RobustLineIntersector<F> {
         self.has_intersection() && self.is_proper
     }
 
-    // JTS:
-    // JTS:   public RobustLineIntersector() {
-    // JTS:   }
     // JTS:
     // JTS:   public void computeIntersection(Coordinate p, Coordinate p1, Coordinate p2) {
     // JTS:     isProper = false;
@@ -186,10 +197,10 @@ impl<F: num_traits::Float> LineIntersector<F> for RobustLineIntersector<F> {
         // must intersect.
         // JTS:     if (Pq1 == 0 || Pq2 == 0 || Qp1 == 0 || Qp2 == 0) {
         // JTS:       isProper = false;
-        if matches!(p_q1, Orientation::Collinear)
-            || matches!(p_q2, Orientation::Collinear)
-            || matches!(q_p1, Orientation::Collinear)
-            || matches!(q_p2, Orientation::Collinear)
+        if p_q1 == Orientation::Collinear
+            || p_q2 == Orientation::Collinear
+            || q_p1 == Orientation::Collinear
+            || q_p2 == Orientation::Collinear
         {
             self.is_proper = false;
             // JTS:       /**

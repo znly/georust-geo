@@ -1,4 +1,5 @@
-use super::{EdgeIntersectionList, GraphComponent, Label, LineIntersector};
+use super::algorithm::LineIntersector;
+use super::{EdgeIntersectionList, GraphComponent, Label};
 use geo_types::Coordinate;
 
 // TODO: investigate how isEqual should be implented - not sure it makes sense

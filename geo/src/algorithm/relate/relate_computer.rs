@@ -1,5 +1,6 @@
 use super::IntersectionMatrix;
 use crate::algorithm::dimensions::Dimensions;
+use crate::geomgraph::algorithm::RobustLineIntersector;
 use crate::geomgraph::{GeometryGraph, Location};
 
 use geo_types::Geometry;
@@ -48,13 +49,19 @@ use geo_types::Geometry;
 pub struct RelateComputer<'a, F: num_traits::Float> {
     graph_a: GeometryGraph<'a, F>,
     graph_b: GeometryGraph<'a, F>,
+    line_intersector: RobustLineIntersector<F>,
 }
 
-impl<'a, F: num_traits::Float> RelateComputer<'a, F> {
+impl<'a, F: 'static + num_traits::Float> RelateComputer<'a, F> {
     pub fn new(geom_a: &'a Geometry<F>, geom_b: &'a Geometry<F>) -> RelateComputer<'a, F> {
         let graph_a = GeometryGraph::new(0, geom_a);
         let graph_b = GeometryGraph::new(1, geom_b);
-        Self { graph_a, graph_b }
+        let line_intersector = RobustLineIntersector::new();
+        Self {
+            graph_a,
+            graph_b,
+            line_intersector,
+        }
     }
 
     // JTS:   private LineIntersector li = new RobustLineIntersector();
@@ -74,7 +81,7 @@ impl<'a, F: num_traits::Float> RelateComputer<'a, F> {
     // JTS:
     // JTS:   public IntersectionMatrix computeIM()
     // JTS:   {
-    pub fn compute_intersection_matrix(&self) -> IntersectionMatrix {
+    pub fn compute_intersection_matrix(&mut self) -> IntersectionMatrix {
         // JTS:     IntersectionMatrix im = new IntersectionMatrix();
         let mut intersection_matrix = IntersectionMatrix::new();
         // JTS:     // since Geometries are finite and embedded in a 2-D space, the EE element must always be 2
@@ -112,9 +119,17 @@ impl<'a, F: num_traits::Float> RelateComputer<'a, F> {
             }
         }
 
-        todo!();
         // JTS:     arg[0].computeSelfNodes(li, false);
         // JTS:     arg[1].computeSelfNodes(li, false);
+        // REVIEW: In JTS, second `false` is implied via a default arg from an overload
+        // REVIEW: In JTS, self.line_intersection is just passed in. But it's mutated - seems like
+        //         a bad idea and rust won't allow it. So we clone.
+        self.graph_a
+            .compute_self_nodes(Box::new(self.line_intersector.clone()), false, false);
+        self.graph_b
+            .compute_self_nodes(Box::new(self.line_intersector.clone()), false, false);
+
+        todo!();
         // JTS:
         // JTS:     // compute intersections between edges of the two input geometries
         // JTS:     SegmentIntersector intersector = arg[0].computeEdgeIntersections(arg[1], li, false);
@@ -485,7 +500,7 @@ mod test {
         ]
         .into();
 
-        let relate_computer = RelateComputer::new(&square0, &square1);
+        let mut relate_computer = RelateComputer::new(&square0, &square1);
         let intersection_matrix = relate_computer.compute_intersection_matrix();
         let expected = [
             [
@@ -527,7 +542,7 @@ mod test {
         ]
         .into();
 
-        let relate_computer = RelateComputer::new(&square0, &square1);
+        let mut relate_computer = RelateComputer::new(&square0, &square1);
         let intersection_matrix = relate_computer.compute_intersection_matrix();
         let expected = [
             [Dimensions::Empty, Dimensions::Empty, Dimensions::Empty],

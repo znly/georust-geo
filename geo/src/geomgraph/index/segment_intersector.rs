@@ -1,4 +1,6 @@
-use super::super::{Edge, Intersection, LineIntersector, Node};
+use super::super::{Edge, Node};
+use crate::geomgraph::algorithm::{Intersection, LineIntersector};
+
 use geo_types::Coordinate;
 use std::cell::{Ref, RefCell};
 

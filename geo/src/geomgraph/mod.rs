@@ -27,9 +27,7 @@ use planar_graph::PlanarGraph;
 use topology_location::TopologyLocation;
 
 // in just algorithm is an external pacakage (top level, still part of JTS) - not witin geomgraph
-mod algorithm;
-// CLEANUP: remove these convenience accessors to clarify package dependencies?
-use algorithm::{Intersection, LineIntersector, RobustLineIntersector};
+pub(crate) mod algorithm;
 
 use geo_types::{Coordinate, Geometry};
 
