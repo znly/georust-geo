@@ -46,15 +46,15 @@ use geo_types::Geometry;
 // JTS: public class RelateComputer
 // JTS: {
 pub struct RelateComputer<'a, F: num_traits::Float> {
-    graph0: GeometryGraph<'a, F>,
-    graph1: GeometryGraph<'a, F>,
+    graph_a: GeometryGraph<'a, F>,
+    graph_b: GeometryGraph<'a, F>,
 }
 
 impl<'a, F: num_traits::Float> RelateComputer<'a, F> {
-    pub fn new(geom0: &'a Geometry<F>, geom1: &'a Geometry<F>) -> RelateComputer<'a, F> {
-        let graph0 = GeometryGraph::new(0, geom0);
-        let graph1 = GeometryGraph::new(1, geom1);
-        Self { graph0, graph1 }
+    pub fn new(geom_a: &'a Geometry<F>, geom_b: &'a Geometry<F>) -> RelateComputer<'a, F> {
+        let graph_a = GeometryGraph::new(0, geom_a);
+        let graph_b = GeometryGraph::new(1, geom_b);
+        Self { graph_a, graph_b }
     }
 
     // JTS:   private LineIntersector li = new RobustLineIntersector();
@@ -96,12 +96,12 @@ impl<'a, F: num_traits::Float> RelateComputer<'a, F> {
         // if the Geometries don't overlap, we can skip most of the work
         use crate::algorithm::bounding_rect::BoundingRect;
         match (
-            self.graph0.get_geometry().bounding_rect(),
-            self.graph1.get_geometry().bounding_rect(),
+            self.graph_a.get_geometry().bounding_rect(),
+            self.graph_b.get_geometry().bounding_rect(),
         ) {
-            (Some(bounding_rect_0), Some(bounding_rect_1)) => {
+            (Some(bounding_rect_a), Some(bounding_rect_b)) => {
                 use crate::algorithm::intersects::Intersects;
-                if !bounding_rect_0.intersects(&bounding_rect_1) {
+                if !bounding_rect_a.intersects(&bounding_rect_b) {
                     self.compute_disjoint_intersection_matrix(&mut intersection_matrix);
                     return intersection_matrix;
                 }
@@ -314,7 +314,7 @@ impl<'a, F: num_traits::Float> RelateComputer<'a, F> {
         // JTS:       im.set(Location.BOUNDARY, Location.EXTERIOR, ga.getBoundaryDimension());
         // JTS:     }
         {
-            let geometry_a = self.graph0.get_geometry();
+            let geometry_a = self.graph_a.get_geometry();
             let dimensions = geometry_a.get_dimensions();
             if dimensions != Dimensions::Empty {
                 intersection_matrix.set(Location::Interior, Location::Exterior, dimensions);
@@ -337,7 +337,7 @@ impl<'a, F: num_traits::Float> RelateComputer<'a, F> {
         // JTS:     }
         // JTS:   }
         {
-            let geometry_b = self.graph1.get_geometry();
+            let geometry_b = self.graph_b.get_geometry();
             let dimensions = geometry_b.get_dimensions();
             if dimensions != Dimensions::Empty {
                 intersection_matrix.set(Location::Exterior, Location::Interior, dimensions);
