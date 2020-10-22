@@ -1,4 +1,4 @@
-use crate::geomgraph::{GraphComponent, Label, Node, NodeFactory};
+use crate::geomgraph::{GraphComponent, Label, Location, Node, NodeFactory};
 use crate::Coordinate;
 
 pub struct RelateNode<F: num_traits::Float> {
@@ -34,6 +34,10 @@ impl<F: num_traits::Float> RelateNode<F> {
             edge_end_bundle_star,
             label: Label::new(0, None),
         }
+    }
+
+    pub fn set_label_on_location(&mut self, geom_index: usize, location: Location) {
+        self.label.set_on_location(geom_index, location)
     }
 }
 

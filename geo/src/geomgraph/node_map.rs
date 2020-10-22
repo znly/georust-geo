@@ -128,12 +128,15 @@ impl<F: num_traits::Float, N: Node<F>, NF: NodeFactory<F, N>> NodeMap<F, N, NF> 
     // JTS:   {
     // JTS:     return nodeMap.values().iterator();
     // JTS:   }
+    pub fn iter(&self) -> impl std::iter::Iterator<Item = &N> {
+        self.map.values()
+    }
+
     // JTS:   public Collection values()
     // JTS:   {
     // JTS:     return nodeMap.values();
     // JTS:   }
 
-    // JTS:
     // JTS:   public Collection getBoundaryNodes(int geomIndex)
     // JTS:   {
     // JTS:     Collection bdyNodes = new ArrayList();

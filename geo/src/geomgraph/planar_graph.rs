@@ -75,7 +75,7 @@ impl<F: num_traits::Float> PlanarGraph<F> {
     // JTS:   public PlanarGraph() {
     // JTS:     nodes = new NodeMap(new NodeFactory());
     // JTS:   }
-    pub fn new(node_factory: BasicNodeFactory) -> Self {
+    pub fn new() -> Self {
         PlanarGraph {
             nodes: NodeMap::new(),
             edges: vec![],

@@ -68,6 +68,10 @@ impl<F: num_traits::Float> GeometryGraph<'_, F> {
     pub fn add_node_with_coordinate(&mut self, coord: Coordinate<F>) -> &mut BasicNode<F> {
         self.planar_graph.add_node_with_coordinate(coord)
     }
+
+    pub fn node_iter(&self) -> impl Iterator<Item = &BasicNode<F>> {
+        self.planar_graph.nodes.iter()
+    }
 }
 
 impl<'a, F: num_traits::Float> GeometryGraph<'a, F> {
@@ -178,7 +182,7 @@ impl<'a, F: num_traits::Float> GeometryGraph<'a, F> {
             arg_index,
             parent_geometry,
             use_boundary_determination_rule: true,
-            planar_graph: PlanarGraph::new(BasicNodeFactory),
+            planar_graph: PlanarGraph::new(),
         }
     }
 
