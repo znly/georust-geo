@@ -340,15 +340,24 @@ impl<'a, F: 'static + num_traits::Float> RelateComputer<'a, F> {
             for edge_intersection in edge.edge_intersections() {
                 // JTS:         EdgeIntersection ei = (EdgeIntersection) eiIt.next();
                 // JTS:         RelateNode n = (RelateNode) nodes.addNode(ei.coord);
-                self.nodes
+                let new_node = self
+                    .nodes
                     .add_node_with_coordinate(edge_intersection.coordinate());
-                todo!();
+
                 // JTS:         if (eLoc == Location.BOUNDARY)
                 // JTS:           n.setLabelBoundary(argIndex);
                 // JTS:         else {
                 // JTS:           if (n.getLabel().isNull(argIndex))
                 // JTS:             n.setLabel(argIndex, Location.INTERIOR);
                 // JTS:         }
+                if edge_location == Some(Location::Boundary) {
+                    new_node.set_label_boundary(geom_index);
+                } else {
+                    // CLEANUP: unwrap - label is never null for nodes.
+                    if new_node.label().unwrap().is_empty(geom_index) {
+                        new_node.set_label_on_location(geom_index, Location::Interior);
+                    }
+                }
                 // JTS: //Debug.println(n);
                 // JTS:       }
                 // JTS:     }

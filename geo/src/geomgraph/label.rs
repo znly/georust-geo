@@ -173,6 +173,10 @@ impl Label {
     // JTS:     return count;
     // JTS:   }
     // JTS:   public boolean isNull(int geomIndex) { return elt[geomIndex].isNull(); }
+    pub fn is_empty(&self, geom_index: usize) -> bool {
+        self.elt[geom_index].is_empty()
+    }
+
     // JTS:   public boolean isAnyNull(int geomIndex) { return elt[geomIndex].isAnyNull(); }
     // JTS:
     // JTS:   public boolean isArea()               { return elt[0].isArea() || elt[1].isArea();   }

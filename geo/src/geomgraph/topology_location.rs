@@ -102,6 +102,10 @@ impl TopologyLocation {
     // JTS:     }
     // JTS:     return true;
     // JTS:   }
+    pub fn is_empty(&self) -> bool {
+        self.location.iter().all(Option::is_none)
+    }
+
     // JTS:   /**
     // JTS:    * @return true if any locations are NULL
     // JTS:    */
