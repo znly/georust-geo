@@ -63,6 +63,8 @@ pub trait GraphComponent {
     // JTS:    * @return true if this component is isolated
     // JTS:    */
     // JTS:   abstract public boolean isIsolated();
+    fn is_isolated(&self) -> bool;
+
     // JTS:   /**
     // JTS:    * Update the IM with the contribution for this component.
     // JTS:    * A component only contributes if it has a labelling for both parent geometries

@@ -141,6 +141,10 @@ impl Label {
     // JTS:   {
     // JTS:     elt[geomIndex].setAllLocations(location);
     // JTS:   }
+    pub fn set_all_locations(&mut self, geom_index: usize, location: Location) {
+        self.elt[geom_index].set_all_locations(location)
+    }
+
     // JTS:   public void setAllLocationsIfNull(int geomIndex, int location)
     // JTS:   {
     // JTS:     elt[geomIndex].setAllLocationsIfNull(location);
@@ -172,6 +176,13 @@ impl Label {
     // JTS:     if (! elt[1].isNull()) count++;
     // JTS:     return count;
     // JTS:   }
+    pub fn geometry_count(&self) -> usize {
+        self.elt
+            .iter()
+            .filter(|location| !location.is_empty())
+            .count()
+    }
+
     // JTS:   public boolean isNull(int geomIndex) { return elt[geomIndex].isNull(); }
     pub fn is_empty(&self, geom_index: usize) -> bool {
         self.elt[geom_index].is_empty()

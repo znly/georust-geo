@@ -17,6 +17,19 @@ pub struct NodeMap<F: num_traits::Float, N: Node<F>, NF: NodeFactory<F, N>> {
     _node_factory: PhantomData<NF>,
 }
 
+impl<F, N, NF> std::fmt::Debug for NodeMap<F, N, NF>
+where
+    F: num_traits::Float,
+    N: Node<F>,
+    NF: NodeFactory<F, N>,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("NodeMap")
+            .field("map.len()", &self.map.len())
+            .finish()
+    }
+}
+
 #[derive(Clone)]
 struct NodeKey<F: num_traits::Float>(Coordinate<F>);
 
@@ -130,6 +143,10 @@ impl<F: num_traits::Float, N: Node<F>, NF: NodeFactory<F, N>> NodeMap<F, N, NF> 
     // JTS:   }
     pub fn iter(&self) -> impl std::iter::Iterator<Item = &N> {
         self.map.values()
+    }
+
+    pub fn iter_mut(&mut self) -> impl std::iter::Iterator<Item = &mut N> {
+        self.map.values_mut()
     }
 
     // JTS:   public Collection values()

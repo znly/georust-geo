@@ -33,6 +33,10 @@ impl<F: num_traits::Float> GraphComponent for BasicNode<F> {
     fn set_label(&mut self, new_value: Label) {
         self.label = new_value;
     }
+
+    fn is_isolated(&self) -> bool {
+        self.label.geometry_count() == 1
+    }
 }
 
 impl<F: num_traits::Float> Node<F> for BasicNode<F> {

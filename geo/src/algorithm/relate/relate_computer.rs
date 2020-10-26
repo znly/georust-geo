@@ -155,12 +155,16 @@ impl<'a, F: 'static + num_traits::Float> RelateComputer<'a, F> {
         // determined by intersections between the geometries.
         self.copy_nodes_and_labels(0);
         self.copy_nodes_and_labels(1);
-        todo!();
         // JTS:
         // JTS:     // complete the labelling for any nodes which only have a label for a single geometry
         // JTS: //Debug.addWatch(nodes.find(new Coordinate(110, 200)));
         // JTS: //Debug.printWatch();
         // JTS:     labelIsolatedNodes();
+        // complete the labelling for any nodes which only have a label for a single geometry
+        panic!("{:?}", self.nodes);
+
+        self.label_isolated_nodes();
+        todo!();
         // JTS: //Debug.printWatch();
         // JTS:
         // JTS:     // If a proper intersection was found, we can set a lower bound on the IM.
@@ -532,35 +536,63 @@ impl<'a, F: 'static + num_traits::Float> RelateComputer<'a, F> {
     // JTS:       Label label = n.getLabel();
     // JTS:       // isolated nodes should always have at least one geometry in their label
     // JTS:       Assert.isTrue(label.getGeometryCount() > 0, "node with empty label found");
-    // JTS:       if (n.isIsolated()) {
-    // JTS:         if (label.isNull(0))
-    // JTS:           labelIsolatedNode(n, 0);
-    // JTS:         else
-    // JTS:           labelIsolatedNode(n, 1);
-    // JTS:       }
-    // JTS:     }
-    // JTS:   }
+    /// Isolated nodes are nodes whose labels are incomplete (e.g. the location for one Geometry is
+    /// null).  
+    /// This is the case because nodes in one graph which don't intersect nodes in the other
+    /// are not completely labelled by the initial process of adding nodes to the nodeList.  To
+    /// complete the labelling we need to check for nodes that lie in the interior of edges, and in
+    /// the interior of areas.
+    fn label_isolated_nodes(&mut self) {
+        for node in self.nodes.iter_mut() {
+            // CLEANUP: remove unwrap?
+            let label = node.label().unwrap();
+            // isolated nodes should always have at least one geometry in their label
+            debug_assert!(label.geometry_count() > 0, "node with empty label found");
+            // JTS:       if (n.isIsolated()) {
+            // JTS:         if (label.isNull(0))
+            // JTS:           labelIsolatedNode(n, 0);
+            // JTS:         else
+            // JTS:           labelIsolatedNode(n, 1);
+            // JTS:       }
+            if node.is_isolated() {
+                if label.is_empty(0) {
+                    Self::label_isolated_node(node, 0)
+                } else {
+                    Self::label_isolated_node(node, 1)
+                }
+            }
+            // JTS:     }
+            // JTS:   }
+        }
+    }
     // JTS:
     // JTS:   /**
     // JTS:    * Label an isolated node with its relationship to the target geometry.
     // JTS:    */
     // JTS:   private void labelIsolatedNode(Node n, int targetIndex)
     // JTS:   {
-    // JTS:     int loc = ptLocator.locate(n.getCoordinate(), arg[targetIndex].getGeometry());
-    // JTS:     n.getLabel().setAllLocations(targetIndex, loc);
-    // JTS: //debugPrintln(n.getLabel());
-    // JTS:   }
-    // JTS: }
+    fn label_isolated_node(node: &mut RelateNode<F>, target_index: usize) {
+        // JTS:     int loc = ptLocator.locate(n.getCoordinate(), arg[targetIndex].getGeometry());
+        let location = todo!();
+        // JTS:     n.getLabel().setAllLocations(targetIndex, loc);
+        // JTS: //debugPrintln(n.getLabel());
+        // JTS:   }
+        // JTS: }
+        // CLEANUP: unwrap
+        node.label_mut()
+            .unwrap()
+            .set_all_locations(target_index, location);
+    }
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
-    use geo_types::{polygon, Geometry};
+    use geo_types::{polygon, Geometry, GeometryCollection};
 
     #[test]
     fn test_disjoint() {
-        let square0: Geometry<f64> = polygon![
+        let square_a: Geometry<f64> = polygon![
             (x: 0., y: 0.),
             (x: 0., y: 20.),
             (x: 20., y: 20.),
@@ -569,7 +601,7 @@ mod test {
         ]
         .into();
 
-        let square1: Geometry<f64> = polygon![
+        let square_b: Geometry<f64> = polygon![
             (x: 55., y: 55.),
             (x: 50., y: 60.),
             (x: 60., y: 60.),
@@ -578,7 +610,7 @@ mod test {
         ]
         .into();
 
-        let mut relate_computer = RelateComputer::new(&square0, &square1);
+        let mut relate_computer = RelateComputer::new(&square_a, &square_b);
         let intersection_matrix = relate_computer.compute_intersection_matrix();
         let expected = [
             [
@@ -601,8 +633,8 @@ mod test {
     }
 
     #[test]
-    fn test_wip() {
-        let square0: Geometry<f64> = polygon![
+    fn test_a_contains_b() {
+        let square_a: Geometry<f64> = polygon![
             (x: 0., y: 0.),
             (x: 0., y: 20.),
             (x: 20., y: 20.),
@@ -611,7 +643,7 @@ mod test {
         ]
         .into();
 
-        let square1: Geometry<f64> = polygon![
+        let square_b: Geometry<f64> = polygon![
             (x: 5., y: 5.),
             (x: 5., y: 10.),
             (x: 10., y: 10.),
@@ -620,8 +652,91 @@ mod test {
         ]
         .into();
 
-        let mut relate_computer = RelateComputer::new(&square0, &square1);
+        let mut relate_computer = RelateComputer::new(&square_a, &square_b);
         let intersection_matrix = relate_computer.compute_intersection_matrix();
+        // TODO: expected is incorrect
+        let expected = [
+            [Dimensions::Empty, Dimensions::Empty, Dimensions::Empty],
+            [Dimensions::Empty, Dimensions::Empty, Dimensions::Empty],
+            [
+                Dimensions::Empty,
+                Dimensions::Empty,
+                Dimensions::TwoDimensional,
+            ],
+        ];
+        assert_eq!(intersection_matrix.0, expected);
+    }
+
+    #[test]
+    fn test_a_overlaps_b() {
+        let square_a: Geometry<f64> = polygon![
+            (x: 0., y: 0.),
+            (x: 0., y: 20.),
+            (x: 20., y: 20.),
+            (x: 20., y: 0.),
+            (x: 0., y: 0.),
+        ]
+        .into();
+
+        let square_b: Geometry<f64> = polygon![
+            (x: 5., y: 5.),
+            (x: 5., y: 30.),
+            (x: 30., y: 30.),
+            (x: 30., y: 5.),
+            (x: 5., y: 5.),
+        ]
+        .into();
+
+        let mut relate_computer = RelateComputer::new(&square_a, &square_b);
+        let intersection_matrix = relate_computer.compute_intersection_matrix();
+        // TODO: expected is incorrect
+        let expected = [
+            [Dimensions::Empty, Dimensions::Empty, Dimensions::Empty],
+            [Dimensions::Empty, Dimensions::Empty, Dimensions::Empty],
+            [
+                Dimensions::Empty,
+                Dimensions::Empty,
+                Dimensions::TwoDimensional,
+            ],
+        ];
+        assert_eq!(intersection_matrix.0, expected);
+    }
+
+    #[test]
+    fn test_a_overlaps_itself() {
+        let square_a_1: Geometry<f64> = polygon![
+            (x: 0., y: 0.),
+            (x: 0., y: 20.),
+            (x: 20., y: 20.),
+            (x: 20., y: 0.),
+            (x: 0., y: 0.),
+        ]
+        .into();
+
+        let square_a_2: Geometry<f64> = polygon![
+            (x: 5., y: 5.),
+            (x: 5., y: 30.),
+            (x: 30., y: 30.),
+            (x: 30., y: 5.),
+            (x: 5., y: 5.),
+        ]
+        .into();
+
+        let collection_a: Geometry<f64> =
+            Geometry::GeometryCollection(GeometryCollection(vec![square_a_1, square_a_2]));
+
+        let square_b: Geometry<f64> = polygon![
+            (x: 5., y: 5.),
+            (x: 5., y: 30.),
+            (x: 30., y: 30.),
+            (x: 30., y: 5.),
+            (x: 5., y: 5.),
+        ]
+        .into();
+
+        let mut relate_computer = RelateComputer::new(&collection_a, &square_b);
+        let intersection_matrix = relate_computer.compute_intersection_matrix();
+        // TODO: expected is incorrect
         let expected = [
             [Dimensions::Empty, Dimensions::Empty, Dimensions::Empty],
             [Dimensions::Empty, Dimensions::Empty, Dimensions::Empty],

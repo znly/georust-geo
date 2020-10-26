@@ -138,6 +138,12 @@ impl TopologyLocation {
     // JTS:       location[i]     = locValue;
     // JTS:     }
     // JTS:   }
+    pub fn set_all_locations(&mut self, location: Location) {
+        for i in 0..self.location.len() {
+            self.location[i] = Some(location)
+        }
+    }
+
     // JTS:   public void setAllLocationsIfNull(int locValue)
     // JTS:   {
     // JTS:     for (int i = 0; i < location.length; i++) {

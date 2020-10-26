@@ -24,6 +24,10 @@ impl<F: num_traits::Float> GraphComponent for Edge<F> {
     fn set_label(&mut self, new_value: Label) {
         self.label = Some(new_value)
     }
+
+    fn is_isolated(&self) -> bool {
+        todo!()
+    }
 }
 
 // JTS: /**
