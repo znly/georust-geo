@@ -1,9 +1,12 @@
 use super::{IntersectionMatrix, RelateNode, RelateNodeFactory};
 use crate::algorithm::dimensions::Dimensions;
-use crate::geomgraph::algorithm::RobustLineIntersector;
-use crate::geomgraph::{GeometryGraph, GraphComponent, Location, Node, NodeMap};
+use crate::algorithm::kernels::HasKernel;
+use crate::geomgraph::{
+    algorithm::RobustLineIntersector, GeometryGraph, GraphComponent, Location, Node, NodeMap,
+};
 
 use geo_types::Geometry;
+use num_traits::Float;
 
 // JTS: /**
 // JTS:  * @version 1.7
@@ -46,14 +49,20 @@ use geo_types::Geometry;
 // JTS:  */
 // JTS: public class RelateComputer
 // JTS: {
-pub struct RelateComputer<'a, F: num_traits::Float> {
+pub struct RelateComputer<'a, F>
+where
+    F: Float + HasKernel,
+{
     graph_a: GeometryGraph<'a, F>,
     graph_b: GeometryGraph<'a, F>,
     line_intersector: RobustLineIntersector<F>,
     nodes: NodeMap<F, RelateNode<F>, RelateNodeFactory>,
 }
 
-impl<'a, F: 'static + num_traits::Float> RelateComputer<'a, F> {
+impl<'a, F> RelateComputer<'a, F>
+where
+    F: 'static + Float + HasKernel,
+{
     pub fn new(geom_a: &'a Geometry<F>, geom_b: &'a Geometry<F>) -> RelateComputer<'a, F> {
         let graph_a = GeometryGraph::new(0, geom_a);
         let graph_b = GeometryGraph::new(1, geom_b);

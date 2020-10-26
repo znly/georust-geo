@@ -36,7 +36,7 @@ impl<F: num_traits::Float> RelateNode<F> {
         RelateNode {
             coordinate,
             edge_end_bundle_star,
-            label: Label::new(0, None),
+            label: Label::new_with_on_location(0, None),
         }
     }
 

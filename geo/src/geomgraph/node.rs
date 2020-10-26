@@ -59,7 +59,7 @@ impl<F: num_traits::Float> BasicNode<F> {
         BasicNode {
             coordinate,
             edges,
-            label: Label::new(0, None),
+            label: Label::new_with_on_location(0, None),
         }
     }
 

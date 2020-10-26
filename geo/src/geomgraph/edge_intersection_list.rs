@@ -25,6 +25,13 @@ impl<F: num_traits::Float> EdgeIntersectionList<F> {
     // JTS:   {
     // JTS:     this.edge = edge;
     // JTS:   }
+    pub fn new() -> EdgeIntersectionList<F> {
+        // REVIEW: JTS holds a circular reference to edge.
+        // Let's see if we can just pass it in to the methods that need it instead.
+        EdgeIntersectionList {
+            node_set: BTreeSet::new(),
+        }
+    }
 
     // JTS:   /**
     // JTS:    * Adds an intersection into the list, if it isn't already there.

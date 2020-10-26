@@ -66,9 +66,12 @@ impl Label {
     // JTS:     elt[1] = new TopologyLocation(Location.NONE);
     // JTS:     elt[geomIndex].setLocation(onLoc);
     // JTS:   }
-    pub fn new(geom_index: usize, location: Option<Location>) -> Label {
+    pub fn new_with_on_location(geom_index: usize, location: Option<Location>) -> Label {
         let mut label = Label {
-            elt: [TopologyLocation::new(None), TopologyLocation::new(None)],
+            elt: [
+                TopologyLocation::new_on(None),
+                TopologyLocation::new_on(None),
+            ],
         };
         if let Some(location) = location {
             label.elt[geom_index].set_on_location(location);
@@ -96,6 +99,21 @@ impl Label {
     // JTS:     elt[1] = new TopologyLocation(Location.NONE, Location.NONE, Location.NONE);
     // JTS:     elt[geomIndex].setLocations(onLoc, leftLoc, rightLoc);
     // JTS:   }
+    pub fn new_with_locations(
+        geom_index: usize,
+        on_location: Location,
+        left_location: Location,
+        right_location: Location,
+    ) -> Label {
+        let mut label = Label {
+            elt: [
+                TopologyLocation::new_on_left_right(None, None, None),
+                TopologyLocation::new_on_left_right(None, None, None),
+            ],
+        };
+        label.elt[geom_index].set_locations(on_location, left_location, right_location);
+        label
+    }
     // JTS:   /**
     // JTS:    * Construct a Label with the same values as the argument Label.
     // JTS:    */

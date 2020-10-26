@@ -9,9 +9,12 @@ use super::{
         LineIntersector,
     },
     index::{EdgeSetIntersector, SegmentIntersector, SimpleEdgeSetIntersector},
-    BasicNode, BasicNodeFactory, Coordinate, Edge, Geometry, GraphComponent, Label, Location,
-    NodeFactory, PlanarGraph, Position,
+    BasicNode, BasicNodeFactory, Coordinate, Edge, Float, GraphComponent, HasKernel, Label,
+    Location, NodeFactory, PlanarGraph, Position,
 };
+
+use crate::algorithm::dimensions::HasDimensions;
+use crate::{Geometry, LineString, Polygon};
 
 use std::cell::RefCell;
 
@@ -47,7 +50,10 @@ use std::cell::RefCell;
 // JTS:   extends PlanarGraph
 // JTS: {
 /// A GeometryGraph is a graph that models a given Geometry
-pub struct GeometryGraph<'a, F: num_traits::Float> {
+pub struct GeometryGraph<'a, F>
+where
+    F: Float + HasKernel,
+{
     arg_index: usize,
     parent_geometry: &'a Geometry<F>,
     use_boundary_determination_rule: bool,
@@ -56,9 +62,16 @@ pub struct GeometryGraph<'a, F: num_traits::Float> {
 
 // PlanarGraph delegations
 // In JTS this is achieved through inheritance - GeometryGraph inherits from PlanarGraph
-impl<F: num_traits::Float> GeometryGraph<'_, F> {
+impl<F> GeometryGraph<'_, F>
+where
+    F: Float + HasKernel,
+{
     pub fn edges(&self) -> &[RefCell<Edge<F>>] {
         self.planar_graph.edges()
+    }
+
+    pub fn insert_edge(&mut self, edge: Edge<F>) {
+        self.planar_graph.insert_edge(edge)
     }
 
     pub fn is_boundary_node(&self, geom_index: usize, coord: Coordinate<F>) -> bool {
@@ -74,7 +87,10 @@ impl<F: num_traits::Float> GeometryGraph<'_, F> {
     }
 }
 
-impl<'a, F: num_traits::Float> GeometryGraph<'a, F> {
+impl<'a, F> GeometryGraph<'a, F>
+where
+    F: Float + HasKernel,
+{
     // JTS: /**
     // JTS:  * This method implements the Boundary Determination Rule
     // JTS:  * for determining whether
@@ -178,12 +194,14 @@ impl<'a, F: num_traits::Float> GeometryGraph<'a, F> {
     // JTS:     }
     // JTS:   }
     pub fn new(arg_index: usize, parent_geometry: &'a Geometry<F>) -> Self {
-        GeometryGraph {
+        let mut graph = GeometryGraph {
             arg_index,
             parent_geometry,
             use_boundary_determination_rule: true,
             planar_graph: PlanarGraph::new(),
-        }
+        };
+        graph.add_geometry(parent_geometry);
+        graph
     }
 
     // JTS:
@@ -249,26 +267,46 @@ impl<'a, F: num_traits::Float> GeometryGraph<'a, F> {
     // JTS:       e.eiList.addSplitEdges(edgelist);
     // JTS:     }
     // JTS:   }
+
     // JTS:   private void add(Geometry g)
     // JTS:   {
-    // JTS:     if (g.isEmpty()) return;
-    // JTS:
-    // JTS:     // check if this Geometry should obey the Boundary Determination Rule
-    // JTS:     // all collections except MultiPolygons obey the rule
-    // JTS:     if (g instanceof MultiPolygon)
-    // JTS:       useBoundaryDeterminationRule = false;
-    // JTS:
-    // JTS:     if (g instanceof Polygon)                 addPolygon((Polygon) g);
-    // JTS:                         // LineString also handles LinearRings
-    // JTS:     else if (g instanceof LineString)         addLineString((LineString) g);
-    // JTS:     else if (g instanceof Point)              addPoint((Point) g);
-    // JTS:     else if (g instanceof MultiPoint)         addCollection((MultiPoint) g);
-    // JTS:     else if (g instanceof MultiLineString)    addCollection((MultiLineString) g);
-    // JTS:     else if (g instanceof MultiPolygon)       addCollection((MultiPolygon) g);
-    // JTS:     else if (g instanceof GeometryCollection) addCollection((GeometryCollection) g);
-    // JTS:     else  throw new UnsupportedOperationException(g.getClass().getName());
-    // JTS:   }
-    // JTS:
+    pub fn add_geometry(&mut self, geometry: &Geometry<F>) {
+        // JTS:     if (g.isEmpty()) return;
+        if geometry.is_empty() {
+            return;
+        }
+        // JTS:
+        // JTS:     if (g instanceof Polygon)                 addPolygon((Polygon) g);
+        // JTS:                         // LineString also handles LinearRings
+        // JTS:     else if (g instanceof LineString)         addLineString((LineString) g);
+        // JTS:     else if (g instanceof Point)              addPoint((Point) g);
+        // JTS:     else if (g instanceof MultiPoint)         addCollection((MultiPoint) g);
+        // JTS:     else if (g instanceof MultiLineString)    addCollection((MultiLineString) g);
+        // JTS:     else if (g instanceof MultiPolygon)       addCollection((MultiPolygon) g);
+        // JTS:     else if (g instanceof GeometryCollection) addCollection((GeometryCollection) g);
+        // JTS:     else  throw new UnsupportedOperationException(g.getClass().getName());
+        // JTS:   }
+        match geometry {
+            Geometry::Line(_line) => todo!(),
+            Geometry::Rect(_rect) => todo!(),
+            Geometry::Point(_point) => todo!(),
+            Geometry::Polygon(polygon) => self.add_polygon(polygon),
+            Geometry::Triangle(_triangle) => todo!(),
+            Geometry::LineString(_line_string) => todo!(),
+            Geometry::MultiPoint(_multi_point) => todo!(),
+            Geometry::MultiPolygon(_multi_polygon) => {
+                // JTS:     // check if this Geometry should obey the Boundary Determination Rule
+                // JTS:     // all collections except MultiPolygons obey the rule
+                // JTS:     if (g instanceof MultiPolygon)
+                // JTS:       useBoundaryDeterminationRule = false;
+                self.use_boundary_determination_rule = false;
+                todo!();
+            }
+            Geometry::MultiLineString(_multi_line_string) => todo!(),
+            Geometry::GeometryCollection(_geometry_collection) => todo!(),
+        }
+    }
+
     // JTS:   private void addCollection(GeometryCollection gc)
     // JTS:   {
     // JTS:     for (int i = 0; i < gc.getNumGeometries(); i++) {
@@ -295,52 +333,95 @@ impl<'a, F: num_traits::Float> GeometryGraph<'a, F> {
     // JTS:    */
     // JTS:   private void addPolygonRing(LinearRing lr, int cwLeft, int cwRight)
     // JTS:   {
-    // JTS:   	// don't bother adding empty holes
-    // JTS:   	if (lr.isEmpty()) return;
-    // JTS:
-    // JTS:     Coordinate[] coord = CoordinateArrays.removeRepeatedPoints(lr.getCoordinates());
-    // JTS:
-    // JTS:     if (coord.length < 4) {
-    // JTS:       hasTooFewPoints = true;
-    // JTS:       invalidPoint = coord[0];
-    // JTS:       return;
-    // JTS:     }
-    // JTS:
-    // JTS:     int left  = cwLeft;
-    // JTS:     int right = cwRight;
-    // JTS:     if (Orientation.isCCW(coord)) {
-    // JTS:       left = cwRight;
-    // JTS:       right = cwLeft;
-    // JTS:     }
-    // JTS:     Edge e = new Edge(coord,
-    // JTS:                         new Label(argIndex, Location.BOUNDARY, left, right));
-    // JTS:     lineEdgeMap.put(lr, e);
-    // JTS:
-    // JTS:     insertEdge(e);
-    // JTS:     // insert the endpoint as a node, to mark that it is on the boundary
-    // JTS:     insertPoint(argIndex, coord[0], Location.BOUNDARY);
-    // JTS:   }
-    // JTS:
+    fn add_polygon_ring(
+        &mut self,
+        linear_ring: &LineString<F>,
+        cw_left: Location,
+        cw_right: Location,
+    ) {
+        debug_assert!(linear_ring.is_closed());
+        // JTS:   	// don't bother adding empty holes
+        // JTS:   	if (lr.isEmpty()) return;
+        if linear_ring.is_empty() {
+            return;
+        }
+
+        // JTS:     Coordinate[] coord = CoordinateArrays.removeRepeatedPoints(lr.getCoordinates());
+        let mut coords: Vec<Coordinate<F>> = vec![];
+        for coord in &linear_ring.0 {
+            if coords.last() != Some(coord) {
+                coords.push(*coord)
+            }
+        }
+
+        // JTS:     if (coord.length < 4) {
+        // JTS:       hasTooFewPoints = true;
+        // JTS:       invalidPoint = coord[0];
+        // JTS:       return;
+        // JTS:     }
+        if coords.len() < 4 {
+            todo!("gracefully handle invalid ring")
+        }
+        let first_point = coords[0].clone();
+
+        // JTS:
+        // JTS:     int left  = cwLeft;
+        // JTS:     int right = cwRight;
+        // JTS:     if (Orientation.isCCW(coord)) {
+        // JTS:       left = cwRight;
+        // JTS:       right = cwLeft;
+        // JTS:     }
+        // TODO: num_traits -> HasKernel
+        use crate::algorithm::winding_order::{Winding, WindingOrder};
+        let (left, right) = if linear_ring.winding_order() == Some(WindingOrder::CounterClockwise) {
+            (cw_right, cw_left)
+        } else {
+            (cw_left, cw_right)
+        };
+
+        // JTS:     Edge e = new Edge(coord,
+        // JTS:                         new Label(argIndex, Location.BOUNDARY, left, right));
+        // JTS:     lineEdgeMap.put(lr, e);
+        let edge = Edge::new(
+            coords,
+            Label::new_with_locations(self.arg_index, Location::Boundary, left, right),
+        );
+
+        // JTS:     insertEdge(e);
+        self.insert_edge(edge);
+
+        // JTS:     // insert the endpoint as a node, to mark that it is on the boundary
+        // JTS:     insertPoint(argIndex, coord[0], Location.BOUNDARY);
+        // insert the endpoint as a node, to mark that it is on the boundary
+        self.insert_point(self.arg_index, first_point, Location::Boundary);
+        // JTS:   }
+    }
+
     // JTS:   private void addPolygon(Polygon p)
     // JTS:   {
-    // JTS:     addPolygonRing(
-    // JTS:             p.getExteriorRing(),
-    // JTS:             Location.EXTERIOR,
-    // JTS:             Location.INTERIOR);
-    // JTS:
-    // JTS:     for (int i = 0; i < p.getNumInteriorRing(); i++) {
-    // JTS:     	LinearRing hole = p.getInteriorRingN(i);
-    // JTS:
-    // JTS:       // Holes are topologically labelled opposite to the shell, since
-    // JTS:       // the interior of the polygon lies on their opposite side
-    // JTS:       // (on the left, if the hole is oriented CW)
-    // JTS:       addPolygonRing(
-    // JTS:       		hole,
-    // JTS:           Location.INTERIOR,
-    // JTS:           Location.EXTERIOR);
-    // JTS:     }
-    // JTS:   }
-    // JTS:
+    fn add_polygon(&mut self, polygon: &Polygon<F>) {
+        // JTS:     addPolygonRing(
+        // JTS:             p.getExteriorRing(),
+        // JTS:             Location.EXTERIOR,
+        // JTS:             Location.INTERIOR);
+        self.add_polygon_ring(polygon.exterior(), Location::Exterior, Location::Interior);
+        // JTS:     for (int i = 0; i < p.getNumInteriorRing(); i++) {
+        // JTS:     	LinearRing hole = p.getInteriorRingN(i);
+        // JTS:
+        // JTS:       // Holes are topologically labelled opposite to the shell, since
+        // JTS:       // the interior of the polygon lies on their opposite side
+        // JTS:       // (on the left, if the hole is oriented CW)
+        // JTS:       addPolygonRing(
+        // JTS:       		hole,
+        // JTS:           Location.INTERIOR,
+        // JTS:           Location.EXTERIOR);
+        // JTS:     }
+        // JTS:   }
+        for hole in polygon.interiors() {
+            self.add_polygon_ring(hole, Location::Interior, Location::Exterior)
+        }
+    }
+
     // JTS:   private void addLineString(LineString line)
     // JTS:   {
     // JTS:     Coordinate[] coord = CoordinateArrays.removeRepeatedPoints(line.getCoordinates());

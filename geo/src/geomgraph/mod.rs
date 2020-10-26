@@ -31,6 +31,9 @@ pub(crate) mod algorithm;
 
 use geo_types::{Coordinate, Geometry};
 
+use crate::algorithm::kernels::HasKernel;
+use num_traits::Float;
+
 // CLEANUP: use geo::kernels::Orientation instead?
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub enum Position {

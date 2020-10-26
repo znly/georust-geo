@@ -28,9 +28,14 @@ use super::{Location, Position};
 
 #[derive(Clone)]
 pub struct TopologyLocation {
-    // CLEANUP: location is between 1-3, maybe cleaner to just have 3 separate Option<Location>
-    // attributes, one for each: [on_location, (left_location, right_location]
+    // CLEANUP: location is either 1 or 3, maybe cleaner to just have 3 separate Option<Location>
+    // attributes, one for each: [on_location, left_location, right_location]
     // CLEANUP: can we make this non-optional (or some of them, if we split up properties)?
+    // Or maybe something like:
+    // pub enum TopologyLocation {
+    //     On(Location),
+    //     OneLeftRight(Location, Location, Location)
+    // }
     location: Vec<Option<Location>>,
 }
 
@@ -55,12 +60,21 @@ impl TopologyLocation {
     // JTS:    location[Position.LEFT] = left;
     // JTS:    location[Position.RIGHT] = right;
     // JTS:   }
-    // JTS:
+    pub fn new_on_left_right(
+        on_location: Option<Location>,
+        left_location: Option<Location>,
+        right_location: Option<Location>,
+    ) -> TopologyLocation {
+        TopologyLocation {
+            location: vec![on_location, left_location, right_location],
+        }
+    }
+
     // JTS:   public TopologyLocation(int on) {
     // JTS:    init(1);
     // JTS:    location[Position.ON] = on;
     // JTS:   }
-    pub fn new(on_location: Option<Location>) -> TopologyLocation {
+    pub fn new_on(on_location: Option<Location>) -> TopologyLocation {
         TopologyLocation {
             location: vec![on_location],
         }
@@ -173,6 +187,12 @@ impl TopologyLocation {
     // JTS:       location[Position.LEFT] = left;
     // JTS:       location[Position.RIGHT] = right;
     // JTS:   }
+    pub fn set_locations(&mut self, on: Location, left: Location, right: Location) {
+        self.location[Position::On as usize] = Some(on);
+        self.location[Position::Left as usize] = Some(left);
+        self.location[Position::Right as usize] = Some(right);
+    }
+
     // JTS:   public boolean allPositionsEqual(int loc)
     // JTS:   {
     // JTS:     for (int i = 0; i < location.length; i++) {

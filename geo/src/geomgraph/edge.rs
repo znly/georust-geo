@@ -77,6 +77,14 @@ impl<F: num_traits::Float> Edge<F> {
     // JTS:     this.pts = pts;
     // JTS:     this.label = label;
     // JTS:   }
+    pub fn new(coords: Vec<Coordinate<F>>, label: Label) -> Edge<F> {
+        Edge {
+            coords,
+            label: Some(label),
+            is_isolated: true,
+            edge_intersections: EdgeIntersectionList::new(),
+        }
+    }
     // JTS:   public Edge(Coordinate[] pts)
     // JTS:   {
     // JTS:     this(pts, null);
