@@ -110,8 +110,8 @@ impl SimpleEdgeSetIntersector {
         // JTS:       }
         // JTS:     }
         // TODO: What's the lifetime of this borrow? `add_intersections` does a borrow_mut
-        let edge0_coords_len = edge0.borrow().coords().len();
-        let edge1_coords_len = edge1.borrow().coords().len();
+        let edge0_coords_len = edge0.borrow().coords().len() - 1;
+        let edge1_coords_len = edge1.borrow().coords().len() - 1;
         for i0 in 0..edge0_coords_len {
             for i1 in 0..edge1_coords_len {
                 segment_intersector.add_intersections(edge0, i0, edge1, i1);

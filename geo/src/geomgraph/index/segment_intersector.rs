@@ -215,6 +215,7 @@ impl<F: num_traits::Float> SegmentIntersector<F> {
         segment_index_1: usize,
     ) {
         // JTS:     if (e0 == e1 && segIndex0 == segIndex1) return;
+        // REVIEW: I *think* we want to compare references here, rather than value equality
         if *edge0.borrow() == *edge1.borrow() && segment_index_0 == segment_index_1 {
             return;
         }
