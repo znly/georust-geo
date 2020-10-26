@@ -95,8 +95,8 @@ pub trait LineIntersector<F: num_traits::Float> {
     fn compute_edge_distance(&self, p: Coordinate<F>, p0: Coordinate<F>, p1: Coordinate<F>) -> F {
         // JTS:     double dx = Math.abs(p1.x - p0.x);
         // JTS:     double dy = Math.abs(p1.y - p0.y);
-        let dx = p1.x - p0.x;
-        let dy = p1.y - p0.y;
+        let dx = (p1.x - p0.x).abs();
+        let dy = (p1.y - p0.y).abs();
 
         // JTS:     double dist = -1.0;   // sentinel value
         let mut dist: F;
@@ -146,7 +146,7 @@ pub trait LineIntersector<F: num_traits::Float> {
         }
         // JTS:     Assert.isTrue(! (dist == 0.0 && ! p.equals(p0)), "Bad distance calculation");
         // JTS:     return dist;
-        assert!(!(dist == F::zero() && p != p0));
+        assert!(!(dist == F::zero() && p != p0), "Bad distance calculation");
         dist
         // JTS:   }
     }
