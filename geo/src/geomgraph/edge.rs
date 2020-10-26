@@ -306,7 +306,7 @@ impl<F: num_traits::Float> std::cmp::PartialEq for Edge<F> {
                 is_equal_forward = false;
             }
 
-            if self.coords()[i] != other.coords()[coords_len - i] {
+            if self.coords()[i] != other.coords()[coords_len - i - 1] {
                 is_equal_reverse = false;
             }
 
