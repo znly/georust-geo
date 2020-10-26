@@ -57,8 +57,6 @@ impl<F: num_traits::Float> LineIntersector<F> for RobustLineIntersector<F> {
     }
 
     fn set_result(&mut self, result: Intersection) {
-        // this might be an overzealous assert...
-        assert!(self.result.is_none());
         self.result = Some(result);
     }
 
