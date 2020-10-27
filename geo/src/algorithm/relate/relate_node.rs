@@ -64,8 +64,6 @@ impl<F: num_traits::Float> RelateNode<F> {
         // JTS:   }
         // JTS:   label.setLocation(argIndex, newLoc);
         // JTS: }
-        // this might be an overzealous assert - JTS doesn't leverage Optional types
-        debug_assert!(self.label.on_location(geom_index).is_some());
         let new_location = match self.label.on_location(geom_index) {
             Some(Location::Boundary) => Location::Interior,
             Some(Location::Interior) => Location::Boundary,
