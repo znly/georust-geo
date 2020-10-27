@@ -170,8 +170,6 @@ where
         // JTS: //Debug.printWatch();
         // JTS:     labelIsolatedNodes();
         // complete the labelling for any nodes which only have a label for a single geometry
-        panic!("{:?}", self.nodes);
-
         self.label_isolated_nodes();
         todo!();
         // JTS: //Debug.printWatch();
