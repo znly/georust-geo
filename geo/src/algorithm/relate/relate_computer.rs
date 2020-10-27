@@ -2,7 +2,8 @@ use super::{IntersectionMatrix, RelateNode, RelateNodeFactory};
 use crate::algorithm::dimensions::Dimensions;
 use crate::algorithm::kernels::HasKernel;
 use crate::geomgraph::{
-    algorithm::RobustLineIntersector, GeometryGraph, GraphComponent, Location, Node, NodeMap,
+    algorithm::{PointLocator, RobustLineIntersector},
+    GeometryGraph, GraphComponent, Location, Node, NodeMap,
 };
 
 use geo_types::Geometry;
@@ -55,8 +56,9 @@ where
 {
     graph_a: GeometryGraph<'a, F>,
     graph_b: GeometryGraph<'a, F>,
-    line_intersector: RobustLineIntersector<F>,
     nodes: NodeMap<F, RelateNode<F>, RelateNodeFactory>,
+    line_intersector: RobustLineIntersector<F>,
+    point_locator: PointLocator<F>,
 }
 
 impl<'a, F> RelateComputer<'a, F>
@@ -64,14 +66,12 @@ where
     F: 'static + Float + HasKernel,
 {
     pub fn new(geom_a: &'a Geometry<F>, geom_b: &'a Geometry<F>) -> RelateComputer<'a, F> {
-        let graph_a = GeometryGraph::new(0, geom_a);
-        let graph_b = GeometryGraph::new(1, geom_b);
-        let line_intersector = RobustLineIntersector::new();
         Self {
-            graph_a,
-            graph_b,
-            line_intersector,
+            graph_a: GeometryGraph::new(0, geom_a),
+            graph_b: GeometryGraph::new(1, geom_b),
             nodes: NodeMap::new(),
+            line_intersector: RobustLineIntersector::new(),
+            point_locator: PointLocator::new(),
         }
     }
 
@@ -550,6 +550,8 @@ where
     /// complete the labelling we need to check for nodes that lie in the interior of edges, and in
     /// the interior of areas.
     fn label_isolated_nodes(&mut self) {
+        let geometry_a = self.graph_a.geometry();
+        let geometry_b = self.graph_b.geometry();
         for node in self.nodes.iter_mut() {
             // CLEANUP: remove unwrap?
             let label = node.label().unwrap();
@@ -563,24 +565,29 @@ where
             // JTS:       }
             if node.is_isolated() {
                 if label.is_empty(0) {
-                    Self::label_isolated_node(node, 0)
+                    Self::label_isolated_node(&mut self.point_locator, node, 0, geometry_a)
                 } else {
-                    Self::label_isolated_node(node, 1)
+                    Self::label_isolated_node(&mut self.point_locator, node, 1, geometry_b)
                 }
             }
             // JTS:     }
             // JTS:   }
         }
     }
-    // JTS:
+
     // JTS:   /**
     // JTS:    * Label an isolated node with its relationship to the target geometry.
     // JTS:    */
     // JTS:   private void labelIsolatedNode(Node n, int targetIndex)
     // JTS:   {
-    fn label_isolated_node(node: &mut RelateNode<F>, target_index: usize) {
+    fn label_isolated_node(
+        point_locator: &mut PointLocator<F>,
+        node: &mut RelateNode<F>,
+        target_index: usize,
+        geometry: &Geometry<F>,
+    ) {
         // JTS:     int loc = ptLocator.locate(n.getCoordinate(), arg[targetIndex].getGeometry());
-        let location = todo!();
+        let location = point_locator.locate(node.coordinate(), geometry);
         // JTS:     n.getLabel().setAllLocations(targetIndex, loc);
         // JTS: //debugPrintln(n.getLabel());
         // JTS:   }

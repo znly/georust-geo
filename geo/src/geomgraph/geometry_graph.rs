@@ -14,7 +14,7 @@ use super::{
 };
 
 use crate::algorithm::dimensions::HasDimensions;
-use crate::{Geometry, LineString, Polygon};
+use crate::{Geometry, Line, LineString, Point, Polygon};
 
 use std::cell::RefCell;
 
@@ -287,23 +287,46 @@ where
         // JTS:     else  throw new UnsupportedOperationException(g.getClass().getName());
         // JTS:   }
         match geometry {
-            Geometry::Line(_line) => todo!(),
-            Geometry::Rect(_rect) => todo!(),
-            Geometry::Point(_point) => todo!(),
+            Geometry::Line(line) => self.add_line(line),
+            Geometry::Rect(rect) => {
+                // PERF: avoid this conversion/clone?
+                self.add_polygon(&Polygon::from(rect.clone()));
+            }
+            Geometry::Point(point) => {
+                self.add_point(point);
+            }
             Geometry::Polygon(polygon) => self.add_polygon(polygon),
-            Geometry::Triangle(_triangle) => todo!(),
-            Geometry::LineString(_line_string) => todo!(),
-            Geometry::MultiPoint(_multi_point) => todo!(),
-            Geometry::MultiPolygon(_multi_polygon) => {
+            Geometry::Triangle(triangle) => {
+                // PERF: avoid this conversion/clone?
+                self.add_polygon(&Polygon::from(triangle.clone()));
+            }
+            Geometry::LineString(line_string) => self.add_line_string(line_string),
+            Geometry::MultiPoint(multi_point) => {
+                for point in &multi_point.0 {
+                    self.add_point(point);
+                }
+            }
+            Geometry::MultiPolygon(multi_polygon) => {
                 // JTS:     // check if this Geometry should obey the Boundary Determination Rule
                 // JTS:     // all collections except MultiPolygons obey the rule
                 // JTS:     if (g instanceof MultiPolygon)
                 // JTS:       useBoundaryDeterminationRule = false;
                 self.use_boundary_determination_rule = false;
-                todo!();
+                for polygon in &multi_polygon.0 {
+                    self.add_polygon(polygon);
+                }
             }
-            Geometry::MultiLineString(_multi_line_string) => todo!(),
-            Geometry::GeometryCollection(_geometry_collection) => todo!(),
+            Geometry::MultiLineString(multi_line_string) => {
+                for line_string in &multi_line_string.0 {
+                    // PERF: can we get rid of these clones?
+                    self.add_line_string(line_string);
+                }
+            }
+            Geometry::GeometryCollection(geometry_collection) => {
+                for geometry in geometry_collection {
+                    self.add_geometry(geometry);
+                }
+            }
         }
     }
 
@@ -360,7 +383,7 @@ where
         // JTS:       return;
         // JTS:     }
         if coords.len() < 4 {
-            todo!("gracefully handle invalid ring")
+            todo!("handle invalid ring")
         }
         let first_point = coords[0].clone();
 
@@ -381,11 +404,13 @@ where
 
         // JTS:     Edge e = new Edge(coord,
         // JTS:                         new Label(argIndex, Location.BOUNDARY, left, right));
-        // JTS:     lineEdgeMap.put(lr, e);
         let edge = Edge::new(
             coords,
             Label::new_with_locations(self.arg_index, Location::Boundary, left, right),
         );
+        // JTS:     lineEdgeMap.put(lr, e);
+        // REVIEW: note we don't implement lineEdgeMap. I don't think we *need* it for the Relate
+        // operations and I think it'll require moving edges into a RefCell.
 
         // JTS:     insertEdge(e);
         self.insert_edge(edge);
@@ -424,29 +449,66 @@ where
 
     // JTS:   private void addLineString(LineString line)
     // JTS:   {
-    // JTS:     Coordinate[] coord = CoordinateArrays.removeRepeatedPoints(line.getCoordinates());
-    // JTS:
-    // JTS:     if (coord.length < 2) {
-    // JTS:       hasTooFewPoints = true;
-    // JTS:       invalidPoint = coord[0];
-    // JTS:       return;
-    // JTS:     }
-    // JTS:
-    // JTS:     // add the edge for the LineString
-    // JTS:     // line edges do not have locations for their left and right sides
-    // JTS:     Edge e = new Edge(coord, new Label(argIndex, Location.INTERIOR));
-    // JTS:     lineEdgeMap.put(line, e);
-    // JTS:     insertEdge(e);
-    // JTS:     /**
-    // JTS:      * Add the boundary points of the LineString, if any.
-    // JTS:      * Even if the LineString is closed, add both points as if they were endpoints.
-    // JTS:      * This allows for the case that the node already exists and is a boundary point.
-    // JTS:      */
-    // JTS:     Assert.isTrue(coord.length >= 2, "found LineString with single point");
-    // JTS:     insertBoundaryPoint(argIndex, coord[0]);
-    // JTS:     insertBoundaryPoint(argIndex, coord[coord.length - 1]);
-    // JTS:
-    // JTS:   }
+    fn add_line_string(&mut self, line_string: &LineString<F>) {
+        // JTS:     Coordinate[] coord = CoordinateArrays.removeRepeatedPoints(line.getCoordinates());
+        let mut coords: Vec<Coordinate<F>> = vec![];
+        for coord in &line_string.0 {
+            if coords.last() != Some(coord) {
+                coords.push(*coord)
+            }
+        }
+
+        // JTS:     if (coord.length < 2) {
+        // JTS:       hasTooFewPoints = true;
+        // JTS:       invalidPoint = coord[0];
+        // JTS:       return;
+        // JTS:     }
+        if coords.len() < 2 {
+            todo!("handle invalid line string");
+        }
+        self.insert_boundary_point(self.arg_index, *coords.first().unwrap());
+        self.insert_boundary_point(self.arg_index, *coords.last().unwrap());
+
+        // JTS:
+        // JTS:     // add the edge for the LineString
+        // JTS:     // line edges do not have locations for their left and right sides
+        // JTS:     Edge e = new Edge(coord, new Label(argIndex, Location.INTERIOR));
+        let edge = Edge::new(
+            coords,
+            Label::new_with_on_location(self.arg_index, Some(Location::Interior)),
+        );
+
+        // REVIEW: note we don't implement lineEdgeMap. I don't think we *need* it for the Relate
+        // operations and I think it'll require moving edges into a RefCell.
+        // JTS:     lineEdgeMap.put(line, e);
+
+        // JTS:     insertEdge(e);
+        self.insert_edge(edge);
+
+        // JTS:     /**
+        // JTS:      * Add the boundary points of the LineString, if any.
+        // JTS:      * Even if the LineString is closed, add both points as if they were endpoints.
+        // JTS:      * This allows for the case that the node already exists and is a boundary point.
+        // JTS:      */
+        // JTS:     Assert.isTrue(coord.length >= 2, "found LineString with single point");
+        // JTS:     insertBoundaryPoint(argIndex, coord[0]);
+        // JTS:     insertBoundaryPoint(argIndex, coord[coord.length - 1]);
+        // REVIEW: re-ordered code to insert boundary points *before* `coords` moves into Edge::new
+        // JTS:   }
+    }
+
+    fn add_line(&mut self, line: &Line<F>) {
+        self.insert_boundary_point(self.arg_index, line.start);
+        self.insert_boundary_point(self.arg_index, line.end);
+
+        let edge = Edge::new(
+            vec![line.start, line.end],
+            Label::new_with_on_location(self.arg_index, Some(Location::Interior)),
+        );
+
+        self.insert_edge(edge);
+    }
+
     // JTS:
     // JTS:   /**
     // JTS:    * Add an Edge computed externally.  The label on the Edge is assumed
@@ -469,7 +531,12 @@ where
     // JTS:   {
     // JTS:     insertPoint(argIndex, pt, Location.INTERIOR);
     // JTS:   }
-    // JTS:
+    /// Add a point computed externally.  The point is assumed to be a
+    /// Point Geometry part, which has a location of INTERIOR.
+    fn add_point(&mut self, point: &Point<F>) {
+        self.insert_point(self.arg_index, point.clone().into(), Location::Interior);
+    }
+
     // JTS:   /**
     // JTS:    * Compute self-nodes, taking advantage of the Geometry type to
     // JTS:    * minimize the number of intersection tests.  (E.g. rings are

@@ -45,11 +45,22 @@ pub enum Position {
     Right = 2,
 }
 
-// CLEANUP: geo::utils::CoordPos instead?
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub enum Location {
     // CLEANUP: get rid of the explicit discrimanator?
     Interior = 0,
     Boundary = 1,
     Exterior = 2,
+}
+
+// CLEANUP: get rid of Location and use geo::utils::CoordPos everywhere directly
+use crate::utils::CoordPos;
+impl From<CoordPos> for Location {
+    fn from(coord_pos: CoordPos) -> Location {
+        match coord_pos {
+            CoordPos::Inside => Location::Interior,
+            CoordPos::Outside => Location::Exterior,
+            CoordPos::OnBoundary => Location::Boundary,
+        }
+    }
 }
