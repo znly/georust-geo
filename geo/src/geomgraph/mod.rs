@@ -2,6 +2,7 @@
 #![allow(unused_imports)]
 
 mod edge;
+mod edge_end_star;
 mod edge_intersection;
 mod edge_intersection_list;
 mod geometry_graph;
@@ -15,6 +16,7 @@ mod planar_graph;
 mod topology_location;
 
 use edge::Edge;
+pub(crate) use edge_end_star::EdgeEndStar;
 use edge_intersection::EdgeIntersection;
 use edge_intersection_list::EdgeIntersectionList;
 pub use geometry_graph::GeometryGraph;
@@ -51,7 +53,3 @@ pub enum Location {
     Boundary = 1,
     Exterior = 2,
 }
-
-/// TODO: actually implement EdgeEndStar for incident edge intersections
-#[derive(Clone)]
-pub struct EdgeEndStar;

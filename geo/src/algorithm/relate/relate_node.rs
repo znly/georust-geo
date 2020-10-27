@@ -1,3 +1,4 @@
+use super::EdgeEndBundleStar;
 use crate::geomgraph::{GraphComponent, Label, Location, Node, NodeFactory};
 use crate::Coordinate;
 
@@ -82,12 +83,5 @@ pub struct RelateNodeFactory;
 impl<F: num_traits::Float> NodeFactory<F, RelateNode<F>> for RelateNodeFactory {
     fn create_node(coordinate: Coordinate<F>) -> RelateNode<F> {
         RelateNode::new(coordinate, EdgeEndBundleStar::new())
-    }
-}
-
-pub struct EdgeEndBundleStar;
-impl EdgeEndBundleStar {
-    fn new() -> Self {
-        todo!()
     }
 }
