@@ -109,7 +109,6 @@ impl SimpleEdgeSetIntersector {
         // JTS:         si.addIntersections(e0, i0, e1, i1);
         // JTS:       }
         // JTS:     }
-        // TODO: What's the lifetime of this borrow? `add_intersections` does a borrow_mut
         let edge0_coords_len = edge0.borrow().coords().len() - 1;
         let edge1_coords_len = edge1.borrow().coords().len() - 1;
         for i0 in 0..edge0_coords_len {

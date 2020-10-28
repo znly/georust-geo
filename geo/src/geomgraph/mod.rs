@@ -2,6 +2,7 @@
 #![allow(unused_imports)]
 
 mod edge;
+mod edge_end;
 mod edge_end_star;
 mod edge_intersection;
 mod edge_intersection_list;
@@ -13,12 +14,14 @@ mod node;
 mod node_factory;
 mod node_map;
 mod planar_graph;
+mod quadrant;
 mod topology_location;
 
-use edge::Edge;
+pub(crate) use edge::Edge;
+pub(crate) use edge_end::EdgeEnd;
 pub(crate) use edge_end_star::EdgeEndStar;
-use edge_intersection::EdgeIntersection;
-use edge_intersection_list::EdgeIntersectionList;
+pub(crate) use edge_intersection::EdgeIntersection;
+pub(crate) use edge_intersection_list::EdgeIntersectionList;
 pub use geometry_graph::GeometryGraph;
 pub use graph_component::GraphComponent;
 pub(crate) use label::Label;
@@ -26,6 +29,7 @@ pub(crate) use node::{BasicNode, Node};
 pub(crate) use node_factory::{BasicNodeFactory, NodeFactory};
 pub use node_map::NodeMap;
 use planar_graph::PlanarGraph;
+pub(crate) use quadrant::Quadrant;
 use topology_location::TopologyLocation;
 
 // in just algorithm is an external pacakage (top level, still part of JTS) - not witin geomgraph

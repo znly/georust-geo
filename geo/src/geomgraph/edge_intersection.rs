@@ -17,10 +17,7 @@ use super::Coordinate;
 /// Represents a point on an edge which intersects with another edge.
 ///
 /// The intersection may either be a single point, or a line segment (in which case this point is
-/// the start of the line segment)
-/// The intersection point must be precise.
-/// TODO: should we get rid of this clone?
-#[derive(Clone)]
+/// the start of the line segment) The intersection point must be precise.
 pub struct EdgeIntersection<F: num_traits::Float> {
     coord: Coordinate<F>,
     segment_index: usize,

@@ -27,6 +27,24 @@ use super::{Location, Position, TopologyLocation};
 // JTS:  *
 // JTS:  */
 // JTS: public class Label {
+/// A `Label` indicates the topological relationship of a component of a topology graph to a given
+/// [Geometry].
+///
+/// This class supports labels for relationships to two `Geometry`s, which is sufficient for
+/// algorithms for binary operations.
+///
+/// Topology graphs support the concept of labeling nodes and edges in the graph.  The label of a
+/// node or edge specifies its topological relationship to one or more geometries.  (In fact, since
+/// JTS operations have only two arguments labels are required for only two geometries).  A label
+/// for a node or edge has one or two elements, depending on whether the node or edge occurs in one
+/// or both of the input `Geometry`s.  Elements contain attributes which categorize the topological
+/// location of the node or edge relative to the parent `Geometry`; that is, whether the node or
+/// edge is in the interior, boundary or exterior of the `Geometry`.  Attributes have a value
+/// from the set `{Interior, Boundary, Exterior}`.  In a node each element has  a single attribute
+/// `(On)`.  For an edge each element has a triplet of attributes `(Left, On, Right)`.
+///
+/// It is up to the client code to associate the 0 and 1 [TopologyLocation]s with specific
+/// geometries.
 #[derive(Clone)]
 pub struct Label {
     // REVIEW: better name? what does this stand for - "element location's topology"?
@@ -122,12 +140,16 @@ impl Label {
     // JTS:     elt[0] = new TopologyLocation(lbl.elt[0]);
     // JTS:     elt[1] = new TopologyLocation(lbl.elt[1]);
     // JTS:   }
-    // JTS:
+
     // JTS:   public void flip()
     // JTS:   {
     // JTS:     elt[0].flip();
     // JTS:     elt[1].flip();
     // JTS:   }
+    pub fn flip(&mut self) {
+        self.elt[0].flip();
+        self.elt[1].flip();
+    }
 
     // JTS:   public int getLocation(int geomIndex, int posIndex) { return elt[geomIndex].get(posIndex); }
     pub fn location(&self, geom_index: usize, position: Position) -> Option<Location> {

@@ -1,4 +1,4 @@
-use super::{Coordinate, EdgeIntersection};
+use super::{Coordinate, Edge, EdgeIntersection};
 
 use std::collections::BTreeSet;
 
@@ -12,11 +12,17 @@ use std::collections::BTreeSet;
 // JTS: public class EdgeIntersectionList
 // JTS: {
 #[derive(PartialEq)]
-pub struct EdgeIntersectionList<F: num_traits::Float> {
+pub struct EdgeIntersectionList<F>
+where
+    F: num_traits::Float,
+{
     node_set: BTreeSet<EdgeIntersection<F>>,
 }
 
-impl<F: num_traits::Float> EdgeIntersectionList<F> {
+impl<F> EdgeIntersectionList<F>
+where
+    F: num_traits::Float,
+{
     // JTS:   // a Map <EdgeIntersection, EdgeIntersection>
     // JTS:   private Map nodeMap = new TreeMap();
     // JTS:   Edge edge;  // the parent edge
@@ -77,93 +83,105 @@ impl<'a, F: num_traits::Float> IntoIterator for &'a EdgeIntersectionList<F> {
         self.node_set.iter()
     }
 }
-// JTS:
-// JTS:   /**
-// JTS:    * Tests if the given point is an edge intersection
-// JTS:    *
-// JTS:    * @param pt the point to test
-// JTS:    * @return true if the point is an intersection
-// JTS:    */
-// JTS:   public boolean isIntersection(Coordinate pt)
-// JTS:   {
-// JTS:     for (Iterator it = iterator(); it.hasNext(); ) {
-// JTS:       EdgeIntersection ei = (EdgeIntersection) it.next();
-// JTS:       if (ei.coord.equals(pt))
-// JTS:        return true;
-// JTS:     }
-// JTS:     return false;
-// JTS:   }
-// JTS:
-// JTS:   /**
-// JTS:    * Adds entries for the first and last points of the edge to the list
-// JTS:    */
-// JTS:   public void addEndpoints()
-// JTS:   {
-// JTS:     int maxSegIndex = edge.pts.length - 1;
-// JTS:     add(edge.pts[0], 0, 0.0);
-// JTS:     add(edge.pts[maxSegIndex], maxSegIndex, 0.0);
-// JTS:   }
-// JTS:
-// JTS:   /**
-// JTS:    * Creates new edges for all the edges that the intersections in this
-// JTS:    * list split the parent edge into.
-// JTS:    * Adds the edges to the input list (this is so a single list
-// JTS:    * can be used to accumulate all split edges for a Geometry).
-// JTS:    *
-// JTS:    * @param edgeList a list of EdgeIntersections
-// JTS:    */
-// JTS:   public void addSplitEdges(List edgeList)
-// JTS:   {
-// JTS:     // ensure that the list has entries for the first and last point of the edge
-// JTS:     addEndpoints();
-// JTS:
-// JTS:     Iterator it = iterator();
-// JTS:     // there should always be at least two entries in the list
-// JTS:     EdgeIntersection eiPrev = (EdgeIntersection) it.next();
-// JTS:     while (it.hasNext()) {
-// JTS:       EdgeIntersection ei = (EdgeIntersection) it.next();
-// JTS:       Edge newEdge = createSplitEdge(eiPrev, ei);
-// JTS:       edgeList.add(newEdge);
-// JTS:
-// JTS:       eiPrev = ei;
-// JTS:     }
-// JTS:   }
-// JTS:   /**
-// JTS:    * Create a new "split edge" with the section of points between
-// JTS:    * (and including) the two intersections.
-// JTS:    * The label for the new edge is the same as the label for the parent edge.
-// JTS:    */
-// JTS:   Edge createSplitEdge(EdgeIntersection ei0, EdgeIntersection ei1)
-// JTS:   {
-// JTS: //Debug.print("\ncreateSplitEdge"); Debug.print(ei0); Debug.print(ei1);
-// JTS:     int npts = ei1.segmentIndex - ei0.segmentIndex + 2;
-// JTS:
-// JTS:     Coordinate lastSegStartPt = edge.pts[ei1.segmentIndex];
-// JTS:     // if the last intersection point is not equal to the its segment start pt,
-// JTS:     // add it to the points list as well.
-// JTS:     // (This check is needed because the distance metric is not totally reliable!)
-// JTS:     // The check for point equality is 2D only - Z values are ignored
-// JTS:     boolean useIntPt1 = ei1.dist > 0.0 || ! ei1.coord.equals2D(lastSegStartPt);
-// JTS:     if (! useIntPt1) {
-// JTS:       npts--;
-// JTS:     }
-// JTS:
-// JTS:     Coordinate[] pts = new Coordinate[npts];
-// JTS:     int ipt = 0;
-// JTS:     pts[ipt++] = new Coordinate(ei0.coord);
-// JTS:     for (int i = ei0.segmentIndex + 1; i <= ei1.segmentIndex; i++) {
-// JTS:       pts[ipt++] = edge.pts[i];
-// JTS:     }
-// JTS:     if (useIntPt1) pts[ipt] = ei1.coord;
-// JTS:     return new Edge(pts, new Label(edge.label));
-// JTS:   }
-// JTS:
-// JTS:   public void print(PrintStream out)
-// JTS:   {
-// JTS:     out.println("Intersections:");
-// JTS:     for (Iterator it = iterator(); it.hasNext(); ) {
-// JTS:       EdgeIntersection ei = (EdgeIntersection) it.next();
-// JTS:       ei.print(out);
-// JTS:     }
-// JTS:   }
-// JTS: }
+
+impl<F> EdgeIntersectionList<F>
+where
+    F: num_traits::Float,
+{
+    // JTS:
+    // JTS:   /**
+    // JTS:    * Tests if the given point is an edge intersection
+    // JTS:    *
+    // JTS:    * @param pt the point to test
+    // JTS:    * @return true if the point is an intersection
+    // JTS:    */
+    // JTS:   public boolean isIntersection(Coordinate pt)
+    // JTS:   {
+    // JTS:     for (Iterator it = iterator(); it.hasNext(); ) {
+    // JTS:       EdgeIntersection ei = (EdgeIntersection) it.next();
+    // JTS:       if (ei.coord.equals(pt))
+    // JTS:        return true;
+    // JTS:     }
+    // JTS:     return false;
+    // JTS:   }
+    // JTS:
+    // JTS:   /**
+    // JTS:    * Adds entries for the first and last points of the edge to the list
+    // JTS:    */
+    // JTS:   public void addEndpoints()
+    // JTS:   {
+    // JTS:     int maxSegIndex = edge.pts.length - 1;
+    // JTS:     add(edge.pts[0], 0, 0.0);
+    // JTS:     add(edge.pts[maxSegIndex], maxSegIndex, 0.0);
+    // JTS:   }
+    // REVIEW: Note, we pass in the edge rather than maintain a RefCell to it
+    // pub fn add_endpoints(&mut self, edge: &mut Edge<F>) {
+    //     let max_segment_index = edge.coords().len() - 1;
+    //     self.add(edge.coords()[0], 0, F::zero());
+    //     self.add(edge.coords()[max_segment_index], max_segment_index, F::zero());
+    // }
+
+    // JTS:   /**
+    // JTS:    * Creates new edges for all the edges that the intersections in this
+    // JTS:    * list split the parent edge into.
+    // JTS:    * Adds the edges to the input list (this is so a single list
+    // JTS:    * can be used to accumulate all split edges for a Geometry).
+    // JTS:    *
+    // JTS:    * @param edgeList a list of EdgeIntersections
+    // JTS:    */
+    // JTS:   public void addSplitEdges(List edgeList)
+    // JTS:   {
+    // JTS:     // ensure that the list has entries for the first and last point of the edge
+    // JTS:     addEndpoints();
+    // JTS:
+    // JTS:     Iterator it = iterator();
+    // JTS:     // there should always be at least two entries in the list
+    // JTS:     EdgeIntersection eiPrev = (EdgeIntersection) it.next();
+    // JTS:     while (it.hasNext()) {
+    // JTS:       EdgeIntersection ei = (EdgeIntersection) it.next();
+    // JTS:       Edge newEdge = createSplitEdge(eiPrev, ei);
+    // JTS:       edgeList.add(newEdge);
+    // JTS:
+    // JTS:       eiPrev = ei;
+    // JTS:     }
+    // JTS:   }
+    // JTS:   /**
+    // JTS:    * Create a new "split edge" with the section of points between
+    // JTS:    * (and including) the two intersections.
+    // JTS:    * The label for the new edge is the same as the label for the parent edge.
+    // JTS:    */
+    // JTS:   Edge createSplitEdge(EdgeIntersection ei0, EdgeIntersection ei1)
+    // JTS:   {
+    // JTS: //Debug.print("\ncreateSplitEdge"); Debug.print(ei0); Debug.print(ei1);
+    // JTS:     int npts = ei1.segmentIndex - ei0.segmentIndex + 2;
+    // JTS:
+    // JTS:     Coordinate lastSegStartPt = edge.pts[ei1.segmentIndex];
+    // JTS:     // if the last intersection point is not equal to the its segment start pt,
+    // JTS:     // add it to the points list as well.
+    // JTS:     // (This check is needed because the distance metric is not totally reliable!)
+    // JTS:     // The check for point equality is 2D only - Z values are ignored
+    // JTS:     boolean useIntPt1 = ei1.dist > 0.0 || ! ei1.coord.equals2D(lastSegStartPt);
+    // JTS:     if (! useIntPt1) {
+    // JTS:       npts--;
+    // JTS:     }
+    // JTS:
+    // JTS:     Coordinate[] pts = new Coordinate[npts];
+    // JTS:     int ipt = 0;
+    // JTS:     pts[ipt++] = new Coordinate(ei0.coord);
+    // JTS:     for (int i = ei0.segmentIndex + 1; i <= ei1.segmentIndex; i++) {
+    // JTS:       pts[ipt++] = edge.pts[i];
+    // JTS:     }
+    // JTS:     if (useIntPt1) pts[ipt] = ei1.coord;
+    // JTS:     return new Edge(pts, new Label(edge.label));
+    // JTS:   }
+    // JTS:
+    // JTS:   public void print(PrintStream out)
+    // JTS:   {
+    // JTS:     out.println("Intersections:");
+    // JTS:     for (Iterator it = iterator(); it.hasNext(); ) {
+    // JTS:       EdgeIntersection ei = (EdgeIntersection) it.next();
+    // JTS:       ei.print(out);
+    // JTS:     }
+    // JTS:   }
+    // JTS: }
+}

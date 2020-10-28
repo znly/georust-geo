@@ -133,6 +133,19 @@ impl<F: num_traits::Float> Edge<F> {
         &self.edge_intersections
     }
 
+    pub fn edge_intersections_mut(&mut self) -> &mut EdgeIntersectionList<F> {
+        &mut self.edge_intersections
+    }
+
+    pub fn add_edge_intersection_list_endpoints(&mut self) {
+        let max_segment_index = self.coords().len() - 1;
+        let first_coord = self.coords()[0];
+        let max_coord = self.coords()[max_segment_index];
+        self.edge_intersections_mut().add(first_coord, 0, F::zero());
+        self.edge_intersections_mut()
+            .add(max_coord, max_segment_index, F::zero());
+    }
+
     // JTS:
     // JTS:   public MonotoneChainEdge getMonotoneChainEdge()
     // JTS:   {

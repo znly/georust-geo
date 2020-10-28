@@ -1,4 +1,4 @@
-use super::{IntersectionMatrix, RelateNode, RelateNodeFactory};
+use super::{EdgeEndBuilder, IntersectionMatrix, RelateNode, RelateNodeFactory};
 use crate::algorithm::dimensions::{Dimensions, HasDimensions};
 use crate::algorithm::kernels::HasKernel;
 use crate::geomgraph::{
@@ -178,7 +178,6 @@ where
         // JTS:     computeProperIntersectionIM(intersector, im);
         // If a proper intersection was found, we can set a lower bound on the IM.
         self.compute_proper_intersection_im(&segment_intersector, &mut intersection_matrix);
-        todo!();
         // JTS:
         // JTS:     /**
         // JTS:      * Now process improper intersections
@@ -192,6 +191,12 @@ where
         // JTS:     insertEdgeEnds(ee0);
         // JTS:     List ee1 = eeBuilder.computeEdgeEnds(arg[1].getEdgeIterator());
         // JTS:     insertEdgeEnds(ee1);
+        // Now process improper intersections
+        // (eg where one or other of the geometries has a vertex at the intersection point)
+        // We need to compute the edge graph at all nodes to determine the IM.
+        let ee_builder = EdgeEndBuilder::new();
+        let ee0: Vec<_> = ee_builder.compute_ends_for_edges(self.graph_a.edges());
+        todo!();
         // JTS:
         // JTS: //Debug.println("==== NodeList ===");
         // JTS: //Debug.print(nodes);

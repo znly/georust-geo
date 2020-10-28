@@ -137,6 +137,7 @@ impl TopologyLocation {
     // JTS:   public boolean isArea() { return location.length > 1; }
     // JTS:   public boolean isLine() { return location.length == 1; }
     // JTS:
+
     // JTS:   public void flip()
     // JTS:   {
     // JTS:     if (location.length <= 1) return;
@@ -144,8 +145,14 @@ impl TopologyLocation {
     // JTS:     location[Position.LEFT] = location[Position.RIGHT];
     // JTS:     location[Position.RIGHT] = temp;
     // JTS:   }
-    // JTS:
-    // JTS:
+    pub fn flip(&mut self) {
+        if self.location.len() <= 1 {
+            return;
+        }
+        self.location
+            .swap(Position::Left as usize, Position::Right as usize);
+    }
+
     // JTS:   public void setAllLocations(int locValue)
     // JTS:   {
     // JTS:     for (int i = 0; i < location.length; i++) {
