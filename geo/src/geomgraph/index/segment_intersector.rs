@@ -22,10 +22,10 @@ pub struct SegmentIntersector<F: num_traits::Float> {
     record_isolated: bool,
     has_intersection: bool,
     include_proper: bool,
-    // CLEANUP: can we get rid of has_proper and just do proper_intersection_point.is_some()?
+    // CLEANUP: can we get rid of has_proper_intersection and just do proper_intersection_point.is_some()?
     proper_intersection_point: Option<Coordinate<F>>,
-    has_proper: bool,
-    has_proper_interior: bool,
+    has_proper_intersection: bool,
+    has_proper_interior_intersection: bool,
     is_done_when_proper_intersection: bool,
     is_done: bool,
     boundary_nodes: Option<[Vec<BasicNode<F>>; 2]>,
@@ -84,8 +84,8 @@ impl<F: num_traits::Float> SegmentIntersector<F> {
             include_proper,
             record_isolated,
             has_intersection: false,
-            has_proper: false,
-            has_proper_interior: false,
+            has_proper_intersection: false,
+            has_proper_interior_intersection: false,
             proper_intersection_point: None,
             is_done: false,
             is_done_when_proper_intersection: false,
@@ -135,11 +135,19 @@ impl<F: num_traits::Float> SegmentIntersector<F> {
     // JTS:    * can result in the point being on the Boundary of the Geometry.
     // JTS:    */
     // JTS:   public boolean hasProperIntersection() { return hasProper; }
+    pub fn has_proper_intersection(&self) -> bool {
+        self.has_proper_intersection
+    }
+
     // JTS:   /**
     // JTS:    * A proper interior intersection is a proper intersection which is <b>not</b>
     // JTS:    * contained in the set of boundary nodes set for this SegmentIntersector.
     // JTS:    */
     // JTS:   public boolean hasProperInteriorIntersection() { return hasProperInterior; }
+    pub fn has_proper_interior_intersection(&self) -> bool {
+        self.has_proper_interior_intersection
+    }
+
     // JTS:
     // JTS:
     // JTS:   /**
@@ -288,7 +296,7 @@ impl<F: num_traits::Float> SegmentIntersector<F> {
                     // JTS:           properIntersectionPoint = li.getIntersection(0).copy();
                     // JTS:           hasProper = true;
                     self.proper_intersection_point = Some(self.line_intersector.intersection(0));
-                    self.has_proper = true;
+                    self.has_proper_intersection = true;
 
                     // JTS:           if (isDoneWhenProperInt) {
                     // JTS:         	  isDone = true;
@@ -300,7 +308,7 @@ impl<F: num_traits::Float> SegmentIntersector<F> {
                     // JTS:           if (! isBoundaryPoint(li, bdyNodes))
                     // JTS:             hasProperInterior = true;
                     if !self.is_boundary_point(&self.line_intersector, &self.boundary_nodes) {
-                        self.has_proper_interior = true
+                        self.has_proper_interior_intersection = true
                     }
                     // JTS:         }
                     // JTS:         //if (li.isCollinear())

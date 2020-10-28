@@ -1,8 +1,9 @@
 use super::{IntersectionMatrix, RelateNode, RelateNodeFactory};
-use crate::algorithm::dimensions::Dimensions;
+use crate::algorithm::dimensions::{Dimensions, HasDimensions};
 use crate::algorithm::kernels::HasKernel;
 use crate::geomgraph::{
     algorithm::{PointLocator, RobustLineIntersector},
+    index::SegmentIntersector,
     GeometryGraph, GraphComponent, Location, Node, NodeMap,
 };
 
@@ -171,11 +172,13 @@ where
         // JTS:     labelIsolatedNodes();
         // complete the labelling for any nodes which only have a label for a single geometry
         self.label_isolated_nodes();
-        todo!();
         // JTS: //Debug.printWatch();
         // JTS:
         // JTS:     // If a proper intersection was found, we can set a lower bound on the IM.
         // JTS:     computeProperIntersectionIM(intersector, im);
+        // If a proper intersection was found, we can set a lower bound on the IM.
+        self.compute_proper_intersection_im(&segment_intersector, &mut intersection_matrix);
+        todo!();
         // JTS:
         // JTS:     /**
         // JTS:      * Now process improper intersections
@@ -226,50 +229,116 @@ where
     // JTS:
     // JTS:   private void computeProperIntersectionIM(SegmentIntersector intersector, IntersectionMatrix im)
     // JTS:   {
-    // JTS:     // If a proper intersection is found, we can set a lower bound on the IM.
-    // JTS:     int dimA = arg[0].getGeometry().getDimension();
-    // JTS:     int dimB = arg[1].getGeometry().getDimension();
-    // JTS:     boolean hasProper         = intersector.hasProperIntersection();
-    // JTS:     boolean hasProperInterior = intersector.hasProperInteriorIntersection();
-    // JTS:
-    // JTS:       // For Geometry's of dim 0 there can never be proper intersections.
-    // JTS:
-    // JTS:       /**
-    // JTS:        * If edge segments of Areas properly intersect, the areas must properly overlap.
-    // JTS:        */
-    // JTS:     if (dimA == 2 && dimB == 2) {
-    // JTS:       if (hasProper) im.setAtLeast("212101212");
-    // JTS:     }
-    // JTS:       /**
-    // JTS:        * If an Line segment properly intersects an edge segment of an Area,
-    // JTS:        * it follows that the Interior of the Line intersects the Boundary of the Area.
-    // JTS:        * If the intersection is a proper <i>interior</i> intersection, then
-    // JTS:        * there is an Interior-Interior intersection too.
-    // JTS:        * Note that it does not follow that the Interior of the Line intersects the Exterior
-    // JTS:        * of the Area, since there may be another Area component which contains the rest of the Line.
-    // JTS:        */
-    // JTS:     else if (dimA == 2 && dimB == 1) {
-    // JTS:       if (hasProper)          im.setAtLeast("FFF0FFFF2");
-    // JTS:       if (hasProperInterior)  im.setAtLeast("1FFFFF1FF");
-    // JTS:     }
-    // JTS:     else if (dimA == 1 && dimB == 2) {
-    // JTS:       if (hasProper)          im.setAtLeast("F0FFFFFF2");
-    // JTS:       if (hasProperInterior)  im.setAtLeast("1F1FFFFFF");
-    // JTS:     }
-    // JTS:     /* If edges of LineStrings properly intersect *in an interior point*, all
-    // JTS:         we can deduce is that
-    // JTS:         the interiors intersect.  (We can NOT deduce that the exteriors intersect,
-    // JTS:         since some other segments in the geometries might cover the points in the
-    // JTS:         neighbourhood of the intersection.)
-    // JTS:         It is important that the point be known to be an interior point of
-    // JTS:         both Geometries, since it is possible in a self-intersecting geometry to
-    // JTS:         have a proper intersection on one segment that is also a boundary point of another segment.
-    // JTS:     */
-    // JTS:     else if (dimA == 1 && dimB == 1) {
-    // JTS:       if (hasProperInterior)    im.setAtLeast("0FFFFFFFF");
-    // JTS:     }
-    // JTS:   }
-    // JTS:
+    fn compute_proper_intersection_im(
+        &mut self,
+        segment_intersector: &SegmentIntersector<F>,
+        intersection_matrix: &mut IntersectionMatrix,
+    ) {
+        // JTS:     // If a proper intersection is found, we can set a lower bound on the IM.
+        // JTS:     int dimA = arg[0].getGeometry().getDimension();
+        // JTS:     int dimB = arg[1].getGeometry().getDimension();
+        // If a proper intersection is found, we can set a lower bound on the IM.
+        let dim_a = self.graph_a.geometry().dimensions();
+        let dim_b = self.graph_b.geometry().dimensions();
+
+        // JTS:     boolean hasProper         = intersector.hasProperIntersection();
+        // JTS:     boolean hasProperInterior = intersector.hasProperInteriorIntersection();
+        let has_proper = segment_intersector.has_proper_intersection();
+        let has_proper_interior = segment_intersector.has_proper_interior_intersection();
+
+        // JTS:       // For Geometry's of dim 0 there can never be proper intersections.
+        debug_assert!(
+            (dim_a != Dimensions::ZeroDimensional && dim_b != Dimensions::ZeroDimensional)
+                || (!has_proper && !has_proper_interior)
+        );
+
+        match (dim_a, dim_b) {
+            // JTS:       /**
+            // JTS:        * If edge segments of Areas properly intersect, the areas must properly overlap.
+            // JTS:        */
+            // JTS:     if (dimA == 2 && dimB == 2) {
+            // If edge segments of Areas properly intersect, the areas must properly overlap.
+            (Dimensions::TwoDimensional, Dimensions::TwoDimensional) => {
+                // JTS:       if (hasProper) im.setAtLeast("212101212");
+                if has_proper {
+                    intersection_matrix.set_at_least("212101212");
+                }
+                // JTS:     }
+            }
+
+            // JTS:       /**
+            // JTS:        * If an Line segment properly intersects an edge segment of an Area,
+            // JTS:        * it follows that the Interior of the Line intersects the Boundary of the Area.
+            // JTS:        * If the intersection is a proper <i>interior</i> intersection, then
+            // JTS:        * there is an Interior-Interior intersection too.
+            // JTS:        * Note that it does not follow that the Interior of the Line intersects the Exterior
+            // JTS:        * of the Area, since there may be another Area component which contains the rest of the Line.
+            // JTS:        */
+            // JTS:     else if (dimA == 2 && dimB == 1) {
+            // If a Line segment properly intersects an edge segment of an Area, it follows that
+            // the Interior of the Line intersects the Boundary of the Area.
+            // If the intersection is a proper *interior* intersection, then there is an
+            // Interior-Interior intersection too.
+            // Note that it does not follow that the Interior of the Line intersects the Exterior
+            // of the Area, since there may be another Area component which contains the rest of the Line.
+            (Dimensions::TwoDimensional, Dimensions::OneDimensional) => {
+                // JTS:       if (hasProper)          im.setAtLeast("FFF0FFFF2");
+                if has_proper {
+                    intersection_matrix.set_at_least("FFF0FFFF2");
+                }
+
+                // JTS:       if (hasProperInterior)  im.setAtLeast("1FFFFF1FF");
+                if has_proper_interior {
+                    intersection_matrix.set_at_least("1FFFFF1FF");
+                }
+
+                // JTS:     }
+            }
+
+            // JTS:     else if (dimA == 1 && dimB == 2) {
+            (Dimensions::OneDimensional, Dimensions::TwoDimensional) => {
+                // JTS:       if (hasProper)          im.setAtLeast("F0FFFFFF2");
+                if has_proper {
+                    intersection_matrix.set_at_least("F0FFFFFF2");
+                }
+
+                // JTS:       if (hasProperInterior)  im.setAtLeast("1F1FFFFFF");
+                if has_proper_interior {
+                    intersection_matrix.set_at_least("1F1FFFFFF");
+                }
+
+                // JTS:     }
+            }
+
+            // JTS:     /* If edges of LineStrings properly intersect *in an interior point*, all
+            // JTS:         we can deduce is that
+            // JTS:         the interiors intersect.  (We can NOT deduce that the exteriors intersect,
+            // JTS:         since some other segments in the geometries might cover the points in the
+            // JTS:         neighbourhood of the intersection.)
+            // JTS:         It is important that the point be known to be an interior point of
+            // JTS:         both Geometries, since it is possible in a self-intersecting geometry to
+            // JTS:         have a proper intersection on one segment that is also a boundary point of another segment.
+            // JTS:     */
+            // JTS:     else if (dimA == 1 && dimB == 1) {
+            // If edges of LineStrings properly intersect *in an interior point*, all we can deduce
+            // is that the interiors intersect.  (We can NOT deduce that the exteriors intersect,
+            // since some other segments in the geometries might cover the points in the
+            // neighbourhood of the intersection.)
+            // It is important that the point be known to be an interior point of both Geometries,
+            // since it is possible in a self-intersecting geometry to have a proper intersection
+            // on one segment that is also a boundary point of another segment.
+            (Dimensions::OneDimensional, Dimensions::OneDimensional) => {
+                // JTS:       if (hasProperInterior)    im.setAtLeast("0FFFFFFFF");
+                // JTS:     }
+                if has_proper_interior {
+                    intersection_matrix.set_at_least("0FFFFFFFF");
+                }
+            }
+            // JTS:   }
+            _ => todo!(),
+        }
+    }
+
     // JTS:     /**
     // JTS:      * Copy all nodes from an arg geometry into this graph.
     // JTS:      * The node label in the arg geometry overrides any previously computed
@@ -288,6 +357,7 @@ where
     // JTS: //node.print(System.out);
     // JTS:     }
     // JTS:   }
+
     /// Copy all nodes from an arg geometry into this graph.
     ///
     /// The node label in the arg geometry overrides any previously computed label for that
@@ -411,7 +481,6 @@ where
     /// If the Geometries are disjoint, we need to enter their dimension and boundary dimension in
     /// the Ext rows in the IM
     fn compute_disjoint_intersection_matrix(&self, intersection_matrix: &mut IntersectionMatrix) {
-        use crate::algorithm::dimensions::HasDimensions;
         // JTS:     Geometry ga = arg[0].getGeometry();
         // JTS:     if (! ga.isEmpty()) {
         // JTS:       im.set(Location.INTERIOR, Location.EXTERIOR, ga.getDimension());

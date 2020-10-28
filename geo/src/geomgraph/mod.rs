@@ -7,7 +7,7 @@ mod edge_intersection;
 mod edge_intersection_list;
 mod geometry_graph;
 mod graph_component;
-mod index;
+pub(crate) mod index;
 mod label;
 mod node;
 mod node_factory;
