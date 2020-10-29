@@ -1,14 +1,12 @@
 use super::{EdgeEndBuilder, IntersectionMatrix, RelateNode, RelateNodeFactory};
 use crate::algorithm::dimensions::{Dimensions, HasDimensions};
-use crate::algorithm::kernels::HasKernel;
 use crate::geomgraph::{
     algorithm::{PointLocator, RobustLineIntersector},
     index::SegmentIntersector,
-    EdgeEnd, GeometryGraph, GraphComponent, Location, Node, NodeMap,
+    EdgeEnd, Float, GeometryGraph, GraphComponent, Location, Node, NodeMap,
 };
 
 use geo_types::Geometry;
-use num_traits::Float;
 
 // JTS: /**
 // JTS:  * @version 1.7
@@ -53,7 +51,7 @@ use num_traits::Float;
 // JTS: {
 pub(crate) struct RelateComputer<'a, F>
 where
-    F: Float + HasKernel,
+    F: Float,
 {
     graph_a: GeometryGraph<'a, F>,
     graph_b: GeometryGraph<'a, F>,
@@ -62,9 +60,18 @@ where
     point_locator: PointLocator<F>,
 }
 
+// CLEANUP: remove this.
+pub fn _test_relate_computer() {
+    use crate::{line_string, polygon};
+    let square_a: Geometry<f64> = polygon![].into();
+    let square_b: Geometry<f64> = polygon![].into();
+    let mut relate_computer = RelateComputer::new(&square_a, &square_b);
+    let _intersection_matrix = relate_computer.compute_intersection_matrix();
+}
+
 impl<'a, F> RelateComputer<'a, F>
 where
-    F: 'static + Float + HasKernel,
+    F: 'static + Float,
 {
     pub fn new(geom_a: &'a Geometry<F>, geom_b: &'a Geometry<F>) -> RelateComputer<'a, F> {
         Self {
@@ -199,12 +206,13 @@ where
         self.insert_edge_ends(edge_ends_a);
         let edge_ends_b: Vec<_> = edge_end_builder.compute_ends_for_edges(self.graph_b.edges());
         self.insert_edge_ends(edge_ends_b);
-        todo!();
         // JTS:
         // JTS: //Debug.println("==== NodeList ===");
         // JTS: //Debug.print(nodes);
         // JTS:
         // JTS:     labelNodeEdges();
+        self.label_node_edges();
+        todo!();
         // JTS:
         // JTS:   /**
         // JTS:    * Compute the labeling for isolated components
@@ -348,7 +356,7 @@ where
                 }
             }
             // JTS:   }
-            _ => todo!(),
+            _ => {}
         }
     }
 
@@ -549,7 +557,12 @@ where
     // JTS: //node.print(System.out);
     // JTS:     }
     // JTS:   }
-    // JTS:
+    fn label_node_edges(&mut self) {
+        for node in self.nodes.iter_mut() {
+            node.edges().compute_labeling(&self.graph_a, &self.graph_b);
+        }
+    }
+
     // JTS:   /**
     // JTS:    * update the IM with the sum of the IMs for each component
     // JTS:    */

@@ -9,8 +9,8 @@ use super::{
         LineIntersector,
     },
     index::{EdgeSetIntersector, SegmentIntersector, SimpleEdgeSetIntersector},
-    BasicNode, BasicNodeFactory, Coordinate, Edge, Float, GraphComponent, HasKernel, Label,
-    Location, NodeFactory, PlanarGraph, Position,
+    BasicNode, BasicNodeFactory, Coordinate, Edge, Float, GraphComponent, Label, Location,
+    NodeFactory, PlanarGraph, Position,
 };
 
 use crate::algorithm::dimensions::HasDimensions;
@@ -52,7 +52,7 @@ use std::cell::RefCell;
 /// A GeometryGraph is a graph that models a given Geometry
 pub(crate) struct GeometryGraph<'a, F>
 where
-    F: Float + HasKernel,
+    F: Float,
 {
     arg_index: usize,
     parent_geometry: &'a Geometry<F>,
@@ -64,7 +64,7 @@ where
 // In JTS this is achieved through inheritance - GeometryGraph inherits from PlanarGraph
 impl<F> GeometryGraph<'_, F>
 where
-    F: Float + HasKernel,
+    F: Float,
 {
     pub fn edges(&self) -> &[RefCell<Edge<F>>] {
         self.planar_graph.edges()
@@ -89,7 +89,7 @@ where
 
 impl<'a, F> GeometryGraph<'a, F>
 where
-    F: Float + HasKernel,
+    F: Float,
 {
     // JTS: /**
     // JTS:  * This method implements the Boundary Determination Rule
@@ -394,7 +394,6 @@ where
         // JTS:       left = cwRight;
         // JTS:       right = cwLeft;
         // JTS:     }
-        // TODO: num_traits -> HasKernel
         use crate::algorithm::winding_order::{Winding, WindingOrder};
         let (left, right) = if linear_ring.winding_order() == Some(WindingOrder::CounterClockwise) {
             (cw_right, cw_left)

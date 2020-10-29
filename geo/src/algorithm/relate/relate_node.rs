@@ -1,19 +1,19 @@
 use super::EdgeEndBundleStar;
-use crate::geomgraph::{EdgeEnd, GraphComponent, Label, Location, Node, NodeFactory};
+use crate::geomgraph::{EdgeEnd, Float, GraphComponent, Label, Location, Node, NodeFactory};
 use crate::Coordinate;
 
 pub(crate) struct RelateNode<F>
 where
-    F: num_traits::Float,
+    F: Float,
 {
     coordinate: Coordinate<F>,
     label: Label,
-    edge_end_bundle_star: EdgeEndBundleStar,
+    edge_end_bundle_star: EdgeEndBundleStar<F>,
 }
 
 impl<F> Node<F> for RelateNode<F>
 where
-    F: num_traits::Float,
+    F: Float,
 {
     // REVIEW: duplicated from BasicNode since we don't have inheritance
     fn coordinate(&self) -> &Coordinate<F> {
@@ -29,15 +29,15 @@ where
     // JTS:   }
     fn add_edge_end(&self, edge_end: EdgeEnd<F>) {
         // REVIEW: get rid of uwrap?
-        // self.edges.unwrap().insert(edge_end);
         // edge_end.set_node(self);
+        // self.edge_end_bundle_star.insert(edge_end);
         todo!()
     }
 }
 
 impl<F> GraphComponent for RelateNode<F>
 where
-    F: num_traits::Float,
+    F: Float,
 {
     fn label(&self) -> Option<&Label> {
         Some(&self.label)
@@ -58,9 +58,9 @@ where
 
 impl<F> RelateNode<F>
 where
-    F: num_traits::Float,
+    F: Float,
 {
-    fn new(coordinate: Coordinate<F>, edge_end_bundle_star: EdgeEndBundleStar) -> Self {
+    fn new(coordinate: Coordinate<F>, edge_end_bundle_star: EdgeEndBundleStar<F>) -> Self {
         RelateNode {
             coordinate,
             edge_end_bundle_star,
@@ -102,12 +102,16 @@ where
     pub fn set_label_on_location(&mut self, geom_index: usize, location: Location) {
         self.label.set_on_location(geom_index, location)
     }
+
+    pub fn edges(&self) -> &EdgeEndBundleStar<F> {
+        &self.edge_end_bundle_star
+    }
 }
 
 pub(crate) struct RelateNodeFactory;
 impl<F> NodeFactory<F, RelateNode<F>> for RelateNodeFactory
 where
-    F: num_traits::Float,
+    F: Float,
 {
     fn create_node(coordinate: Coordinate<F>) -> RelateNode<F> {
         RelateNode::new(coordinate, EdgeEndBundleStar::new())

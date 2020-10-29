@@ -2,7 +2,7 @@ use crate::{
     algorithm::{bounding_rect::BoundingRect, dimensions::HasDimensions, intersects::Intersects},
     geomgraph::{
         algorithm::boundary_node_rule::{BoundaryNodeRule, Mod2BoundaryNodeRule},
-        Location,
+        Float, Location,
     },
     Coordinate, Geometry, Line, LineString, Point, Polygon,
 };
@@ -25,7 +25,7 @@ use crate::{
 // JTS: {
 pub(crate) struct PointLocator<F>
 where
-    F: num_traits::Float + crate::algorithm::kernels::HasKernel,
+    F: Float,
 {
     is_in: bool,
     num_boundaries: usize,
@@ -34,7 +34,7 @@ where
 
 impl<F> PointLocator<F>
 where
-    F: num_traits::Float + crate::algorithm::kernels::HasKernel,
+    F: Float,
 {
     // JTS:   // default is to use OGC SFS rule
     // JTS:   private BoundaryNodeRule boundaryRule =

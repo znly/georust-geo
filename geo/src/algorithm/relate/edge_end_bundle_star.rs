@@ -1,3 +1,5 @@
+use crate::geomgraph::{Float, GeometryGraph};
+
 // JTS: /**
 // JTS:  * An ordered list of {@link EdgeEndBundle}s around a {@link RelateNode}.
 // JTS:  * They are maintained in CCW order (starting with the positive x-axis) around the node
@@ -14,11 +16,25 @@
 // JTS:   public EdgeEndBundleStar() {
 // JTS:   }
 // JTS:
-pub(crate) struct EdgeEndBundleStar;
+pub(crate) struct EdgeEndBundleStar<F>
+where
+    F: Float,
+{
+    _marker: std::marker::PhantomData<F>,
+}
 
-impl EdgeEndBundleStar {
+impl<F> EdgeEndBundleStar<F>
+where
+    F: Float,
+{
     pub(crate) fn new() -> Self {
-        EdgeEndBundleStar
+        EdgeEndBundleStar {
+            _marker: std::marker::PhantomData,
+        }
+    }
+
+    pub(crate) fn compute_labeling(&self, graph_a: &GeometryGraph<F>, graph_b: &GeometryGraph<F>) {
+        todo!()
     }
 }
 // JTS:   /**
