@@ -14,7 +14,7 @@ use std::cell::{Ref, RefCell};
 // JTS: {
 /// Computes the intersection of line segments,
 /// and adds the intersection to the edges containing the segments.
-pub struct SegmentIntersector<F: num_traits::Float> {
+pub(crate) struct SegmentIntersector<F: num_traits::Float> {
     // TODO is it worth making this generic?
     // Though JTS leaves this abstract - we might consider hard coding it to a RobustLineIntersector
     // TODO benchmark to see if there is an appreciable perf difference

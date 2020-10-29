@@ -10,11 +10,11 @@ use super::{BasicNode, Coordinate, Node};
 // JTS:   }
 // JTS: }
 
-pub trait NodeFactory<F: num_traits::Float, N: Node<F>> {
+pub(crate) trait NodeFactory<F: num_traits::Float, N: Node<F>> {
     fn create_node(coordinate: Coordinate<F>) -> N;
 }
 
-pub struct BasicNodeFactory;
+pub(crate) struct BasicNodeFactory;
 
 /// The basic node constructor does not allow for incident edges
 impl<F: num_traits::Float> NodeFactory<F, BasicNode<F>> for BasicNodeFactory {

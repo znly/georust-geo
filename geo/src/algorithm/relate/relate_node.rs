@@ -1,20 +1,44 @@
 use super::EdgeEndBundleStar;
-use crate::geomgraph::{GraphComponent, Label, Location, Node, NodeFactory};
+use crate::geomgraph::{EdgeEnd, GraphComponent, Label, Location, Node, NodeFactory};
 use crate::Coordinate;
 
-pub struct RelateNode<F: num_traits::Float> {
+pub(crate) struct RelateNode<F>
+where
+    F: num_traits::Float,
+{
     coordinate: Coordinate<F>,
     label: Label,
     edge_end_bundle_star: EdgeEndBundleStar,
 }
 
-impl<F: num_traits::Float> Node<F> for RelateNode<F> {
+impl<F> Node<F> for RelateNode<F>
+where
+    F: num_traits::Float,
+{
+    // REVIEW: duplicated from BasicNode since we don't have inheritance
     fn coordinate(&self) -> &Coordinate<F> {
         &self.coordinate
     }
+
+    // REVIEW: duplicated from BasicNode since we don't have inheritance
+    // JTS:   public void add(EdgeEnd e)
+    // JTS:   {
+    // JTS:     // Assert: start pt of e is equal to node point
+    // JTS:     edges.insert(e);
+    // JTS:     e.setNode(this);
+    // JTS:   }
+    fn add_edge_end(&self, edge_end: EdgeEnd<F>) {
+        // REVIEW: get rid of uwrap?
+        // self.edges.unwrap().insert(edge_end);
+        // edge_end.set_node(self);
+        todo!()
+    }
 }
 
-impl<F: num_traits::Float> GraphComponent for RelateNode<F> {
+impl<F> GraphComponent for RelateNode<F>
+where
+    F: num_traits::Float,
+{
     fn label(&self) -> Option<&Label> {
         Some(&self.label)
     }
@@ -32,7 +56,10 @@ impl<F: num_traits::Float> GraphComponent for RelateNode<F> {
     }
 }
 
-impl<F: num_traits::Float> RelateNode<F> {
+impl<F> RelateNode<F>
+where
+    F: num_traits::Float,
+{
     fn new(coordinate: Coordinate<F>, edge_end_bundle_star: EdgeEndBundleStar) -> Self {
         RelateNode {
             coordinate,
@@ -77,8 +104,11 @@ impl<F: num_traits::Float> RelateNode<F> {
     }
 }
 
-pub struct RelateNodeFactory;
-impl<F: num_traits::Float> NodeFactory<F, RelateNode<F>> for RelateNodeFactory {
+pub(crate) struct RelateNodeFactory;
+impl<F> NodeFactory<F, RelateNode<F>> for RelateNodeFactory
+where
+    F: num_traits::Float,
+{
     fn create_node(coordinate: Coordinate<F>) -> RelateNode<F> {
         RelateNode::new(coordinate, EdgeEndBundleStar::new())
     }

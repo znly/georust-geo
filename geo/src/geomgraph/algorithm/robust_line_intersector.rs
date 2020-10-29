@@ -15,7 +15,7 @@ use geo_types::{Coordinate, Rect};
 // JTS: {
 /// A robust version of [LineIntersector](traits.LineIntersector).
 #[derive(Clone)]
-pub struct RobustLineIntersector<F: num_traits::Float> {
+pub(crate) struct RobustLineIntersector<F: num_traits::Float> {
     // TODO: JTS captures some state in the LineIntersector. I'm not sure if it's helpful. Roughly it
     // seems to be mid-computation state and result state. Perhaps that could be better modeled and
     // we could leave the LineIntersector less mutable.

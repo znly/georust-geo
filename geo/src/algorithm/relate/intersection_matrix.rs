@@ -2,7 +2,7 @@ use crate::algorithm::dimensions::Dimensions;
 use crate::geomgraph::Location;
 
 // CLEANUP: make internal private?
-pub struct IntersectionMatrix(pub [[Dimensions; 3]; 3]);
+pub(crate) struct IntersectionMatrix([[Dimensions; 3]; 3]);
 
 impl IntersectionMatrix {
     pub fn new() -> IntersectionMatrix {

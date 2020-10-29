@@ -12,7 +12,7 @@ use super::Label;
 // JTS: abstract public class GraphComponent {
 /// A GraphComponent is the parent class for the objects' that form a graph.
 /// Each GraphComponent can carry a Label.
-pub trait GraphComponent {
+pub(crate) trait GraphComponent {
     // JTS:
     // JTS:   protected Label label;
     // JTS:   /**

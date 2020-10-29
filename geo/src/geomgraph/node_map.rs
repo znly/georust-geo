@@ -1,4 +1,4 @@
-use super::{Coordinate, GraphComponent, Location, Node, NodeFactory};
+use super::{Coordinate, EdgeEnd, GraphComponent, Location, Node, NodeFactory};
 
 use std::collections::BTreeMap;
 use std::marker::PhantomData;
@@ -12,7 +12,7 @@ use std::marker::PhantomData;
 // JTS:  */
 // JTS: public class NodeMap
 /// A map of nodes, indexed by the coordinate of the node
-pub struct NodeMap<F: num_traits::Float, N: Node<F>, NF: NodeFactory<F, N>> {
+pub(crate) struct NodeMap<F: num_traits::Float, N: Node<F>, NF: NodeFactory<F, N>> {
     map: BTreeMap<NodeKey<F>, N>,
     _node_factory: PhantomData<NF>,
 }
@@ -127,6 +127,11 @@ impl<F: num_traits::Float, N: Node<F>, NF: NodeFactory<F, N>> NodeMap<F, N, NF> 
     // JTS:     Node n = addNode(p);
     // JTS:     n.add(e);
     // JTS:   }
+    pub fn add_edge_end(&mut self, edge_end: EdgeEnd<F>) {
+        let coord = edge_end.coordinate();
+        let mut node = self.add_node_with_coordinate(*coord);
+        node.add_edge_end(edge_end);
+    }
 
     // JTS:   /**
     // JTS:    * @return the node if found; null otherwise

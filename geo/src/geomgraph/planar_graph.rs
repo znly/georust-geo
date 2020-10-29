@@ -42,7 +42,7 @@ use std::cell::RefCell;
 /// Two fundamental operations are supported by topology graphs:
 ///   - Computing the intersections between all the edges and nodes of a single graph
 ///   - Computing the intersections between the edges and nodes of two different graphs
-pub struct PlanarGraph<F: num_traits::Float> {
+pub(crate) struct PlanarGraph<F: num_traits::Float> {
     pub(crate) nodes: NodeMap<F, BasicNode<F>, BasicNodeFactory>,
     edges: Vec<RefCell<Edge<F>>>,
 }

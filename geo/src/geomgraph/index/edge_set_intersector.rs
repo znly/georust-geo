@@ -3,7 +3,7 @@ use super::SegmentIntersector;
 
 use std::cell::RefCell;
 
-pub trait EdgeSetIntersector<F: num_traits::Float> {
+pub(crate) trait EdgeSetIntersector<F: num_traits::Float> {
     // JTS: /**
     // JTS:  * Computes all self-intersections between edges in a set of edges,
     // JTS:  * allowing client to choose whether self-intersections are computed.

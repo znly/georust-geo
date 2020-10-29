@@ -10,7 +10,7 @@ use std::cell::RefCell;
 // JTS:  * This algorithm is too slow for production use, but is useful for testing purposes.
 // JTS:  * @version 1.7
 // JTS:  */
-pub struct SimpleEdgeSetIntersector {
+pub(crate) struct SimpleEdgeSetIntersector {
     overlap_count: u32,
 }
 

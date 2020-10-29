@@ -46,7 +46,7 @@ use super::{Location, Position, TopologyLocation};
 /// It is up to the client code to associate the 0 and 1 [TopologyLocation]s with specific
 /// geometries.
 #[derive(Clone)]
-pub struct Label {
+pub(crate) struct Label {
     // REVIEW: better name? what does this stand for - "element location's topology"?
     elt: [TopologyLocation; 2],
 }

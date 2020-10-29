@@ -12,7 +12,7 @@ use std::collections::BTreeSet;
 // JTS: public class EdgeIntersectionList
 // JTS: {
 #[derive(PartialEq)]
-pub struct EdgeIntersectionList<F>
+pub(crate) struct EdgeIntersectionList<F>
 where
     F: num_traits::Float,
 {

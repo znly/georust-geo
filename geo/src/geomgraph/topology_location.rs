@@ -27,7 +27,7 @@ use super::{Location, Position};
 // JTS: public class TopologyLocation {
 
 #[derive(Clone)]
-pub struct TopologyLocation {
+pub(crate) struct TopologyLocation {
     // CLEANUP: location is either 1 or 3, maybe cleaner to just have 3 separate Option<Location>
     // attributes, one for each: [on_location, left_location, right_location]
     // CLEANUP: can we make this non-optional (or some of them, if we split up properties)?

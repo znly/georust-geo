@@ -18,7 +18,7 @@ use super::Coordinate;
 ///
 /// The intersection may either be a single point, or a line segment (in which case this point is
 /// the start of the line segment) The intersection point must be precise.
-pub struct EdgeIntersection<F: num_traits::Float> {
+pub(crate) struct EdgeIntersection<F: num_traits::Float> {
     coord: Coordinate<F>,
     segment_index: usize,
     dist: F,

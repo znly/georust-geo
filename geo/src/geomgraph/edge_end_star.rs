@@ -22,7 +22,7 @@
 // JTS: abstract public class EdgeEndStar
 // TODO: Or maybe trait?
 #[derive(Clone)]
-pub struct EdgeEndStar;
+pub(crate) struct EdgeEndStar;
 // JTS: {
 // JTS:
 // JTS:   /**

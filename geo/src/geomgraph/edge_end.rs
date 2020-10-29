@@ -88,8 +88,20 @@ where
     // JTS:
     // JTS:   public Edge getEdge() { return edge; }
     // JTS:   public Label getLabel() { return label; }
+    pub fn label(&self) -> &Label {
+        &self.label
+    }
+
     // JTS:   public Coordinate getCoordinate() { return p0; }
+    pub fn coordinate(&self) -> &Coordinate<F> {
+        &self.coord_0
+    }
+
     // JTS:   public Coordinate getDirectedCoordinate() { return p1; }
+    pub fn directed_coordinate(&self) -> &Coordinate<F> {
+        &self.coord_1
+    }
+
     // JTS:   public int getQuadrant() { return quadrant; }
     // JTS:   public double getDx() { return dx; }
     // JTS:   public double getDy() { return dy; }

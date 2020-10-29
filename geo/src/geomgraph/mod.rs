@@ -22,12 +22,12 @@ pub(crate) use edge_end::EdgeEnd;
 pub(crate) use edge_end_star::EdgeEndStar;
 pub(crate) use edge_intersection::EdgeIntersection;
 pub(crate) use edge_intersection_list::EdgeIntersectionList;
-pub use geometry_graph::GeometryGraph;
-pub use graph_component::GraphComponent;
+pub(crate) use geometry_graph::GeometryGraph;
+pub(crate) use graph_component::GraphComponent;
 pub(crate) use label::Label;
 pub(crate) use node::{BasicNode, Node};
 pub(crate) use node_factory::{BasicNodeFactory, NodeFactory};
-pub use node_map::NodeMap;
+pub(crate) use node_map::NodeMap;
 use planar_graph::PlanarGraph;
 pub(crate) use quadrant::Quadrant;
 use topology_location::TopologyLocation;
@@ -42,7 +42,7 @@ use num_traits::Float;
 
 // CLEANUP: use geo::kernels::Orientation instead?
 #[derive(Copy, Clone, PartialEq, Eq)]
-pub enum Position {
+pub(crate) enum Position {
     // CLEANUP: get rid of the explicit discrimanator?
     On = 0,
     Left = 1,
@@ -50,7 +50,7 @@ pub enum Position {
 }
 
 #[derive(Copy, Clone, PartialEq, Eq)]
-pub enum Location {
+pub(crate) enum Location {
     // CLEANUP: get rid of the explicit discrimanator?
     Interior = 0,
     Boundary = 1,

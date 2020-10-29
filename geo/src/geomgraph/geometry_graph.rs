@@ -50,7 +50,7 @@ use std::cell::RefCell;
 // JTS:   extends PlanarGraph
 // JTS: {
 /// A GeometryGraph is a graph that models a given Geometry
-pub struct GeometryGraph<'a, F>
+pub(crate) struct GeometryGraph<'a, F>
 where
     F: Float + HasKernel,
 {

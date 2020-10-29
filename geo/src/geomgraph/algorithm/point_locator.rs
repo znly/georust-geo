@@ -23,7 +23,7 @@ use crate::{
 // JTS:  */
 // JTS: public class PointLocator
 // JTS: {
-pub struct PointLocator<F>
+pub(crate) struct PointLocator<F>
 where
     F: num_traits::Float + crate::algorithm::kernels::HasKernel,
 {

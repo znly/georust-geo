@@ -1,10 +1,14 @@
 // JTS: import org.locationtech.jts.geom.Coordinate;
 // JTS: import org.locationtech.jts.geom.IntersectionMatrix;
 // JTS: import org.locationtech.jts.geom.Location;
-use super::{Coordinate, EdgeEndStar, GraphComponent, Label};
+use super::{Coordinate, EdgeEnd, EdgeEndStar, GraphComponent, Label};
 
-pub trait Node<F: num_traits::Float>: GraphComponent {
+pub(crate) trait Node<F>: GraphComponent
+where
+    F: num_traits::Float,
+{
     fn coordinate(&self) -> &Coordinate<F>;
+    fn add_edge_end(&self, edge_end: EdgeEnd<F>);
 }
 
 // JTS: /**
@@ -14,14 +18,20 @@ pub trait Node<F: num_traits::Float>: GraphComponent {
 // JTS:   extends GraphComponent
 // JTS: {
 #[derive(Clone)]
-pub struct BasicNode<F: num_traits::Float> {
+pub(crate) struct BasicNode<F>
+where
+    F: num_traits::Float,
+{
     coordinate: Coordinate<F>,
     // CLEANUP: should we get rid of this Option and have a Node trait?
     edges: Option<EdgeEndStar>,
     label: Label,
 }
 
-impl<F: num_traits::Float> GraphComponent for BasicNode<F> {
+impl<F> GraphComponent for BasicNode<F>
+where
+    F: num_traits::Float,
+{
     fn label(&self) -> Option<&Label> {
         Some(&self.label)
     }
@@ -39,14 +49,33 @@ impl<F: num_traits::Float> GraphComponent for BasicNode<F> {
     }
 }
 
-impl<F: num_traits::Float> Node<F> for BasicNode<F> {
+impl<F> Node<F> for BasicNode<F>
+where
+    F: num_traits::Float,
+{
     // JTS:   protected Coordinate coord; // only non-null if this node is precise
     fn coordinate(&self) -> &Coordinate<F> {
         &self.coordinate
     }
+
+    // JTS:   public void add(EdgeEnd e)
+    // JTS:   {
+    // JTS:     // Assert: start pt of e is equal to node point
+    // JTS:     edges.insert(e);
+    // JTS:     e.setNode(this);
+    // JTS:   }
+    fn add_edge_end(&self, edge_end: EdgeEnd<F>) {
+        // REVIEW: get rid of uwrap?
+        // self.edges.unwrap().insert(edge_end);
+        // edge_end.set_node(self);
+        todo!()
+    }
 }
 
-impl<F: num_traits::Float> BasicNode<F> {
+impl<F> BasicNode<F>
+where
+    F: num_traits::Float,
+{
     // JTS:   protected EdgeEndStar edges;
     // JTS:
     // JTS:   public Node(Coordinate coord, EdgeEndStar edges)
@@ -96,13 +125,6 @@ impl<F: num_traits::Float> BasicNode<F> {
     // JTS:   /**
     // JTS:    * Add the edge to the list of edges at this node
     // JTS:    */
-    // JTS:   public void add(EdgeEnd e)
-    // JTS:   {
-    // JTS:     // Assert: start pt of e is equal to node point
-    // JTS:     edges.insert(e);
-    // JTS:     e.setNode(this);
-    // JTS:   }
-    // JTS:
     // JTS:   public void mergeLabel(Node n)
     // JTS:   {
     // JTS:     mergeLabel(n.label);

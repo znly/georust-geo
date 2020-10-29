@@ -4,7 +4,7 @@ use crate::algorithm::kernels::HasKernel;
 use crate::geomgraph::{
     algorithm::{PointLocator, RobustLineIntersector},
     index::SegmentIntersector,
-    GeometryGraph, GraphComponent, Location, Node, NodeMap,
+    EdgeEnd, GeometryGraph, GraphComponent, Location, Node, NodeMap,
 };
 
 use geo_types::Geometry;
@@ -51,7 +51,7 @@ use num_traits::Float;
 // JTS:  */
 // JTS: public class RelateComputer
 // JTS: {
-pub struct RelateComputer<'a, F>
+pub(crate) struct RelateComputer<'a, F>
 where
     F: Float + HasKernel,
 {
@@ -194,8 +194,11 @@ where
         // Now process improper intersections
         // (eg where one or other of the geometries has a vertex at the intersection point)
         // We need to compute the edge graph at all nodes to determine the IM.
-        let ee_builder = EdgeEndBuilder::new();
-        let ee0: Vec<_> = ee_builder.compute_ends_for_edges(self.graph_a.edges());
+        let edge_end_builder = EdgeEndBuilder::new();
+        let edge_ends_a: Vec<_> = edge_end_builder.compute_ends_for_edges(self.graph_a.edges());
+        self.insert_edge_ends(edge_ends_a);
+        let edge_ends_b: Vec<_> = edge_end_builder.compute_ends_for_edges(self.graph_b.edges());
+        self.insert_edge_ends(edge_ends_b);
         todo!();
         // JTS:
         // JTS: //Debug.println("==== NodeList ===");
@@ -223,15 +226,20 @@ where
         // JTS:   }
         intersection_matrix
     }
-    // JTS:
+
     // JTS:   private void insertEdgeEnds(List ee)
     // JTS:   {
-    // JTS:     for (Iterator i = ee.iterator(); i.hasNext(); ) {
-    // JTS:       EdgeEnd e = (EdgeEnd) i.next();
-    // JTS:       nodes.add(e);
-    // JTS:     }
-    // JTS:   }
-    // JTS:
+    fn insert_edge_ends(&mut self, edge_ends: Vec<EdgeEnd<F>>) {
+        // JTS:     for (Iterator i = ee.iterator(); i.hasNext(); ) {
+        // JTS:       EdgeEnd e = (EdgeEnd) i.next();
+        // JTS:       nodes.add(e);
+        // JTS:     }
+        // JTS:   }
+        for edge_end in edge_ends {
+            self.nodes.add_edge_end(edge_end)
+        }
+    }
+
     // JTS:   private void computeProperIntersectionIM(SegmentIntersector intersector, IntersectionMatrix im)
     // JTS:   {
     fn compute_proper_intersection_im(

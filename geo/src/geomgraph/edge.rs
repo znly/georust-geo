@@ -4,7 +4,7 @@ use geo_types::Coordinate;
 
 // TODO: investigate how isEqual should be implented - not sure it makes sense
 // to derive equality, since it compares a bunch of vec's
-pub struct Edge<F: num_traits::Float> {
+pub(crate) struct Edge<F: num_traits::Float> {
     coords: Vec<Coordinate<F>>,
     is_isolated: bool,
     edge_intersections: EdgeIntersectionList<F>,
