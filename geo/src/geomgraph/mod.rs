@@ -37,8 +37,11 @@ pub(crate) mod algorithm;
 
 use geo_types::{Coordinate, Geometry};
 
-pub(crate) trait Float: num_traits::Float + crate::algorithm::kernels::HasKernel {}
-impl<F: num_traits::Float + crate::algorithm::kernels::HasKernel> Float for F {}
+pub(crate) trait Float:
+    'static + num_traits::Float + crate::algorithm::kernels::HasKernel
+{
+}
+impl<F: 'static + num_traits::Float + crate::algorithm::kernels::HasKernel> Float for F {}
 
 // CLEANUP: use geo::kernels::Orientation instead?
 #[derive(Copy, Clone, PartialEq, Eq)]

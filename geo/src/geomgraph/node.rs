@@ -1,11 +1,11 @@
 // JTS: import org.locationtech.jts.geom.Coordinate;
 // JTS: import org.locationtech.jts.geom.IntersectionMatrix;
 // JTS: import org.locationtech.jts.geom.Location;
-use super::{Coordinate, EdgeEnd, EdgeEndStar, GraphComponent, Label};
+use super::{Coordinate, EdgeEnd, EdgeEndStar, Float, GraphComponent, Label};
 
 pub(crate) trait Node<F>: GraphComponent
 where
-    F: num_traits::Float,
+    F: Float,
 {
     fn coordinate(&self) -> &Coordinate<F>;
     fn add_edge_end(&self, edge_end: EdgeEnd<F>);
@@ -20,7 +20,7 @@ where
 #[derive(Clone)]
 pub(crate) struct BasicNode<F>
 where
-    F: num_traits::Float,
+    F: Float,
 {
     coordinate: Coordinate<F>,
     // CLEANUP: should we get rid of this Option and have a Node trait?
@@ -30,7 +30,7 @@ where
 
 impl<F> GraphComponent for BasicNode<F>
 where
-    F: num_traits::Float,
+    F: Float,
 {
     fn label(&self) -> Option<&Label> {
         Some(&self.label)
@@ -51,7 +51,7 @@ where
 
 impl<F> Node<F> for BasicNode<F>
 where
-    F: num_traits::Float,
+    F: Float,
 {
     // JTS:   protected Coordinate coord; // only non-null if this node is precise
     fn coordinate(&self) -> &Coordinate<F> {
@@ -74,7 +74,7 @@ where
 
 impl<F> BasicNode<F>
 where
-    F: num_traits::Float,
+    F: Float,
 {
     // JTS:   protected EdgeEndStar edges;
     // JTS:

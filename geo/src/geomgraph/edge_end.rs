@@ -1,4 +1,4 @@
-use super::{Coordinate, Edge, Label, Quadrant};
+use super::{Coordinate, Edge, Float, Label, Node, Quadrant};
 
 use std::cell::RefCell;
 
@@ -21,7 +21,7 @@ use std::cell::RefCell;
 // JTS:   implements Comparable
 pub(crate) struct EdgeEnd<F>
 where
-    F: num_traits::Float,
+    F: Float,
 {
     // edge: RefCell<Edge<F>>,
     label: Label,
@@ -33,7 +33,7 @@ where
 
 impl<F> EdgeEnd<F>
 where
-    F: num_traits::Float,
+    F: Float,
 {
     // JTS: {
     // JTS:   protected Edge edge;  // the parent edge of this edge end

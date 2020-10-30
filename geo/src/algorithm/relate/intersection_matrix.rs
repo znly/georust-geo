@@ -1,12 +1,18 @@
 use crate::algorithm::dimensions::Dimensions;
 use crate::geomgraph::Location;
 
-// CLEANUP: make internal private?
+#[derive(PartialEq, Eq, Debug)]
 pub(crate) struct IntersectionMatrix([[Dimensions; 3]; 3]);
 
 impl IntersectionMatrix {
-    pub fn new() -> IntersectionMatrix {
+    pub fn empty() -> IntersectionMatrix {
         IntersectionMatrix([[Dimensions::Empty; 3]; 3])
+    }
+
+    // CLEANUP: remove?
+    #[allow(dead_code)]
+    pub fn new(dimensions: [[Dimensions; 3]; 3]) -> IntersectionMatrix {
+        IntersectionMatrix(dimensions)
     }
 
     pub fn set_at_least(&mut self, dimensions: &str) {

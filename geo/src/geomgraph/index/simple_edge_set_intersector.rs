@@ -1,4 +1,4 @@
-use super::super::Edge;
+use super::super::{Edge, Float};
 use super::{EdgeSetIntersector, SegmentIntersector};
 
 use std::cell::RefCell;
@@ -17,7 +17,10 @@ pub(crate) struct SimpleEdgeSetIntersector {
 // JTS: public class SimpleEdgeSetIntersector
 // JTS:   extends EdgeSetIntersector
 // JTS: {
-impl<F: num_traits::Float> EdgeSetIntersector<F> for SimpleEdgeSetIntersector {
+impl<F> EdgeSetIntersector<F> for SimpleEdgeSetIntersector
+where
+    F: Float,
+{
     // JTS:   // statistics information
     // JTS:   int nOverlaps;
     // JTS:
@@ -96,7 +99,7 @@ impl SimpleEdgeSetIntersector {
     // JTS:    */
     // JTS:   private void computeIntersects(Edge e0, Edge e1, SegmentIntersector si)
     // JTS:   {
-    fn compute_intersects<'a, F: num_traits::Float>(
+    fn compute_intersects<'a, F: Float>(
         &mut self,
         edge0: &RefCell<Edge<F>>,
         edge1: &RefCell<Edge<F>>,

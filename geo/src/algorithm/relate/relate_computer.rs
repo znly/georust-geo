@@ -102,7 +102,7 @@ where
     // JTS:   {
     pub fn compute_intersection_matrix(&mut self) -> IntersectionMatrix {
         // JTS:     IntersectionMatrix im = new IntersectionMatrix();
-        let mut intersection_matrix = IntersectionMatrix::new();
+        let mut intersection_matrix = IntersectionMatrix::empty();
         // JTS:     // since Geometries are finite and embedded in a 2-D space, the EE element must always be 2
         // JTS:     im.set(Location.EXTERIOR, Location.EXTERIOR, 2);
         // since Geometries are finite and embedded in a 2-D space, the EE element must always be 2
@@ -721,7 +721,7 @@ mod test {
 
         let mut relate_computer = RelateComputer::new(&square_a, &square_b);
         let intersection_matrix = relate_computer.compute_intersection_matrix();
-        let expected = [
+        let expected = IntersectionMatrix::new([
             [
                 Dimensions::Empty,
                 Dimensions::Empty,
@@ -737,8 +737,8 @@ mod test {
                 Dimensions::OneDimensional,
                 Dimensions::TwoDimensional,
             ],
-        ];
-        assert_eq!(intersection_matrix.0, expected);
+        ]);
+        assert_eq!(intersection_matrix, expected);
     }
 
     #[test]
@@ -764,7 +764,7 @@ mod test {
         let mut relate_computer = RelateComputer::new(&square_a, &square_b);
         let intersection_matrix = relate_computer.compute_intersection_matrix();
         // TODO: expected is incorrect
-        let expected = [
+        let expected = IntersectionMatrix::new([
             [Dimensions::Empty, Dimensions::Empty, Dimensions::Empty],
             [Dimensions::Empty, Dimensions::Empty, Dimensions::Empty],
             [
@@ -772,8 +772,8 @@ mod test {
                 Dimensions::Empty,
                 Dimensions::TwoDimensional,
             ],
-        ];
-        assert_eq!(intersection_matrix.0, expected);
+        ]);
+        assert_eq!(intersection_matrix, expected);
     }
 
     #[test]
@@ -799,7 +799,7 @@ mod test {
         let mut relate_computer = RelateComputer::new(&square_a, &square_b);
         let intersection_matrix = relate_computer.compute_intersection_matrix();
         // TODO: expected is incorrect
-        let expected = [
+        let expected = IntersectionMatrix::new([
             [Dimensions::Empty, Dimensions::Empty, Dimensions::Empty],
             [Dimensions::Empty, Dimensions::Empty, Dimensions::Empty],
             [
@@ -807,8 +807,8 @@ mod test {
                 Dimensions::Empty,
                 Dimensions::TwoDimensional,
             ],
-        ];
-        assert_eq!(intersection_matrix.0, expected);
+        ]);
+        assert_eq!(intersection_matrix, expected);
     }
 
     #[test]
@@ -846,7 +846,7 @@ mod test {
         let mut relate_computer = RelateComputer::new(&collection_a, &square_b);
         let intersection_matrix = relate_computer.compute_intersection_matrix();
         // TODO: expected is incorrect
-        let expected = [
+        let expected = IntersectionMatrix::new([
             [Dimensions::Empty, Dimensions::Empty, Dimensions::Empty],
             [Dimensions::Empty, Dimensions::Empty, Dimensions::Empty],
             [
@@ -854,7 +854,7 @@ mod test {
                 Dimensions::Empty,
                 Dimensions::TwoDimensional,
             ],
-        ];
-        assert_eq!(intersection_matrix.0, expected);
+        ]);
+        assert_eq!(intersection_matrix, expected);
     }
 }

@@ -1,4 +1,5 @@
-use crate::geomgraph::{Edge, EdgeEnd, EdgeIntersection, GraphComponent};
+use super::RelateNode;
+use crate::geomgraph::{Edge, EdgeEnd, EdgeIntersection, Float, GraphComponent};
 
 use std::cell::RefCell;
 
@@ -27,7 +28,7 @@ use std::cell::RefCell;
 // JTS:  */
 pub(crate) struct EdgeEndBuilder<F>
 where
-    F: num_traits::Float,
+    F: Float,
 {
     _marker: std::marker::PhantomData<F>,
 }
@@ -38,7 +39,7 @@ where
 // JTS:   }
 impl<F> EdgeEndBuilder<F>
 where
-    F: num_traits::Float,
+    F: Float,
 {
     pub fn new() -> Self {
         EdgeEndBuilder {

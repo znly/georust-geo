@@ -1,4 +1,4 @@
-use super::{Coordinate, EdgeEnd, GraphComponent, Location, Node, NodeFactory};
+use super::{Coordinate, EdgeEnd, Float, GraphComponent, Location, Node, NodeFactory};
 
 use std::collections::BTreeMap;
 use std::marker::PhantomData;
@@ -12,14 +12,19 @@ use std::marker::PhantomData;
 // JTS:  */
 // JTS: public class NodeMap
 /// A map of nodes, indexed by the coordinate of the node
-pub(crate) struct NodeMap<F: num_traits::Float, N: Node<F>, NF: NodeFactory<F, N>> {
+pub(crate) struct NodeMap<F, N, NF>
+where
+    F: Float,
+    N: Node<F>,
+    NF: NodeFactory<F, N>,
+{
     map: BTreeMap<NodeKey<F>, N>,
     _node_factory: PhantomData<NF>,
 }
 
 impl<F, N, NF> std::fmt::Debug for NodeMap<F, N, NF>
 where
-    F: num_traits::Float,
+    F: Float,
     N: Node<F>,
     NF: NodeFactory<F, N>,
 {
@@ -31,9 +36,9 @@ where
 }
 
 #[derive(Clone)]
-struct NodeKey<F: num_traits::Float>(Coordinate<F>);
+struct NodeKey<F: Float>(Coordinate<F>);
 
-impl<F: num_traits::Float> std::cmp::Ord for NodeKey<F> {
+impl<F: Float> std::cmp::Ord for NodeKey<F> {
     fn cmp(&self, other: &NodeKey<F>) -> std::cmp::Ordering {
         // TODO: BTree requires Ord - can we guarantee all coords in the graph are non-NaN?
         debug_assert!(!self.0.x.is_nan());
@@ -45,13 +50,13 @@ impl<F: num_traits::Float> std::cmp::Ord for NodeKey<F> {
     }
 }
 
-impl<F: num_traits::Float> std::cmp::PartialOrd for NodeKey<F> {
+impl<F: Float> std::cmp::PartialOrd for NodeKey<F> {
     fn partial_cmp(&self, other: &NodeKey<F>) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl<F: num_traits::Float> std::cmp::PartialEq for NodeKey<F> {
+impl<F: Float> std::cmp::PartialEq for NodeKey<F> {
     fn eq(&self, other: &NodeKey<F>) -> bool {
         // TODO: BTree requires Eq - can we guarantee all coords in the graph are non-NaN?
         debug_assert!(!self.0.x.is_nan());
@@ -62,9 +67,14 @@ impl<F: num_traits::Float> std::cmp::PartialEq for NodeKey<F> {
     }
 }
 
-impl<F: num_traits::Float> std::cmp::Eq for NodeKey<F> {}
+impl<F: Float> std::cmp::Eq for NodeKey<F> {}
 
-impl<F: num_traits::Float, N: Node<F>, NF: NodeFactory<F, N>> NodeMap<F, N, NF> {
+impl<F, N, NF> NodeMap<F, N, NF>
+where
+    F: Float,
+    N: Node<F>,
+    NF: NodeFactory<F, N>,
+{
     // JTS: {
     // JTS:   //Map nodeMap = new HashMap();
     // JTS:   Map nodeMap = new TreeMap();
@@ -146,11 +156,11 @@ impl<F: num_traits::Float, N: Node<F>, NF: NodeFactory<F, N>> NodeMap<F, N, NF> 
     // JTS:   {
     // JTS:     return nodeMap.values().iterator();
     // JTS:   }
-    pub fn iter(&self) -> impl std::iter::Iterator<Item = &N> {
+    pub fn iter(&self) -> impl Iterator<Item = &N> {
         self.map.values()
     }
 
-    pub fn iter_mut(&mut self) -> impl std::iter::Iterator<Item = &mut N> {
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut N> {
         self.map.values_mut()
     }
 
