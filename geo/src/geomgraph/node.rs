@@ -1,19 +1,14 @@
 // JTS: import org.locationtech.jts.geom.Coordinate;
 // JTS: import org.locationtech.jts.geom.IntersectionMatrix;
 // JTS: import org.locationtech.jts.geom.Location;
-use super::{Coordinate, EdgeEnd, EdgeEndStar, Float, GraphComponent, Label};
-
-use std::cell::RefCell;
-use std::rc::Rc;
-
-pub(crate) type NodeCell<N> = Rc<RefCell<N>>;
+use super::{Coordinate, EdgeEnd, EdgeEndStar, GraphComponent, Label};
 
 pub(crate) trait Node<F>: GraphComponent
 where
-    F: Float,
+    F: num_traits::Float,
 {
     fn coordinate(&self) -> &Coordinate<F>;
-    fn add_edge_end(node: NodeCell<Self>, edge_end: EdgeEnd<F, Self>);
+    fn add_edge_end(&self, edge_end: EdgeEnd<F>);
 }
 
 // JTS: /**
@@ -69,7 +64,7 @@ where
     // JTS:     edges.insert(e);
     // JTS:     e.setNode(this);
     // JTS:   }
-    fn add_edge_end(&mut node: NodeCell<Self>, edge_end: EdgeEnd<F, Self>) {
+    fn add_edge_end(&self, edge_end: EdgeEnd<F>) {
         // REVIEW: get rid of uwrap?
         // self.edges.unwrap().insert(edge_end);
         // edge_end.set_node(self);

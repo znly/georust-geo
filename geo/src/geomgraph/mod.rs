@@ -25,7 +25,7 @@ pub(crate) use edge_intersection_list::EdgeIntersectionList;
 pub(crate) use geometry_graph::GeometryGraph;
 pub(crate) use graph_component::GraphComponent;
 pub(crate) use label::Label;
-pub(crate) use node::{BasicNode, Node, NodeCell};
+pub(crate) use node::{BasicNode, Node};
 pub(crate) use node_factory::{BasicNodeFactory, NodeFactory};
 pub(crate) use node_map::NodeMap;
 use planar_graph::PlanarGraph;
