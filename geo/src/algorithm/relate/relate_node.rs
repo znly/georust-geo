@@ -1,5 +1,7 @@
 use super::EdgeEndBundleStar;
-use crate::geomgraph::{EdgeEnd, Float, GraphComponent, Label, Location, Node, NodeFactory};
+use crate::geomgraph::{
+    EdgeEnd, Float, GraphComponent, Label, Location, Node, NodeCell, NodeFactory,
+};
 use crate::Coordinate;
 
 pub(crate) struct RelateNode<F>
@@ -27,8 +29,7 @@ where
     // JTS:     edges.insert(e);
     // JTS:     e.setNode(this);
     // JTS:   }
-    fn add_edge_end(&self, edge_end: EdgeEnd<F>) {
-        // REVIEW: get rid of uwrap?
+    fn add_edge_end(node: &mut NodeCell<Self>, mut edge_end: EdgeEnd<F, Self>) {
         // edge_end.set_node(self);
         // self.edge_end_bundle_star.insert(edge_end);
         todo!()

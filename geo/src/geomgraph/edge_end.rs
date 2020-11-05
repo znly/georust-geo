@@ -19,9 +19,10 @@ use std::cell::RefCell;
 // JTS:  */
 // JTS: public class EdgeEnd
 // JTS:   implements Comparable
-pub(crate) struct EdgeEnd<F>
+pub(crate) struct EdgeEnd<F, N>
 where
     F: Float,
+    N: Node<F>,
 {
     // edge: RefCell<Edge<F>>,
     label: Label,
@@ -29,11 +30,16 @@ where
     coord_1: Coordinate<F>,
     delta: Coordinate<F>,
     quadrant: Quadrant,
+    // CLEANUP: will this work? Do I need to introduce a generic constraint? It would touch a
+    // lot...
+    // CLEANUP: does this need to be mut?
+    node: Option<NodeCell<N>>,
 }
 
-impl<F> EdgeEnd<F>
+impl<F, N> EdgeEnd<F, N>
 where
     F: Float,
+    N: Node<F>,
 {
     // JTS: {
     // JTS:   protected Edge edge;  // the parent edge of this edge end
@@ -62,7 +68,7 @@ where
         coord_0: Coordinate<F>,
         coord_1: Coordinate<F>,
         label: Label,
-    ) -> EdgeEnd<F> {
+    ) -> EdgeEnd<F, N> {
         let delta = coord_1 - coord_0;
         let quadrant = Quadrant::new(delta.x, delta.y);
         EdgeEnd {
@@ -72,6 +78,7 @@ where
             coord_1,
             delta,
             quadrant,
+            node: None,
         }
     }
 
@@ -108,6 +115,11 @@ where
     // JTS:
     // JTS:   public void setNode(Node node) { this.node = node; }
     // JTS:   public Node getNode() { return node; }
+    // CLEANUP: pointer static?
+    pub fn set_node(&mut self, node: &NodeCell<N>) {
+        self.node = Some(node.clone());
+    }
+
     // JTS:
     // JTS:   public int compareTo(Object obj)
     // JTS:   {

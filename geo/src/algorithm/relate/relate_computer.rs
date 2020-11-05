@@ -237,7 +237,7 @@ where
 
     // JTS:   private void insertEdgeEnds(List ee)
     // JTS:   {
-    fn insert_edge_ends(&mut self, edge_ends: Vec<EdgeEnd<F>>) {
+    fn insert_edge_ends(&mut self, edge_ends: Vec<EdgeEnd<F, RelateNode<F>>>) {
         // JTS:     for (Iterator i = ee.iterator(); i.hasNext(); ) {
         // JTS:       EdgeEnd e = (EdgeEnd) i.next();
         // JTS:       nodes.add(e);

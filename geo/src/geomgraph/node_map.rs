@@ -137,9 +137,9 @@ where
     // JTS:     Node n = addNode(p);
     // JTS:     n.add(e);
     // JTS:   }
-    pub fn add_edge_end(&mut self, edge_end: EdgeEnd<F>) {
+    pub fn add_edge_end(&mut self, edge_end: EdgeEnd<F, N>) {
         let coord = edge_end.coordinate();
-        let mut node = self.add_node_with_coordinate(*coord);
+        let node = self.add_node_with_coordinate(*coord);
         node.add_edge_end(edge_end);
     }
 

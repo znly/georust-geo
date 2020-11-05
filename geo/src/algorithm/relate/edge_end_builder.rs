@@ -56,7 +56,10 @@ where
     // JTS:     }
     // JTS:     return l;
     // JTS:   }
-    pub fn compute_ends_for_edges(&self, edges: &[RefCell<Edge<F>>]) -> Vec<EdgeEnd<F>> {
+    pub fn compute_ends_for_edges(
+        &self,
+        edges: &[RefCell<Edge<F>>],
+    ) -> Vec<EdgeEnd<F, RelateNode<F>>> {
         let mut list = vec![];
         for edge in edges {
             self.compute_ends_for_edge(&mut edge.borrow_mut(), &mut list);
@@ -70,7 +73,7 @@ where
     // JTS:    */
     // JTS:   public void computeEdgeEnds(Edge edge, List l)
     // JTS:   {
-    fn compute_ends_for_edge(&self, edge: &mut Edge<F>, list: &mut Vec<EdgeEnd<F>>) {
+    fn compute_ends_for_edge(&self, edge: &mut Edge<F>, list: &mut Vec<EdgeEnd<F, RelateNode<F>>>) {
         // JTS:     EdgeIntersectionList eiList = edge.getEdgeIntersectionList();
         // JTS: //Debug.print(eiList);
         // JTS:     // ensure that the list has entries for the first and last point of the edge
@@ -137,7 +140,7 @@ where
     fn create_edge_end_for_prev(
         &self,
         edge: &Edge<F>,
-        list: &mut Vec<EdgeEnd<F>>,
+        list: &mut Vec<EdgeEnd<F, RelateNode<F>>>,
         ei_curr: &EdgeIntersection<F>,
         ei_prev: Option<&EdgeIntersection<F>>,
     ) {
@@ -204,7 +207,7 @@ where
     fn create_edge_end_for_next(
         &self,
         edge: &Edge<F>,
-        list: &mut Vec<EdgeEnd<F>>,
+        list: &mut Vec<EdgeEnd<F, RelateNode<F>>>,
         ei_curr: &EdgeIntersection<F>,
         ei_next: Option<&EdgeIntersection<F>>,
     ) {
