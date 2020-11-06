@@ -24,6 +24,7 @@ where
 {
     coordinate: Coordinate<F>,
     // CLEANUP: should we get rid of this Option and have a Node trait?
+    // BasicNodeFactory which is used by GeometryGraph via PlanarGraph passes edges: None
     edges: Option<EdgeEndStar<F>>,
     label: Label,
 }
@@ -60,12 +61,11 @@ where
     // JTS:     edges.insert(e);
     // JTS:     e.setNode(this);
     // JTS:   }
-    pub fn add_edge_end(&self, edge_end: EdgeEnd<F>) {
-        // TODO: DELEGATE to "subclass" adapter
+    pub fn add_edge_end(&mut self, mut edge_end: EdgeEnd<F>) {
+        // TODO: DELEGATE to "subclass" adapter?
+        edge_end.set_node(self);
         // REVIEW: get rid of uwrap?
-        // self.edges.unwrap().insert(edge_end);
-        // edge_end.set_node(self);
-        todo!()
+        self.edges.as_mut().unwrap().insert(edge_end);
     }
 
     // JTS:   protected EdgeEndStar edges;

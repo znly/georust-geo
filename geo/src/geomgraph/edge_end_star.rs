@@ -1,4 +1,4 @@
-use super::{Float, GeometryGraph};
+use super::{EdgeEnd, Float, GeometryGraph};
 
 // JTS: import java.io.PrintStream;
 // JTS: import java.util.ArrayList;
@@ -56,6 +56,10 @@ where
     // JTS:    * Insert a EdgeEnd into this EdgeEndStar
     // JTS:    */
     // JTS:   abstract public void insert(EdgeEnd e);
+    pub(crate) fn insert(&mut self, edge_end: EdgeEnd<F>) {
+        todo!()
+    }
+
     // JTS:
     // JTS:   /**
     // JTS:    * Insert an EdgeEnd into the map, and clear the edgeList cache,

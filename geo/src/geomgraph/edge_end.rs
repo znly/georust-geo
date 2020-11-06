@@ -29,6 +29,7 @@ where
     coord_1: Coordinate<F>,
     delta: Coordinate<F>,
     quadrant: Quadrant,
+    node: *const Node<F>,
 }
 
 impl<F> EdgeEnd<F>
@@ -72,10 +73,10 @@ where
             coord_1,
             delta,
             quadrant,
+            node: std::ptr::null(),
         }
     }
 
-    // JTS:
     // JTS:   protected void init(Coordinate p0, Coordinate p1)
     // JTS:   {
     // JTS:     this.p0 = p0;
@@ -108,6 +109,10 @@ where
     // JTS:
     // JTS:   public void setNode(Node node) { this.node = node; }
     // JTS:   public Node getNode() { return node; }
+    pub fn set_node(&mut self, node: &Node<F>) {
+        self.node = &*node;
+    }
+
     // JTS:
     // JTS:   public int compareTo(Object obj)
     // JTS:   {
