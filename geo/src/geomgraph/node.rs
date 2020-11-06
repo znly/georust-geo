@@ -1,7 +1,7 @@
 // JTS: import org.locationtech.jts.geom.Coordinate;
 // JTS: import org.locationtech.jts.geom.IntersectionMatrix;
 // JTS: import org.locationtech.jts.geom.Location;
-use super::{Coordinate, EdgeEnd, EdgeEndStar, GraphComponent, Label};
+use super::{Coordinate, EdgeEnd, EdgeEndStar, Float, GraphComponent, Label, Location};
 
 pub(crate) trait Node<F>: GraphComponent
 where
@@ -18,17 +18,17 @@ where
 // JTS:   extends GraphComponent
 // JTS: {
 #[derive(Clone)]
-pub(crate) struct BasicNode<F>
+pub(crate) struct Node<F>
 where
     F: Float,
 {
     coordinate: Coordinate<F>,
     // CLEANUP: should we get rid of this Option and have a Node trait?
-    edges: Option<EdgeEndStar>,
+    edges: Option<EdgeEndStar<F>>,
     label: Label,
 }
 
-impl<F> GraphComponent for BasicNode<F>
+impl<F> GraphComponent for Node<F>
 where
     F: Float,
 {
@@ -49,33 +49,25 @@ where
     }
 }
 
-impl<F> Node<F> for BasicNode<F>
+impl<F> Node<F>
 where
     F: Float,
 {
     // JTS:   protected Coordinate coord; // only non-null if this node is precise
-    fn coordinate(&self) -> &Coordinate<F> {
-        &self.coordinate
-    }
-
     // JTS:   public void add(EdgeEnd e)
     // JTS:   {
     // JTS:     // Assert: start pt of e is equal to node point
     // JTS:     edges.insert(e);
     // JTS:     e.setNode(this);
     // JTS:   }
-    fn add_edge_end(&self, edge_end: EdgeEnd<F>) {
+    pub fn add_edge_end(&self, edge_end: EdgeEnd<F>) {
+        // TODO: DELEGATE to "subclass" adapter
         // REVIEW: get rid of uwrap?
         // self.edges.unwrap().insert(edge_end);
         // edge_end.set_node(self);
         todo!()
     }
-}
 
-impl<F> BasicNode<F>
-where
-    F: Float,
-{
     // JTS:   protected EdgeEndStar edges;
     // JTS:
     // JTS:   public Node(Coordinate coord, EdgeEndStar edges)
@@ -84,17 +76,26 @@ where
     // JTS:     this.edges = edges;
     // JTS:     label = new Label(0, Location.NONE);
     // JTS:   }
-    pub fn new(coordinate: Coordinate<F>, edges: Option<EdgeEndStar>) -> BasicNode<F> {
-        BasicNode {
+    pub fn new(coordinate: Coordinate<F>, edges: Option<EdgeEndStar<F>>) -> Node<F> {
+        Node {
             coordinate,
             edges,
             label: Label::new_with_on_location(0, None),
         }
     }
 
-    // JTS:
     // JTS:   public Coordinate getCoordinate() { return coord; }
+    pub fn coordinate(&self) -> &Coordinate<F> {
+        &self.coordinate
+    }
+
     // JTS:   public EdgeEndStar getEdges() { return edges; }
+    // REVIEW: boxed? option?
+    pub fn edges(&self) -> &EdgeEndStar<F> {
+        // REVIEW: cleanup unwrap
+        self.edges.as_ref().unwrap()
+    }
+
     // JTS:
     // JTS:   /**
     // JTS:    * Tests whether any incident edge is flagged as
@@ -154,7 +155,10 @@ where
     // JTS:     else
     // JTS:       label.setLocation(argIndex, onLocation);
     // JTS:   }
-    // JTS:
+    pub fn set_label_on_location(&mut self, geom_index: usize, location: Location) {
+        self.label.set_on_location(geom_index, location)
+    }
+
     // JTS:   /**
     // JTS:    * Updates the label of a node to BOUNDARY,
     // JTS:    * obeying the mod-2 boundaryDetermination rule.
@@ -176,6 +180,15 @@ where
     // JTS:     }
     // JTS:     label.setLocation(argIndex, newLoc);
     // JTS:   }
+    pub fn set_label_boundary(&mut self, geom_index: usize) {
+        let new_location = match self.label.on_location(geom_index) {
+            Some(Location::Boundary) => Location::Interior,
+            Some(Location::Interior) => Location::Boundary,
+            None | Some(Location::Exterior) => Location::Boundary,
+        };
+        self.label.set_on_location(geom_index, new_location);
+    }
+
     // JTS:
     // JTS:   /**
     // JTS:    * The location for a given eltIndex for a node will be one

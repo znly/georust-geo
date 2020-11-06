@@ -1,4 +1,4 @@
-use super::super::{BasicNode, Edge, Float, Node};
+use super::super::{Edge, Float, Node};
 use crate::geomgraph::algorithm::{Intersection, LineIntersector};
 
 use geo_types::Coordinate;
@@ -31,7 +31,7 @@ where
     has_proper_interior_intersection: bool,
     is_done_when_proper_intersection: bool,
     is_done: bool,
-    boundary_nodes: Option<[Vec<BasicNode<F>>; 2]>,
+    boundary_nodes: Option<[Vec<Node<F>>; 2]>,
 }
 
 impl<F> SegmentIntersector<F>
@@ -108,8 +108,8 @@ where
     // JTS:   }
     pub fn set_boundary_nodes(
         &mut self,
-        boundary_nodes_0: Vec<BasicNode<F>>,
-        boundary_nodes_1: Vec<BasicNode<F>>,
+        boundary_nodes_0: Vec<Node<F>>,
+        boundary_nodes_1: Vec<Node<F>>,
     ) {
         // this might be an overzelous assert - JTS doesn't leverage Option types...
         debug_assert!(self.boundary_nodes.is_none());
@@ -332,7 +332,7 @@ where
     fn is_boundary_point(
         &self,
         line_intersector: &Box<dyn LineIntersector<F>>,
-        boundary_nodes: &Option<[Vec<BasicNode<F>>; 2]>,
+        boundary_nodes: &Option<[Vec<Node<F>>; 2]>,
     ) -> bool {
         // JTS:     if (bdyNodes == null) return false;
         // JTS:     if (isBoundaryPointInternal(li, bdyNodes[0])) return true;
@@ -353,7 +353,7 @@ where
     fn is_boundary_point_internal(
         &self,
         line_intersector: &Box<dyn LineIntersector<F>>,
-        boundary_nodes: &Vec<BasicNode<F>>,
+        boundary_nodes: &Vec<Node<F>>,
     ) -> bool {
         // JTS:     for (Iterator i = bdyNodes.iterator(); i.hasNext(); ) {
         // JTS:       Node node = (Node) i.next();

@@ -1,4 +1,4 @@
-use crate::geomgraph::{Float, GeometryGraph};
+use crate::geomgraph::Float;
 
 // JTS: /**
 // JTS:  * An ordered list of {@link EdgeEndBundle}s around a {@link RelateNode}.
@@ -31,10 +31,6 @@ where
         EdgeEndBundleStar {
             _marker: std::marker::PhantomData,
         }
-    }
-
-    pub(crate) fn compute_labeling(&self, graph_a: &GeometryGraph<F>, graph_b: &GeometryGraph<F>) {
-        todo!()
     }
 }
 // JTS:   /**

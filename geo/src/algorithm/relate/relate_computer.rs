@@ -1,4 +1,4 @@
-use super::{EdgeEndBuilder, IntersectionMatrix, RelateNode, RelateNodeFactory};
+use super::{EdgeEndBuilder, IntersectionMatrix, RelateNodeFactory};
 use crate::algorithm::dimensions::{Dimensions, HasDimensions};
 use crate::geomgraph::{
     algorithm::{PointLocator, RobustLineIntersector},
@@ -55,7 +55,7 @@ where
 {
     graph_a: GeometryGraph<'a, F>,
     graph_b: GeometryGraph<'a, F>,
-    nodes: NodeMap<F, RelateNode<F>, RelateNodeFactory>,
+    nodes: NodeMap<F, RelateNodeFactory>,
     line_intersector: RobustLineIntersector<F>,
     point_locator: PointLocator<F>,
 }
@@ -677,7 +677,7 @@ where
     // JTS:   {
     fn label_isolated_node(
         point_locator: &mut PointLocator<F>,
-        node: &mut RelateNode<F>,
+        node: &mut Node<F>,
         target_index: usize,
         geometry: &Geometry<F>,
     ) {

@@ -1,4 +1,3 @@
-use super::RelateNode;
 use crate::geomgraph::{Edge, EdgeEnd, EdgeIntersection, Float, GraphComponent};
 
 use std::cell::RefCell;

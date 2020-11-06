@@ -1,6 +1,5 @@
 use super::{
-    BasicNode, BasicNodeFactory, Coordinate, Edge, Float, GraphComponent, Label, Location, Node,
-    NodeMap,
+    BasicNodeFactory, Coordinate, Edge, Float, GraphComponent, Label, Location, Node, NodeMap,
 };
 
 use std::cell::RefCell;
@@ -44,7 +43,7 @@ use std::cell::RefCell;
 ///   - Computing the intersections between all the edges and nodes of a single graph
 ///   - Computing the intersections between the edges and nodes of two different graphs
 pub(crate) struct PlanarGraph<F: Float> {
-    pub(crate) nodes: NodeMap<F, BasicNode<F>, BasicNodeFactory>,
+    pub(crate) nodes: NodeMap<F, BasicNodeFactory>,
     edges: Vec<RefCell<Edge<F>>>,
 }
 
@@ -97,7 +96,7 @@ impl<F: Float> PlanarGraph<F> {
     pub fn is_boundary_node(&self, geom_index: usize, coord: Coordinate<F>) -> bool {
         self.nodes
             .find(coord)
-            .and_then(BasicNode::label)
+            .and_then(Node::label)
             .and_then(|label: &Label| label.on_location(geom_index))
             .map(|location| location == Location::Boundary)
             .unwrap_or(false)
@@ -121,7 +120,7 @@ impl<F: Float> PlanarGraph<F> {
     // JTS:   public Collection getNodes() { return nodes.values(); }
     // JTS:   public Node addNode(Node node) { return nodes.addNode(node); }
     // JTS:   public Node addNode(Coordinate coord) { return nodes.addNode(coord); }
-    pub fn add_node_with_coordinate(&mut self, coord: Coordinate<F>) -> &mut BasicNode<F> {
+    pub fn add_node_with_coordinate(&mut self, coord: Coordinate<F>) -> &mut Node<F> {
         self.nodes.add_node_with_coordinate(coord)
     }
 

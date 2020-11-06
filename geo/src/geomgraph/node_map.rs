@@ -12,21 +12,19 @@ use std::marker::PhantomData;
 // JTS:  */
 // JTS: public class NodeMap
 /// A map of nodes, indexed by the coordinate of the node
-pub(crate) struct NodeMap<F, N, NF>
+pub(crate) struct NodeMap<F, NF>
 where
     F: Float,
-    N: Node<F>,
-    NF: NodeFactory<F, N>,
+    NF: NodeFactory<F>,
 {
-    map: BTreeMap<NodeKey<F>, N>,
+    map: BTreeMap<NodeKey<F>, Node<F>>,
     _node_factory: PhantomData<NF>,
 }
 
-impl<F, N, NF> std::fmt::Debug for NodeMap<F, N, NF>
+impl<F, NF> std::fmt::Debug for NodeMap<F, NF>
 where
     F: Float,
-    N: Node<F>,
-    NF: NodeFactory<F, N>,
+    NF: NodeFactory<F>,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("NodeMap")
@@ -69,11 +67,10 @@ impl<F: Float> std::cmp::PartialEq for NodeKey<F> {
 
 impl<F: Float> std::cmp::Eq for NodeKey<F> {}
 
-impl<F, N, NF> NodeMap<F, N, NF>
+impl<F, NF> NodeMap<F, NF>
 where
     F: Float,
-    N: Node<F>,
-    NF: NodeFactory<F, N>,
+    NF: NodeFactory<F>,
 {
     // JTS: {
     // JTS:   //Map nodeMap = new HashMap();
@@ -111,7 +108,7 @@ where
     // JTS:     }
     // JTS:     return node;
     // JTS:   }
-    pub fn add_node_with_coordinate(&mut self, coord: Coordinate<F>) -> &mut N {
+    pub fn add_node_with_coordinate(&mut self, coord: Coordinate<F>) -> &mut Node<F> {
         let key = NodeKey(coord);
         self.map.entry(key).or_insert(NF::create_node(coord))
     }
@@ -148,7 +145,7 @@ where
     // JTS:    */
     // JTS:   public Node find(Coordinate coord)  {    return (Node) nodeMap.get(coord);  }
     /// returns the node if found
-    pub fn find(&self, coord: Coordinate<F>) -> Option<&N> {
+    pub fn find(&self, coord: Coordinate<F>) -> Option<&Node<F>> {
         self.map.get(&NodeKey(coord))
     }
 
@@ -156,11 +153,11 @@ where
     // JTS:   {
     // JTS:     return nodeMap.values().iterator();
     // JTS:   }
-    pub fn iter(&self) -> impl Iterator<Item = &N> {
+    pub fn iter(&self) -> impl Iterator<Item = &Node<F>> {
         self.map.values()
     }
 
-    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut N> {
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut Node<F>> {
         self.map.values_mut()
     }
 
@@ -179,7 +176,7 @@ where
     // JTS:     }
     // JTS:     return bdyNodes;
     // JTS:   }
-    pub fn boundary_nodes(&self, geom_index: usize) -> Vec<&N> {
+    pub fn boundary_nodes(&self, geom_index: usize) -> Vec<&Node<F>> {
         // CLEANUP: `unwrap` - nodes *always* have a label. edges sometimes do not, but they
         // inherit the same `label` API via GraphComponent. Might be nice to separate them
         // to remove this unwrap

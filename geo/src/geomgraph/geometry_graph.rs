@@ -9,8 +9,8 @@ use super::{
         LineIntersector,
     },
     index::{EdgeSetIntersector, SegmentIntersector, SimpleEdgeSetIntersector},
-    BasicNode, BasicNodeFactory, Coordinate, Edge, Float, GraphComponent, Label, Location,
-    NodeFactory, PlanarGraph, Position,
+    BasicNodeFactory, Coordinate, Edge, Float, GraphComponent, Label, Location, Node, NodeFactory,
+    PlanarGraph, Position,
 };
 
 use crate::algorithm::dimensions::HasDimensions;
@@ -78,11 +78,11 @@ where
         self.planar_graph.is_boundary_node(geom_index, coord)
     }
 
-    pub fn add_node_with_coordinate(&mut self, coord: Coordinate<F>) -> &mut BasicNode<F> {
+    pub fn add_node_with_coordinate(&mut self, coord: Coordinate<F>) -> &mut Node<F> {
         self.planar_graph.add_node_with_coordinate(coord)
     }
 
-    pub fn node_iter(&self) -> impl Iterator<Item = &BasicNode<F>> {
+    pub fn node_iter(&self) -> impl Iterator<Item = &Node<F>> {
         self.planar_graph.nodes.iter()
     }
 }
@@ -238,7 +238,7 @@ where
     // JTS:       boundaryNodes = nodes.getBoundaryNodes(argIndex);
     // JTS:     return boundaryNodes;
     // JTS:   }
-    fn boundary_nodes(&self) -> Vec<&BasicNode<F>> {
+    fn boundary_nodes(&self) -> Vec<&Node<F>> {
         // TODO: should we need to memoize this like JTS does?
         self.planar_graph.nodes.boundary_nodes(self.arg_index)
     }
@@ -671,7 +671,7 @@ where
     // JTS:       lbl.setLocation(argIndex, onLocation);
     // JTS:   }
     fn insert_point(&mut self, arg_index: usize, coord: Coordinate<F>, location: Location) {
-        let node: &mut BasicNode<F> = self.add_node_with_coordinate(coord);
+        let node: &mut Node<F> = self.add_node_with_coordinate(coord);
         // CLEANUP: can we get rid of the Option? Or do we need Edges to maintain Option and share GraphComponent trait
         // VERIFY: JTS does a null check here, but not for boundary points. Can we safely skip it?
         let label: &mut Label = node.label_mut().unwrap();
@@ -689,7 +689,7 @@ where
     /// This is used to add the boundary points of dim-1 geometries (Curves/MultiCurves).
     fn insert_boundary_point(&mut self, arg_index: usize, coord: Coordinate<F>) {
         // JTS:     Node n = nodes.addNode(coord);
-        let node: &mut BasicNode<F> = self.add_node_with_coordinate(coord);
+        let node: &mut Node<F> = self.add_node_with_coordinate(coord);
 
         // JTS:     // nodes always have labels
         // JTS:     Label lbl = n.getLabel();
