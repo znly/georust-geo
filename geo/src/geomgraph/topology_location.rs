@@ -135,8 +135,14 @@ impl TopologyLocation {
     // JTS:     return location[locIndex] == le.location[locIndex];
     // JTS:   }
     // JTS:   public boolean isArea() { return location.length > 1; }
+    pub fn is_area(&self) -> bool {
+        self.location.len() > 1
+    }
+
     // JTS:   public boolean isLine() { return location.length == 1; }
-    // JTS:
+    pub fn is_line(&self) -> bool {
+        self.location.len() == 1
+    }
 
     // JTS:   public void flip()
     // JTS:   {
@@ -176,8 +182,9 @@ impl TopologyLocation {
     // JTS:   {
     // JTS:       location[locIndex] = locValue;
     // JTS:   }
-    pub fn set_location(&mut self, position: Position, location: Location) {
-        self.location[position as usize] = Some(location);
+    // REVIEW: can we make location non-optional?
+    pub fn set_location(&mut self, position: Position, location: Option<Location>) {
+        self.location[position as usize] = location;
     }
 
     // JTS:   public void setLocation(int locValue)

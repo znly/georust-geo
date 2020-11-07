@@ -41,13 +41,16 @@ pub(crate) mod algorithm;
 use geo_types::{Coordinate, Geometry};
 
 pub(crate) trait Float:
-    'static + num_traits::Float + crate::algorithm::kernels::HasKernel
+    'static + num_traits::Float + crate::algorithm::kernels::HasKernel + std::fmt::Debug
 {
 }
-impl<F: 'static + num_traits::Float + crate::algorithm::kernels::HasKernel> Float for F {}
+impl<F: 'static + num_traits::Float + crate::algorithm::kernels::HasKernel + std::fmt::Debug> Float
+    for F
+{
+}
 
 // CLEANUP: use geo::kernels::Orientation instead?
-#[derive(Copy, Clone, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub(crate) enum Position {
     // CLEANUP: get rid of the explicit discrimanator?
     On = 0,
@@ -55,7 +58,7 @@ pub(crate) enum Position {
     Right = 2,
 }
 
-#[derive(Copy, Clone, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub(crate) enum Location {
     // CLEANUP: get rid of the explicit discrimanator?
     Interior = 0,

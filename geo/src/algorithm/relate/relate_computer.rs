@@ -392,7 +392,7 @@ where
             assert!(geom_index == 1);
             &self.graph_b
         };
-        for graph_node in graph.node_iter() {
+        for graph_node in graph.nodes_iter() {
             let new_node = self
                 .nodes
                 .add_node_with_coordinate(*graph_node.coordinate());
@@ -560,7 +560,7 @@ where
     fn label_node_edges(&mut self) {
         for node in self.nodes.iter_mut() {
             // REVIEW: unwrap
-            node.edges()
+            node.edges_mut()
                 .unwrap()
                 .compute_labeling(&self.graph_a, &self.graph_b);
         }

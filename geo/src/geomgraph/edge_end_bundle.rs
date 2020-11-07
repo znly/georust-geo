@@ -1,4 +1,7 @@
-use super::{EdgeEnd, Float};
+use super::{
+    algorithm::boundary_node_rule::Mod2BoundaryNodeRule, Coordinate, EdgeEnd, Float, GeometryGraph,
+    Label, Location, Position,
+};
 
 // NOTE: in JTS this is in the algorithm::relate package, but because
 // we moved EdgeEndBundleStar into geomgraph, we also must move EdgeEndBundle
@@ -26,7 +29,9 @@ pub(crate) struct EdgeEndBundle<F>
 where
     F: Float,
 {
+    coordinate: Coordinate<F>,
     edge_ends: Vec<EdgeEnd<F>>,
+    label: Option<Label>,
 }
 
 impl<F> EdgeEndBundle<F>
@@ -53,15 +58,38 @@ where
     // JTS:   {
     // JTS:     this(null, e);
     // JTS:   }
-    pub(crate) fn new() -> Self {
+    pub(crate) fn new(coordinate: Coordinate<F>) -> Self {
         // REVIEW: there's a lot more to the JTS initializer since EdgeEndBundle inherits from
         // EdgeEnd, but let's see if it's necessary.
-        Self { edge_ends: vec![] }
+        Self {
+            coordinate,
+            edge_ends: vec![],
+            label: None,
+        }
     }
 
     // JTS:   public Label getLabel() { return label; }
+    pub fn label(&self) -> Option<&Label> {
+        self.label.as_ref()
+    }
+    pub fn label_mut(&mut self) -> Option<&mut Label> {
+        self.label.as_mut()
+    }
+
+    pub fn coordinate(&self) -> Coordinate<F> {
+        self.coordinate
+    }
+
     // JTS:   public Iterator iterator() { return edgeEnds.iterator(); }
     // JTS:   public List getEdgeEnds() { return edgeEnds; }
+    fn edge_ends_iter(&self) -> impl Iterator<Item = &EdgeEnd<F>> {
+        self.edge_ends.iter()
+    }
+
+    fn edge_ends_iter_mut(&mut self) -> impl Iterator<Item = &mut EdgeEnd<F>> {
+        self.edge_ends.iter_mut()
+    }
+
     // JTS:
     // JTS:   public void insert(EdgeEnd e)
     // JTS:   {
@@ -80,26 +108,44 @@ where
     // JTS:    */
     // JTS:   public void computeLabel(BoundaryNodeRule boundaryNodeRule)
     // JTS:   {
-    // JTS:     // create the label.  If any of the edges belong to areas,
-    // JTS:     // the label must be an area label
-    // JTS:     boolean isArea = false;
-    // JTS:     for (Iterator it = iterator(); it.hasNext(); ) {
-    // JTS:       EdgeEnd e = (EdgeEnd) it.next();
-    // JTS:       if (e.getLabel().isArea()) isArea = true;
-    // JTS:     }
-    // JTS:     if (isArea)
-    // JTS:       label = new Label(Location.NONE, Location.NONE, Location.NONE);
-    // JTS:     else
-    // JTS:       label = new Label(Location.NONE);
-    // JTS:
-    // JTS:     // compute the On label, and the side labels if present
-    // JTS:     for (int i = 0; i < 2; i++) {
-    // JTS:       computeLabelOn(i, boundaryNodeRule);
-    // JTS:       if (isArea)
-    // JTS:         computeLabelSides(i);
-    // JTS:     }
-    // JTS:   }
-    // JTS:
+    // TODO: support pluggable boundary node rule?
+    pub(crate) fn compute_label(&mut self) {
+        // JTS:     // create the label.  If any of the edges belong to areas,
+        // JTS:     // the label must be an area label
+        // JTS:     boolean isArea = false;
+        // JTS:     for (Iterator it = iterator(); it.hasNext(); ) {
+        // JTS:       EdgeEnd e = (EdgeEnd) it.next();
+        // JTS:       if (e.getLabel().isArea()) isArea = true;
+        // JTS:     }
+        let is_area = self
+            .edge_ends_iter()
+            .any(|edge_end| edge_end.label().is_area());
+
+        // JTS:     if (isArea)
+        // JTS:       label = new Label(Location.NONE, Location.NONE, Location.NONE);
+        // JTS:     else
+        // JTS:       label = new Label(Location.NONE);
+        if is_area {
+            self.label = Some(Label::new_with_locations(None, None, None));
+        } else {
+            self.label = Some(Label::new_with_on_location(None));
+        }
+
+        // JTS:     // compute the On label, and the side labels if present
+        // JTS:     for (int i = 0; i < 2; i++) {
+        // JTS:       computeLabelOn(i, boundaryNodeRule);
+        // JTS:       if (isArea)
+        // JTS:         computeLabelSides(i);
+        // JTS:     }
+        // JTS:   }
+        for i in 0..2 {
+            self.compute_label_on(i);
+            if is_area {
+                self.compute_label_sides(i);
+            }
+        }
+    }
+
     // JTS:   /**
     // JTS:    * Compute the overall ON location for the list of EdgeStubs.
     // JTS:    * (This is essentially equivalent to computing the self-overlay of a single Geometry)
@@ -122,33 +168,71 @@ where
     // JTS:    */
     // JTS:   private void computeLabelOn(int geomIndex, BoundaryNodeRule boundaryNodeRule)
     // JTS:   {
-    // JTS:     // compute the ON location value
-    // JTS:     int boundaryCount = 0;
-    // JTS:     boolean foundInterior = false;
-    // JTS:
-    // JTS:     for (Iterator it = iterator(); it.hasNext(); ) {
-    // JTS:       EdgeEnd e = (EdgeEnd) it.next();
-    // JTS:       int loc = e.getLabel().getLocation(geomIndex);
-    // JTS:       if (loc == Location.BOUNDARY) boundaryCount++;
-    // JTS:       if (loc == Location.INTERIOR) foundInterior = true;
-    // JTS:     }
-    // JTS:     int loc = Location.NONE;
-    // JTS:     if (foundInterior)  loc = Location.INTERIOR;
-    // JTS:     if (boundaryCount > 0) {
-    // JTS:       loc = GeometryGraph.determineBoundary(boundaryNodeRule, boundaryCount);
-    // JTS:     }
-    // JTS:     label.setLocation(geomIndex, loc);
-    // JTS:
-    // JTS:   }
+    fn compute_label_on(&mut self, geom_index: usize) {
+        // JTS:     // compute the ON location value
+        // JTS:     int boundaryCount = 0;
+        // JTS:     boolean foundInterior = false;
+        let mut boundary_count = 0;
+        let mut found_interior = false;
+
+        // JTS:     for (Iterator it = iterator(); it.hasNext(); ) {
+        // JTS:       EdgeEnd e = (EdgeEnd) it.next();
+        // JTS:       int loc = e.getLabel().getLocation(geomIndex);
+        // JTS:       if (loc == Location.BOUNDARY) boundaryCount++;
+        // JTS:       if (loc == Location.INTERIOR) foundInterior = true;
+        // JTS:     }
+        for edge_end in self.edge_ends_iter() {
+            match edge_end.label().on_location(geom_index) {
+                Some(Location::Boundary) => {
+                    boundary_count += 1;
+                }
+                Some(Location::Interior) => {
+                    found_interior = true;
+                }
+                None | Some(Location::Exterior) => {}
+            }
+        }
+
+        // JTS:     int loc = Location.NONE;
+        // JTS:     if (foundInterior)  loc = Location.INTERIOR;
+        // JTS:     if (boundaryCount > 0) {
+        // JTS:       loc = GeometryGraph.determineBoundary(boundaryNodeRule, boundaryCount);
+        // JTS:     }
+        let mut location = None;
+        if found_interior {
+            location = Some(Location::Interior);
+        }
+
+        // TEST: Is it possible to be in interior *and* boundary? Is it OK that we "prefer"
+        // boundary in that case?
+        if boundary_count > 0 {
+            location = Some(GeometryGraph::<'_, F>::determine_boundary(
+                &Mod2BoundaryNodeRule,
+                boundary_count,
+            ));
+        }
+
+        // JTS:     label.setLocation(geomIndex, loc);
+        // JTS:
+        // JTS:   }
+        self.label
+            .as_mut()
+            .map(|l| l.set_on_location(geom_index, location));
+    }
+
     // JTS:   /**
     // JTS:    * Compute the labelling for each side
     // JTS:    */
     // JTS:   private void computeLabelSides(int geomIndex)
     // JTS:   {
-    // JTS:     computeLabelSide(geomIndex, Position.LEFT);
-    // JTS:     computeLabelSide(geomIndex, Position.RIGHT);
-    // JTS:   }
-    // JTS:
+    fn compute_label_sides(&mut self, geom_index: usize) {
+        // JTS:     computeLabelSide(geomIndex, Position.LEFT);
+        // JTS:     computeLabelSide(geomIndex, Position.RIGHT);
+        // JTS:   }
+        self.compute_label_side(geom_index, Position::Left);
+        self.compute_label_side(geom_index, Position::Right);
+    }
+
     // JTS:   /**
     // JTS:    * To compute the summary label for a side, the algorithm is:
     // JTS:    *   FOR all edges
@@ -165,20 +249,42 @@ where
     // JTS:    */
     // JTS:   private void computeLabelSide(int geomIndex, int side)
     // JTS:   {
-    // JTS:     for (Iterator it = iterator(); it.hasNext(); ) {
-    // JTS:       EdgeEnd e = (EdgeEnd) it.next();
-    // JTS:       if (e.getLabel().isArea()) {
-    // JTS:         int loc = e.getLabel().getLocation(geomIndex, side);
-    // JTS:         if (loc == Location.INTERIOR) {
-    // JTS:             label.setLocation(geomIndex, side, Location.INTERIOR);
-    // JTS:             return;
-    // JTS:         }
-    // JTS:         else if (loc == Location.EXTERIOR)
-    // JTS:               label.setLocation(geomIndex, side, Location.EXTERIOR);
-    // JTS:       }
-    // JTS:     }
-    // JTS:   }
-    // JTS:
+    fn compute_label_side(&mut self, geom_index: usize, side: Position) {
+        let mut location = None;
+        // JTS:     for (Iterator it = iterator(); it.hasNext(); ) {
+        // JTS:       EdgeEnd e = (EdgeEnd) it.next();
+        for edge_end in self.edge_ends_iter_mut() {
+            // JTS:       if (e.getLabel().isArea()) {
+            if edge_end.label().is_area() {
+                // JTS:         int loc = e.getLabel().getLocation(geomIndex, side);
+                // JTS:         if (loc == Location.INTERIOR) {
+                // JTS:             label.setLocation(geomIndex, side, Location.INTERIOR);
+                // JTS:             return;
+                // JTS:         }
+                // JTS:         else if (loc == Location.EXTERIOR)
+                // JTS:               label.setLocation(geomIndex, side, Location.EXTERIOR);
+                // JTS:       }
+                // JTS:     }
+                match edge_end.label_mut().location(geom_index, side) {
+                    Some(Location::Interior) => {
+                        location = Some(Location::Interior);
+                    }
+                    Some(Location::Exterior) => {
+                        location = Some(Location::Exterior);
+                    }
+                    None | Some(Location::Boundary) => {}
+                }
+            }
+        }
+
+        if let Some(location) = location {
+            self.label
+                .as_mut()
+                .map(|l| l.set_location(geom_index, side, location));
+            // JTS:   }
+        }
+    }
+
     // JTS:   /**
     // JTS:    * Update the IM with the contribution for the computed label for the EdgeStubs.
     // JTS:    */

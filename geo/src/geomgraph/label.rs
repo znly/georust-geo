@@ -74,6 +74,15 @@ impl Label {
     // JTS:     elt[0] = new TopologyLocation(onLoc);
     // JTS:     elt[1] = new TopologyLocation(onLoc);
     // JTS:   }
+    pub fn new_with_on_location(location: Option<Location>) -> Label {
+        Label {
+            elt: [
+                TopologyLocation::new_on(location),
+                TopologyLocation::new_on(location),
+            ],
+        }
+    }
+
     // JTS:   /**
     // JTS:    * Construct a Label with a single location for both Geometries.
     // JTS:    * Initialize the location for the Geometry index.
@@ -84,18 +93,13 @@ impl Label {
     // JTS:     elt[1] = new TopologyLocation(Location.NONE);
     // JTS:     elt[geomIndex].setLocation(onLoc);
     // JTS:   }
-    pub fn new_with_on_location(geom_index: usize, location: Option<Location>) -> Label {
-        let mut label = Label {
+    pub fn new_with_geom_on_location(geom_index: usize, location: Option<Location>) -> Label {
+        Label {
             elt: [
-                TopologyLocation::new_on(None),
-                TopologyLocation::new_on(None),
+                TopologyLocation::new_on(location),
+                TopologyLocation::new_on(location),
             ],
-        };
-        if let Some(location) = location {
-            label.elt[geom_index].set_on_location(location);
         }
-
-        label
     }
 
     // JTS:   /**
@@ -107,6 +111,19 @@ impl Label {
     // JTS:     elt[0] = new TopologyLocation(onLoc, leftLoc, rightLoc);
     // JTS:     elt[1] = new TopologyLocation(onLoc, leftLoc, rightLoc);
     // JTS:   }
+    pub fn new_with_locations(
+        on_location: Option<Location>,
+        left_location: Option<Location>,
+        right_location: Option<Location>,
+    ) -> Label {
+        Label {
+            elt: [
+                TopologyLocation::new_on_left_right(on_location, left_location, right_location),
+                TopologyLocation::new_on_left_right(on_location, left_location, right_location),
+            ],
+        }
+    }
+
     // JTS:   /**
     // JTS:    * Construct a Label with On, Left and Right locations for both Geometries.
     // JTS:    * Initialize the locations for the given Geometry index.
@@ -117,7 +134,7 @@ impl Label {
     // JTS:     elt[1] = new TopologyLocation(Location.NONE, Location.NONE, Location.NONE);
     // JTS:     elt[geomIndex].setLocations(onLoc, leftLoc, rightLoc);
     // JTS:   }
-    pub fn new_with_locations(
+    pub fn new_with_geom_locations(
         geom_index: usize,
         on_location: Location,
         left_location: Location,
@@ -166,14 +183,14 @@ impl Label {
     // JTS:     elt[geomIndex].setLocation(posIndex, location);
     // JTS:   }
     pub fn set_location(&mut self, geom_index: usize, position: Position, location: Location) {
-        self.elt[geom_index].set_location(position, location);
+        self.elt[geom_index].set_location(position, Some(location));
     }
 
     // JTS:   public void setLocation(int geomIndex, int location)
     // JTS:   {
     // JTS:     elt[geomIndex].setLocation(Position.ON, location);
     // JTS:   }
-    pub fn set_on_location(&mut self, geom_index: usize, location: Location) {
+    pub fn set_on_location(&mut self, geom_index: usize, location: Option<Location>) {
         self.elt[geom_index].set_location(Position::On, location);
     }
 
@@ -232,6 +249,14 @@ impl Label {
     // JTS:
     // JTS:   public boolean isArea()               { return elt[0].isArea() || elt[1].isArea();   }
     // JTS:   public boolean isArea(int geomIndex)
+    pub fn is_area(&self) -> bool {
+        self.elt[0].is_area() || self.elt[1].is_area()
+    }
+
+    pub fn is_geom_area(&self, geom_index: usize) -> bool {
+        self.elt[geom_index].is_area()
+    }
+
     // JTS:   {
     // JTS:   	/*  Testing
     // JTS:   	if (elt[0].getLocations().length != elt[1].getLocations().length) {

@@ -94,6 +94,10 @@ where
         &self.label
     }
 
+    pub fn label_mut(&mut self) -> &mut Label {
+        &mut self.label
+    }
+
     // JTS:   public Coordinate getCoordinate() { return p0; }
     pub fn coordinate(&self) -> &Coordinate<F> {
         &self.coord_0
@@ -226,7 +230,7 @@ mod test {
 
     #[test]
     fn test_ord() {
-        let fake_label = Label::new_with_on_location(0, None);
+        let fake_label = Label::new_with_geom_on_location(0, None);
         let edge_end_1 = EdgeEnd::new(
             Coordinate::zero(),
             Coordinate { x: 1.0, y: 1.0 },
