@@ -1,7 +1,7 @@
 // JTS: import org.locationtech.jts.geom.Coordinate;
 // JTS: import org.locationtech.jts.geom.IntersectionMatrix;
 // JTS: import org.locationtech.jts.geom.Location;
-use super::{Coordinate, EdgeEnd, EdgeEndStar, Float, GraphComponent, Label, Location};
+use super::{Coordinate, EdgeEnd, EdgeEndBundleStar, Float, GraphComponent, Label, Location};
 
 pub(crate) trait Node<F>: GraphComponent
 where
@@ -23,9 +23,13 @@ where
     F: Float,
 {
     coordinate: Coordinate<F>,
-    // CLEANUP: should we get rid of this Option and have a Node trait?
-    // BasicNodeFactory which is used by GeometryGraph via PlanarGraph passes edges: None
-    edges: Option<EdgeEndStar<F>>,
+    // CLEANUP: can we get rid of this Option?
+    //  - BasicNodeFactory which is used by GeometryGraph via PlanarGraph passes edges: None
+    //  - RelateNodeFactory which is used  by RelateComputer passes edge: EdgeEndBundleStar
+    //  - TODO: in JTS the overlay operation stuff uses DirectedEdgeStar.
+    // It becomes very prickly to make it generic or boxed, so sticking with just what we need for
+    // relate for now.
+    edges: Option<EdgeEndBundleStar<F>>,
     label: Label,
 }
 
@@ -76,7 +80,7 @@ where
     // JTS:     this.edges = edges;
     // JTS:     label = new Label(0, Location.NONE);
     // JTS:   }
-    pub fn new(coordinate: Coordinate<F>, edges: Option<EdgeEndStar<F>>) -> Node<F> {
+    pub fn new(coordinate: Coordinate<F>, edges: Option<EdgeEndBundleStar<F>>) -> Node<F> {
         Node {
             coordinate,
             edges,
@@ -91,9 +95,8 @@ where
 
     // JTS:   public EdgeEndStar getEdges() { return edges; }
     // REVIEW: boxed? option?
-    pub fn edges(&self) -> &EdgeEndStar<F> {
-        // REVIEW: cleanup unwrap
-        self.edges.as_ref().unwrap()
+    pub fn edges(&self) -> Option<&EdgeEndBundleStar<F>> {
+        self.edges.as_ref()
     }
 
     // JTS:

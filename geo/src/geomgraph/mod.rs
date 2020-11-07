@@ -3,6 +3,8 @@
 
 mod edge;
 mod edge_end;
+mod edge_end_bundle;
+mod edge_end_bundle_star;
 mod edge_end_star;
 mod edge_intersection;
 mod edge_intersection_list;
@@ -19,7 +21,8 @@ mod topology_location;
 
 pub(crate) use edge::Edge;
 pub(crate) use edge_end::EdgeEnd;
-pub(crate) use edge_end_star::EdgeEndStar;
+pub(crate) use edge_end_bundle::EdgeEndBundle;
+pub(crate) use edge_end_bundle_star::EdgeEndBundleStar;
 pub(crate) use edge_intersection::EdgeIntersection;
 pub(crate) use edge_intersection_list::EdgeIntersectionList;
 pub(crate) use geometry_graph::GeometryGraph;

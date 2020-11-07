@@ -19,6 +19,7 @@ use std::cell::RefCell;
 // JTS:  */
 // JTS: public class EdgeEnd
 // JTS:   implements Comparable
+#[derive(Clone)]
 pub(crate) struct EdgeEnd<F>
 where
     F: num_traits::Float,
@@ -112,13 +113,46 @@ where
     pub fn set_node(&mut self, node: &Node<F>) {
         self.node = &*node;
     }
+}
 
-    // JTS:
+impl<F> std::cmp::Eq for EdgeEnd<F> where F: Float {}
+
+impl<F> std::cmp::PartialEq for EdgeEnd<F>
+where
+    F: Float,
+{
+    fn eq(&self, other: &EdgeEnd<F>) -> bool {
+        self.delta == other.delta
+    }
+}
+
+impl<F> std::cmp::PartialOrd for EdgeEnd<F>
+where
+    F: Float,
+{
+    fn partial_cmp(&self, other: &EdgeEnd<F>) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl<F> std::cmp::Ord for EdgeEnd<F>
+where
+    F: Float,
+{
     // JTS:   public int compareTo(Object obj)
     // JTS:   {
     // JTS:       EdgeEnd e = (EdgeEnd) obj;
     // JTS:       return compareDirection(e);
     // JTS:   }
+    fn cmp(&self, other: &EdgeEnd<F>) -> std::cmp::Ordering {
+        self.compare_direction(other)
+    }
+}
+
+impl<F> EdgeEnd<F>
+where
+    F: Float,
+{
     // JTS:   /**
     // JTS:    * Implements the total order relation:
     // JTS:    * <p>
@@ -143,7 +177,25 @@ where
     // JTS:     // this is > e if it is CCW of e
     // JTS:     return Orientation.index(e.p0, e.p1, p1);
     // JTS:   }
-    // JTS:
+    pub(crate) fn compare_direction(&self, other: &EdgeEnd<F>) -> std::cmp::Ordering {
+        use std::cmp::Ordering;
+        if self.delta == other.delta {
+            Ordering::Equal
+        } else if (self.quadrant as usize) > (other.quadrant as usize) {
+            Ordering::Greater
+        } else if (self.quadrant as usize) < (other.quadrant as usize) {
+            Ordering::Less
+        } else {
+            use crate::algorithm::kernels::{Kernel, Orientation, RobustKernel};
+            // REVIEW:
+            match RobustKernel::orient2d(other.coord_0, other.coord_1, self.coord_1) {
+                Orientation::Clockwise => Ordering::Less,
+                Orientation::CounterClockwise => Ordering::Greater,
+                Orientation::Collinear => Ordering::Equal,
+            }
+        }
+    }
+
     // JTS:   public void computeLabel(BoundaryNodeRule boundaryNodeRule)
     // JTS:   {
     // JTS:     // subclasses should override this if they are using labels
@@ -165,4 +217,35 @@ where
     // JTS:     return "  " + name + ": " + p0 + " - " + p1 + " " + quadrant + ":" + angle + "   " + label;
     // JTS:   }
     // JTS: }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use num_traits::Zero;
+
+    #[test]
+    fn test_ord() {
+        let fake_label = Label::new_with_on_location(0, None);
+        let edge_end_1 = EdgeEnd::new(
+            Coordinate::zero(),
+            Coordinate { x: 1.0, y: 1.0 },
+            fake_label.clone(),
+        );
+        let edge_end_2 = EdgeEnd::new(
+            Coordinate::zero(),
+            Coordinate { x: 1.0, y: 1.0 },
+            fake_label.clone(),
+        );
+        assert_eq!(edge_end_1.cmp(&edge_end_2), std::cmp::Ordering::Equal);
+
+        // edge_end_3 is clockwise from edge_end_1
+        let edge_end_3 = EdgeEnd::new(
+            Coordinate::zero(),
+            Coordinate { x: 1.0, y: -1.0 },
+            fake_label.clone(),
+        );
+        assert_eq!(edge_end_1.cmp(&edge_end_3), std::cmp::Ordering::Less);
+        assert_eq!(edge_end_3.cmp(&edge_end_1), std::cmp::Ordering::Greater);
+    }
 }

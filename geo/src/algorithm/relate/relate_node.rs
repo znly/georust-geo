@@ -1,5 +1,4 @@
-use super::EdgeEndBundleStar;
-use crate::geomgraph::{EdgeEnd, Float, GraphComponent, Label, Location, Node, NodeFactory};
+use crate::geomgraph::{EdgeEndBundleStar, Float, Node, NodeFactory};
 use crate::Coordinate;
 
 // JTS: import org.locationtech.jts.geom.Coordinate;
@@ -41,35 +40,35 @@ use crate::Coordinate;
 
 // Initially I tried to rerpesente the inheritance as a base Node trait, but it got real gnarly
 // as generics permeated lots of code. Instead trying a delegate approach...
-pub(crate) struct RelateNode<F>
-where
-    F: Float,
-{
-    coordinate: Coordinate<F>,
-    label: Label,
-    edge_end_bundle_star: EdgeEndBundleStar<F>,
-}
-
-impl<F> RelateNode<F>
-where
-    F: Float,
-{
-    fn new(coordinate: Coordinate<F>, edge_end_bundle_star: EdgeEndBundleStar<F>) -> Self {
-        RelateNode {
-            coordinate,
-            edge_end_bundle_star,
-            label: Label::new_with_on_location(0, None),
-        }
-    }
-
-    pub fn set_label_on_location(&mut self, geom_index: usize, location: Location) {
-        self.label.set_on_location(geom_index, location)
-    }
-
-    pub fn edges(&self) -> &EdgeEndBundleStar<F> {
-        &self.edge_end_bundle_star
-    }
-}
+// pub(crate) struct RelateNode<F>
+// where
+//     F: Float,
+// {
+//     coordinate: Coordinate<F>,
+//     label: Label,
+//     edge_end_bundle_star: EdgeEndBundleStar<F>,
+// }
+//
+// impl<F> RelateNode<F>
+// where
+//     F: Float,
+// {
+//     fn new(coordinate: Coordinate<F>, edge_end_bundle_star: EdgeEndBundleStar<F>) -> Self {
+//         RelateNode {
+//             coordinate,
+//             edge_end_bundle_star,
+//             label: Label::new_with_on_location(0, None),
+//         }
+//     }
+//
+//     pub fn set_label_on_location(&mut self, geom_index: usize, location: Location) {
+//         self.label.set_on_location(geom_index, location)
+//     }
+//
+//     pub fn edges(&self) -> &EdgeEndBundleStar<F> {
+//         &self.edge_end_bundle_star
+//     }
+// }
 
 pub(crate) struct RelateNodeFactory;
 impl<F> NodeFactory<F> for RelateNodeFactory
@@ -77,8 +76,7 @@ where
     F: Float,
 {
     fn create_node(coordinate: Coordinate<F>) -> Node<F> {
-        // Add RelateNodeDelegate
-        // TODO: Node::new(coordinate, Some(Box::new(EdgeEndBundleStar::new())))
-        Node::new(coordinate, None)
+        // TODO: Add RelateNodeDelegate
+        Node::new(coordinate, Some(EdgeEndBundleStar::new()))
     }
 }

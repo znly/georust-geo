@@ -559,7 +559,10 @@ where
     // JTS:   }
     fn label_node_edges(&mut self) {
         for node in self.nodes.iter_mut() {
-            node.edges().compute_labeling(&self.graph_a, &self.graph_b);
+            // REVIEW: unwrap
+            node.edges()
+                .unwrap()
+                .compute_labeling(&self.graph_a, &self.graph_b);
         }
     }
 
