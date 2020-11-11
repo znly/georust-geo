@@ -133,6 +133,16 @@ where
     }
 }
 
+impl<T> EuclideanDistance<T, Coordinate<T>> for Coordinate<T>
+where
+    T: Float,
+{
+    /// Minimum distance between two Coordinates
+    fn euclidean_distance(&self, other: &Coordinate<T>) -> T {
+        Line::new(*self, *other).euclidean_length()
+    }
+}
+
 impl<T> EuclideanDistance<T, MultiPoint<T>> for Point<T>
 where
     T: GeoFloat,
