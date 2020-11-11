@@ -38,7 +38,7 @@ use crate::Coordinate;
 // JTS:
 // JTS: }
 
-// Initially I tried to rerpesente the inheritance as a base Node trait, but it got real gnarly
+// Initially I tried to represent the inheritance as a base Node trait, but it got real gnarly
 // as generics permeated lots of code. Instead trying a delegate approach...
 // pub(crate) struct RelateNode<F>
 // where

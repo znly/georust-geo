@@ -130,6 +130,10 @@ impl TopologyLocation {
     // JTS:     }
     // JTS:     return false;
     // JTS:   }
+    pub fn is_any_empty(&self) -> bool {
+        self.location.iter().any(Option::is_none)
+    }
+
     // JTS:   public boolean isEqualOnSide(TopologyLocation le, int locIndex)
     // JTS:   {
     // JTS:     return location[locIndex] == le.location[locIndex];
@@ -177,7 +181,14 @@ impl TopologyLocation {
     // JTS:       if (location[i] == Location.NONE) location[i]     = locValue;
     // JTS:     }
     // JTS:   }
-    // JTS:
+    pub fn set_all_locations_if_empty(&mut self, location: Location) {
+        for i in 0..self.location.len() {
+            if self.location[i].is_none() {
+                self.location[i] = Some(location)
+            }
+        }
+    }
+
     // JTS:   public void setLocation(int locIndex, int locValue)
     // JTS:   {
     // JTS:       location[locIndex] = locValue;

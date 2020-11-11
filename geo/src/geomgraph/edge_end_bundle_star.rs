@@ -1,4 +1,6 @@
-use crate::geomgraph::{EdgeEnd, EdgeEndBundle, Float, GeometryGraph, Position};
+use crate::geomgraph::{
+    Coordinate, EdgeEnd, EdgeEndBundle, Float, GeometryGraph, Location, Position,
+};
 
 // JTS: /**
 // JTS:  * An ordered list of {@link EdgeEndBundle}s around a {@link RelateNode}.
@@ -22,6 +24,7 @@ where
     F: Float,
 {
     edge_map: std::collections::BTreeMap<EdgeEnd<F>, EdgeEndBundle<F>>,
+    point_in_area_location: Option<[Location; 2]>,
 }
 
 impl<F> EdgeEndBundleStar<F>
@@ -31,6 +34,7 @@ where
     pub(crate) fn new() -> Self {
         EdgeEndBundleStar {
             edge_map: std::collections::BTreeMap::new(),
+            point_in_area_location: None,
         }
     }
 
@@ -53,6 +57,7 @@ where
     // JTS:     }
     // JTS:   }
     pub(crate) fn insert(&mut self, edge_end: EdgeEnd<F>) {
+        // REVIEW: is this clone problemaic? Could the coord be the `key` instead of the edge_end?
         let bundle = self
             .edge_map
             .entry(edge_end.clone())
@@ -75,10 +80,10 @@ where
 }
 
 // From EdgeEndStar.java
-// Note that JTS has EdgeEndBundleStar inherir from EdgeEndStar, but since we're only using one
+// Note that JTS has EdgeEndBundleStar inherit from EdgeEndStar, but since we're only using one
 // subclass (EdgeEndBundleStar) we skip the complexity of inheritance and impl this functionality
 // on EdgeEndBundleStar directly. If/When we implement overlay operations we could consider
-// extracting this to a subclass
+// extracting this subclass behavior
 //
 // JTS: import java.io.PrintStream;
 // JTS: import java.util.ArrayList;
@@ -212,7 +217,6 @@ where
         self.propagate_side_labels(0);
         self.propagate_side_labels(1);
         // JTS:
-        todo!();
         // JTS:     /**
         // JTS:      * If there are edges that still have null labels for a geometry
         // JTS:      * this must be because there are no area edges for that geometry incident on this node.
@@ -251,29 +255,67 @@ where
         // JTS:           hasDimensionalCollapseEdge[geomi] = true;
         // JTS:       }
         // JTS:     }
+        let mut has_dimensaion_callapse_edge = [false, false];
+        for edge_end in self.edge_ends_iter() {
+            // REVIEW: unwrap
+            let label = edge_end.label().unwrap();
+            for geom_index in 0..2 {
+                if label.is_line(geom_index)
+                    && label.on_location(geom_index) == Some(Location::Boundary)
+                {
+                    has_dimensaion_callapse_edge[geom_index] = true;
+                }
+            }
+        }
         // JTS: //Debug.print(this);
         // JTS:     for (Iterator it = iterator(); it.hasNext(); ) {
         // JTS:       EdgeEnd e = (EdgeEnd) it.next();
         // JTS:       Label label = e.getLabel();
         // JTS: //Debug.println(e);
-        // JTS:       for (int geomi = 0; geomi < 2; geomi++) {
-        // JTS:         if (label.isAnyNull(geomi)) {
-        // JTS:           int loc = Location.NONE;
-        // JTS:           if (hasDimensionalCollapseEdge[geomi]) {
-        // JTS:             loc = Location.EXTERIOR;
-        // JTS:           }
-        // JTS:           else {
-        // JTS:             Coordinate p = e.getCoordinate();
-        // JTS:             loc = getLocation(geomi, p, geomGraph);
-        // JTS:           }
-        // JTS:           label.setAllLocationsIfNull(geomi, loc);
-        // JTS:         }
-        // JTS:       }
-        // JTS: //Debug.println(e);
-        // JTS:     }
-        // JTS: //Debug.print(this);
-        // JTS: //Debug.printIfWatch(this);
-        // JTS:   }
+        // JTS:       for (int geomi = 1; geomi < 2; geomi++) {
+
+        // CLEANUP: in JTS this is built lazily and cached. It'll require a little borrow juggling. Is
+        // that worthwhile?
+        let edge_end = self.edge_ends_iter().next().unwrap();
+        let coordinate = edge_end.coordinate();
+        let point_in_area_location = self
+            .point_in_area_location
+            .unwrap_or_else(|| self.build_point_in_area_location(coordinate, graph_a, graph_b));
+
+        for edge_end in self.edge_ends_iter_mut() {
+            // CLEANUP: unwrap
+            let coord = edge_end.coordinate();
+            let label = edge_end.label_mut().unwrap();
+            for geom_index in 0..2 {
+                // JTS:         if (label.isAnyNull(geomi)) {
+                // JTS:           int loc = Location.NONE;
+                // JTS:           if (hasDimensionalCollapseEdge[geomi]) {
+                // JTS:             loc = Location.EXTERIOR;
+                // JTS:           }
+                // JTS:           else {
+                // JTS:             Coordinate p = e.getCoordinate();
+                // JTS:             loc = getLocation(geomi, p, geomGraph);
+                // JTS:           }
+                // JTS:           label.setAllLocationsIfNull(geomi, loc);
+                // JTS:         }
+                if label.is_any_empty(geom_index) {
+                    let location: Location = if has_dimensaion_callapse_edge[geom_index] {
+                        Location::Exterior
+                    } else {
+                        // REVIEW: Borrowing rules forbids this.
+                        // self.get_location(geom_index, coord, graph_a, graph_b)
+                        point_in_area_location[geom_index]
+                    };
+                    label.set_all_locations_if_empty(geom_index, location);
+                }
+            }
+            // JTS:       }
+            // JTS: //Debug.println(e);
+            // JTS:     }
+            // JTS: //Debug.print(this);
+            // JTS: //Debug.printIfWatch(this);
+            // JTS:   }
+        }
     }
 
     // JTS:   private void computeEdgeEndLabels(BoundaryNodeRule boundaryNodeRule)
@@ -293,7 +335,6 @@ where
         }
     }
 
-    // JTS:
     // JTS:   private int getLocation(int geomIndex, Coordinate p, GeometryGraph[] geom)
     // JTS:   {
     // JTS:     // compute location only on demand
@@ -302,7 +343,19 @@ where
     // JTS:     }
     // JTS:     return ptInAreaLocation[geomIndex];
     // JTS:   }
-    // JTS:
+    fn build_point_in_area_location(
+        &mut self,
+        coord: Coordinate<F>,
+        graph_a: &GeometryGraph<F>,
+        graph_b: &GeometryGraph<F>,
+    ) -> [Location; 2] {
+        todo!()
+        // [
+        //     SimplePointInAreaLocator::locate(coord, graph_a.geometry()),
+        //     SimplePointInAreaLocator::locate(coord, graph_a.geometry()),
+        // ]
+    }
+
     // JTS:   public boolean isAreaLabelsConsistent(GeometryGraph geomGraph)
     // JTS:   {
     // JTS:     computeEdgeEndLabels(geomGraph.getBoundaryNodeRule());

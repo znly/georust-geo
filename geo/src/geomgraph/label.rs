@@ -206,6 +206,10 @@ impl Label {
     // JTS:   {
     // JTS:     elt[geomIndex].setAllLocationsIfNull(location);
     // JTS:   }
+    pub fn set_all_locations_if_empty(&mut self, geom_index: usize, location: Location) {
+        self.elt[geom_index].set_all_locations_if_empty(location)
+    }
+
     // JTS:   public void setAllLocationsIfNull(int location)
     // JTS:   {
     // JTS:     setAllLocationsIfNull(0, location);
@@ -246,6 +250,10 @@ impl Label {
     }
 
     // JTS:   public boolean isAnyNull(int geomIndex) { return elt[geomIndex].isAnyNull(); }
+    pub fn is_any_empty(&self, geom_index: usize) -> bool {
+        self.elt[geom_index].is_any_empty()
+    }
+
     // JTS:
     // JTS:   public boolean isArea()               { return elt[0].isArea() || elt[1].isArea();   }
     // JTS:   public boolean isArea(int geomIndex)
@@ -266,7 +274,10 @@ impl Label {
     // JTS:   	return elt[geomIndex].isArea();
     // JTS:   }
     // JTS:   public boolean isLine(int geomIndex)  { return elt[geomIndex].isLine();   }
-    // JTS:
+    pub fn is_line(&self, geom_index: usize) -> bool {
+        self.elt[geom_index].is_line()
+    }
+
     // JTS:   public boolean isEqualOnSide(Label lbl, int side)
     // JTS:   {
     // JTS:     return
