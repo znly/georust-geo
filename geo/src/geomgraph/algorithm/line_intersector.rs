@@ -4,7 +4,7 @@
 // JTS: import org.locationtech.jts.util.Assert;
 use geo_types::Coordinate;
 
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub enum Intersection {
     /// Indicates that line segments do not intersect
     NoIntersection,

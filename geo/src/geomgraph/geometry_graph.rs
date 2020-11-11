@@ -591,7 +591,9 @@ where
         // JTS: 			|| parentGeom instanceof Polygon
         // JTS: 			|| parentGeom instanceof MultiPolygon;
         // JTS:     boolean computeAllSegments = computeRingSelfNodes || ! isRings;
-        let compute_all_segments = true;
+        // FIXME: I think this will give incorrect answers for some geometries, but
+        //        for started I'm only testing polygons, for which this is always true
+        let compute_all_segments = false;
 
         // JTS:     esi.computeIntersections(edges, si, computeAllSegments);
         edge_set_intersector.compute_intersections(

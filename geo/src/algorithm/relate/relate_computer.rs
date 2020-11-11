@@ -203,6 +203,8 @@ where
         // We need to compute the edge graph at all nodes to determine the IM.
         let edge_end_builder = EdgeEndBuilder::new();
         let edge_ends_a: Vec<_> = edge_end_builder.compute_ends_for_edges(self.graph_a.edges());
+        // Fails - len() == 6, which is inconsistent with JTS
+        // assert_eq!(edge_ends_a.len(), 2);
         self.insert_edge_ends(edge_ends_a);
         let edge_ends_b: Vec<_> = edge_end_builder.compute_ends_for_edges(self.graph_b.edges());
         self.insert_edge_ends(edge_ends_b);
@@ -859,5 +861,25 @@ mod test {
             ],
         ]);
         assert_eq!(intersection_matrix, expected);
+    }
+
+    #[test]
+    fn test_footch() {
+        let geom_a: Geometry<f64> = polygon![
+            (x: 0., y: 0.),
+            (x: 0., y: 20.),
+            (x: 20., y: 20.),
+            (x: 20., y: 0.),
+            (x: 0., y: 0.),
+        ]
+        .into();
+        let line_intersector = Box::new(RobustLineIntersector::new());
+        let mut graph_a = GeometryGraph::new(0, &geom_a);
+        assert_eq!(1, graph_a.edges().len());
+        graph_a.compute_self_nodes(line_intersector, false, false);
+
+        let edge_end_builder = EdgeEndBuilder::new();
+        let edge_ends_a: Vec<_> = edge_end_builder.compute_ends_for_edges(graph_a.edges());
+        assert_eq!(edge_ends_a.len(), 2);
     }
 }

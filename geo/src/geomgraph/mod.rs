@@ -41,11 +41,20 @@ pub(crate) mod algorithm;
 use geo_types::{Coordinate, Geometry};
 
 pub(crate) trait Float:
-    'static + num_traits::Float + crate::algorithm::kernels::HasKernel + std::fmt::Debug
+    'static
+    + num_traits::Float
+    + crate::algorithm::kernels::HasKernel
+    + std::fmt::Debug
+    + std::fmt::Display
 {
 }
-impl<F: 'static + num_traits::Float + crate::algorithm::kernels::HasKernel + std::fmt::Debug> Float
-    for F
+impl<
+        F: 'static
+            + num_traits::Float
+            + crate::algorithm::kernels::HasKernel
+            + std::fmt::Debug
+            + std::fmt::Display,
+    > Float for F
 {
 }
 

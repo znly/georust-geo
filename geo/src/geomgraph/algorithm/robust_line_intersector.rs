@@ -1,6 +1,7 @@
 use super::{Intersection, LineIntersector};
 use crate::algorithm::kernels::{Kernel, Orientation, RobustKernel};
 use crate::contains::Contains;
+use crate::geomgraph::Float;
 use crate::intersects::Intersects;
 use crate::num_traits::Zero;
 use geo_types::{Coordinate, Rect};
@@ -15,7 +16,7 @@ use geo_types::{Coordinate, Rect};
 // JTS: {
 /// A robust version of [LineIntersector](traits.LineIntersector).
 #[derive(Clone)]
-pub(crate) struct RobustLineIntersector<F: num_traits::Float> {
+pub(crate) struct RobustLineIntersector<F: Float> {
     // TODO: JTS captures some state in the LineIntersector. I'm not sure if it's helpful. Roughly it
     // seems to be mid-computation state and result state. Perhaps that could be better modeled and
     // we could leave the LineIntersector less mutable.
@@ -26,7 +27,7 @@ pub(crate) struct RobustLineIntersector<F: num_traits::Float> {
     int_pt: [Coordinate<F>; 2],
 }
 
-impl<F: num_traits::Float> RobustLineIntersector<F> {
+impl<F: Float> RobustLineIntersector<F> {
     // JTS:   public RobustLineIntersector() {
     // JTS:   }
     pub fn new() -> RobustLineIntersector<F> {
@@ -39,7 +40,7 @@ impl<F: num_traits::Float> RobustLineIntersector<F> {
     }
 }
 
-impl<F: num_traits::Float> LineIntersector<F> for RobustLineIntersector<F> {
+impl<F: Float> LineIntersector<F> for RobustLineIntersector<F> {
     fn intersection(&self, intersection_index: usize) -> Coordinate<F> {
         self.int_pt[intersection_index]
     }
@@ -232,12 +233,12 @@ impl<F: num_traits::Float> LineIntersector<F> for RobustLineIntersector<F> {
             // which used to produce the INCORRECT result: (20.31970698357233, 46.76654261437082, NaN)
 
             // JTS:       if (p1.equals2D(q1)
-            // JTS:       		|| p1.equals2D(q2)) {
-            // JTS:       	intPt[0] = p1;
+            // JTS:               || p1.equals2D(q2)) {
+            // JTS:           intPt[0] = p1;
             // JTS:       }
             // JTS:       else if (p2.equals2D(q1)
-            // JTS:       		|| p2.equals2D(q2)) {
-            // JTS:       	intPt[0] = p2;
+            // JTS:               || p2.equals2D(q2)) {
+            // JTS:           intPt[0] = p2;
             // JTS:       }
             if p1 == q1 || p1 == q2 {
                 self.int_pt[0] = p1;
@@ -269,22 +270,22 @@ impl<F: num_traits::Float> LineIntersector<F> for RobustLineIntersector<F> {
                 self.int_pt[0] = p1;
             } else if q_p2 == Orientation::Collinear {
                 self.int_pt[0] = p2;
-            // JTS:     else {
-            } else {
-                // JTS:       isProper = true;
-                // JTS:       intPt[0] = intersection(p1, p2, q1, q2);
-                self.is_proper = true;
-                self.int_pt[0] = self.intersection(p1, p2, q1, q2);
             }
-            // JTS:     }
-            // JTS:     return POINT_INTERSECTION;
-            // JTS:   }
+        // JTS:     else {
+        } else {
+            // JTS:       isProper = true;
+            // JTS:       intPt[0] = intersection(p1, p2, q1, q2);
+            self.is_proper = true;
+            self.int_pt[0] = self.intersection(p1, p2, q1, q2);
         }
+        // JTS:     }
+        // JTS:     return POINT_INTERSECTION;
+        // JTS:   }
         Intersection::PointIntersection
     }
 }
 
-impl<F: num_traits::Float> RobustLineIntersector<F> {
+impl<F: Float> RobustLineIntersector<F> {
     // JTS:   private int computeCollinearIntersection(Coordinate p1, Coordinate p2,
     // JTS:       Coordinate q1, Coordinate q2) {
     // CLEANUP: take (p: Line<F>, q: Line<F>) instead?
@@ -674,7 +675,7 @@ impl<F: num_traits::Float> RobustLineIntersector<F> {
 // JTS:    * @see CGAlgorithmsDD#intersection(Coordinate, Coordinate, Coordinate, Coordinate)
 // JTS:    */
 // JTS:   public static Coordinate intersection(Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2) {
-fn line_intersection<F: num_traits::Float>(
+fn line_intersection<F: Float>(
     p1: Coordinate<F>,
     p2: Coordinate<F>,
     q1: Coordinate<F>,
@@ -784,3 +785,404 @@ fn line_intersection<F: num_traits::Float>(
     }
 }
 // JTS: }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use geo_types::Line;
+
+    // JTS: Tests
+    // JTS:  /**
+    // JTS:    * Following cases were failures when using the CentralEndpointIntersector heuristic.
+    // JTS:    * This is because one segment lies at a significant angle to the other,
+    // JTS:    * with only one endpoint is close to the other segment.
+    // JTS:    * The CE heuristic chose the wrong endpoint to return.
+    // JTS:    * The fix is to use a new heuristic which out of the 4 endpoints
+    // JTS:    * chooses the one which is closest to the other segment.
+    // JTS:    * This works in all known failure cases.
+    // JTS:    *
+    // JTS:    * @throws ParseException
+    // JTS:    */
+    // JTS:     public void testCentralEndpointHeuristicFailure()
+    // JTS:     throws ParseException
+    // JTS:     {
+    // JTS:       checkIntersection(
+    // JTS:           "LINESTRING (163.81867067 -211.31840378, 165.9174252 -214.1665075)",
+    // JTS:           "LINESTRING (2.84139601 -57.95412726, 469.59990601 -502.63851732)",
+    // JTS:           1,
+    // JTS:           "POINT (163.81867067 -211.31840378)",
+    // JTS:           0);
+    // JTS:     }
+    // JTS:
+    // JTS:   public void testCentralEndpointHeuristicFailure2()
+    // JTS:   throws ParseException
+    // JTS:   {
+    // JTS:     checkIntersection(
+    // JTS:         "LINESTRING (-58.00593335955 -1.43739086465, -513.86101637525 -457.29247388035)",
+    // JTS:         "LINESTRING (-215.22279674875 -158.65425425385, -218.1208801283 -160.68343590235)",
+    // JTS:         1,
+    // JTS:         "POINT ( -215.22279674875 -158.65425425385 )",
+    // JTS:         0);
+    // JTS:   }
+    // JTS:
+    // JTS:   /**
+    // JTS:    * Tests a case where intersection point is rounded,
+    // JTS:    * and it is computed as a nearest endpoint.
+    // JTS:    * Exposed a bug due to aliasing of endpoint.
+    // JTS:    *
+    // JTS:    * MD 8 Mar 2013
+    // JTS:    *
+    // JTS:    * @throws ParseException
+    // JTS:    */
+    // JTS:   public void testRoundedPointsNotAltered()
+    // JTS:   throws ParseException
+    // JTS:   {
+    // JTS:     checkInputNotAltered(
+    // JTS:         "LINESTRING (-58.00593335955 -1.43739086465, -513.86101637525 -457.29247388035)",
+    // JTS:         "LINESTRING (-215.22279674875 -158.65425425385, -218.1208801283 -160.68343590235)",
+    // JTS:         100000 );
+    // JTS:   }
+    // JTS:
+    // JTS:
+    // JTS: /**
+    // JTS:  * Test from Tomas Fa - JTS list 6/13/2012
+    // JTS:  *
+    // JTS:  * Fails using original JTS DeVillers determine orientation test.
+    // JTS:  * Succeeds using DD and Shewchuk orientation
+    // JTS:  *
+    // JTS:  * @throws ParseException
+    // JTS:  */
+    // JTS: public void testTomasFa_1()
+    // JTS: throws ParseException
+    // JTS: {
+    // JTS:   checkIntersectionNone(
+    // JTS:       "LINESTRING (-42.0 163.2, 21.2 265.2)",
+    // JTS:       "LINESTRING (-26.2 188.7, 37.0 290.7)");
+    // JTS: }
+    // JTS:
+    // JTS: /**
+    // JTS:  * Test from Tomas Fa - JTS list 6/13/2012
+    // JTS:  *
+    // JTS:  * Fails using original JTS DeVillers determine orientation test.
+    // JTS:  * Succeeds using DD and Shewchuk orientation
+    // JTS:  *
+    // JTS:  * @throws ParseException
+    // JTS:  */
+    // JTS: public void testTomasFa_2()
+    // JTS: throws ParseException
+    // JTS: {
+    // JTS:   checkIntersectionNone(
+    // JTS:       "LINESTRING (-5.9 163.1, 76.1 250.7)",
+    // JTS:       "LINESTRING (14.6 185.0, 96.6 272.6)");
+    // JTS: }
+    // JTS:
+    // JTS: /**
+    // JTS:  * Test involving two non-almost-parallel lines.
+    // JTS:  * Does not seem to cause problems with basic line intersection algorithm.
+    // JTS:  *
+    // JTS:  * @throws ParseException
+    // JTS:  */
+    // JTS: public void testLeduc_1()
+    // JTS: throws ParseException
+    // JTS: {
+    // JTS:   checkIntersection(
+    // JTS:       "LINESTRING (305690.0434123494 254176.46578338774, 305601.9999843455 254243.19999846347)",
+    // JTS:       "LINESTRING (305689.6153764265 254177.33102743194, 305692.4999844298 254171.4999983967)",
+    // JTS:       1,
+    // JTS:       "POINT (305690.0434123494 254176.46578338774)",
+    // JTS:       0);
+    // JTS: }
+    #[test]
+    fn test_leduc_1() {
+        let line_string_1 = Line::new(
+            Coordinate {
+                x: 305690.0434123494,
+                y: 254176.46578338774,
+            },
+            Coordinate {
+                x: 305601.9999843455,
+                y: 254243.19999846347,
+            },
+        );
+        let line_string_2 = Line::new(
+            Coordinate {
+                x: 305689.6153764265,
+                y: 254177.33102743194,
+            },
+            Coordinate {
+                x: 305692.4999844298,
+                y: 254171.4999983967,
+            },
+        );
+        let intersection_pt = Coordinate {
+            x: 305690.0434123494,
+            y: 254176.46578338774,
+        };
+        check_intersection(
+            line_string_1,
+            line_string_2,
+            Intersection::PointIntersection,
+            Some(intersection_pt),
+            0f64,
+        );
+    }
+
+    // JTS:
+    // JTS:   /**
+    // JTS:    * Test from strk which is bad in GEOS (2009-04-14).
+    // JTS:    *
+    // JTS:    * @throws ParseException
+    // JTS:    */
+    // JTS:   public void testGEOS_1()
+    // JTS:   throws ParseException
+    // JTS:   {
+    // JTS:       checkIntersection(
+    // JTS:               "LINESTRING (588750.7429703881 4518950.493668233, 588748.2060409798 4518933.9452804085)",
+    // JTS:               "LINESTRING (588745.824857241 4518940.742239175, 588748.2060437313 4518933.9452791475)",
+    // JTS:               1,
+    // JTS:               "POINT (588748.2060416829 4518933.945284994)",
+    // JTS:               0);
+    // JTS:   }
+    // JTS:
+    // JTS:   /**
+    // JTS:    * Test from strk which is bad in GEOS (2009-04-14).
+    // JTS:    *
+    // JTS:    * @throws ParseException
+    // JTS:    */
+    // JTS:   public void testGEOS_2()
+    // JTS:   throws ParseException
+    // JTS:   {
+    // JTS:       checkIntersection(
+    // JTS:               "LINESTRING (588743.626135934 4518924.610969561, 588732.2822865889 4518925.4314047815)",
+    // JTS:               "LINESTRING (588739.1191384895 4518927.235700594, 588731.7854614238 4518924.578370095)",
+    // JTS:               1,
+    // JTS:               "POINT (588733.8306132929 4518925.319423238)",
+    // JTS:               0);
+    // JTS:   }
+    // JTS:
+    // JTS:       /**
+    // JTS:        * This used to be a failure case (exception), but apparently works now.
+    // JTS:        * Possibly normalization has fixed this?
+    // JTS:        *
+    // JTS:        * @throws ParseException
+    // JTS:        */
+    // JTS:   public void testDaveSkeaCase()
+    // JTS:       throws ParseException
+    // JTS:   {
+    // JTS:       checkIntersection(
+    // JTS:               "LINESTRING ( 2089426.5233462777 1180182.3877339689, 2085646.6891757075 1195618.7333999649 )",
+    // JTS:               "LINESTRING ( 1889281.8148903656 1997547.0560044837, 2259977.3672235999 483675.17050843034 )",
+    // JTS:               1,
+    // JTS:               new Coordinate[] {
+    // JTS:                       new Coordinate(2087536.6062609926, 1187900.560566967),
+    // JTS:               }, 0);
+    // JTS:   }
+    // JTS:
+    // JTS:   /**
+    // JTS:    * Outside envelope using HCoordinate method.
+    // JTS:    *
+    // JTS:    * @throws ParseException
+    // JTS:    */
+    // JTS:   public void testCmp5CaseWKT()
+    // JTS:   throws ParseException
+    // JTS:   {
+    // JTS:       checkIntersection(
+    // JTS:               "LINESTRING (4348433.262114629 5552595.478385733, 4348440.849387404 5552599.272022122 )",
+    // JTS:               "LINESTRING (4348433.26211463  5552595.47838573,  4348440.8493874   5552599.27202212  )",
+    // JTS:               1,
+    // JTS:               new Coordinate[] {
+    // JTS:                       new Coordinate(4348440.8493874, 5552599.27202212),
+    // JTS:               },
+    // JTS:               0);
+    // JTS:   }
+    // JTS:
+    // JTS:   /**
+    // JTS:    * Result of this test should be the same as the WKT one!
+    // JTS:    * @throws ParseException
+    // JTS:    */
+    // JTS:   public void testCmp5CaseRaw()
+    // JTS:   throws ParseException
+    // JTS:   {
+    // JTS:       checkIntersection(
+    // JTS:               new Coordinate[] {
+    // JTS:                       new Coordinate(4348433.262114629, 5552595.478385733),
+    // JTS:                       new Coordinate(4348440.849387404, 5552599.272022122),
+    // JTS:
+    // JTS:                       new Coordinate(4348433.26211463,  5552595.47838573),
+    // JTS:                       new Coordinate(4348440.8493874,   5552599.27202212)
+    // JTS:               },                1,
+    // JTS:               new Coordinate[] {
+    // JTS:                       new Coordinate(4348440.8493874, 5552599.27202212),
+    // JTS:               },
+    // JTS:               0);
+    // JTS:   }
+    // JTS:
+    // JTS: void checkIntersectionNone(String wkt1, String wkt2)
+    // JTS:   throws ParseException
+    // JTS: {
+    // JTS:   LineString l1 = (LineString) reader.read(wkt1);
+    // JTS:   LineString l2 = (LineString) reader.read(wkt2);
+    // JTS:   Coordinate[] pt = new Coordinate[] {
+    // JTS:       l1.getCoordinateN(0), l1.getCoordinateN(1),
+    // JTS:       l2.getCoordinateN(0), l2.getCoordinateN(1)
+    // JTS:   };
+    // JTS:   checkIntersection(pt, 0, null, 0);
+    // JTS: }
+    // JTS:
+    // JTS: void checkIntersection(String wkt1, String wkt2,
+    // JTS:     int expectedIntersectionNum,
+    // JTS:     Coordinate[] intPt,
+    // JTS:     double distanceTolerance)
+    // JTS:   throws ParseException
+    // JTS: {
+    // JTS:   LineString l1 = (LineString) reader.read(wkt1);
+    // JTS:   LineString l2 = (LineString) reader.read(wkt2);
+    // JTS:   Coordinate[] pt = new Coordinate[] {
+    // JTS:       l1.getCoordinateN(0), l1.getCoordinateN(1),
+    // JTS:       l2.getCoordinateN(0), l2.getCoordinateN(1)
+    // JTS:   };
+    // JTS:   checkIntersection(pt, expectedIntersectionNum, intPt, distanceTolerance);
+    // JTS: }
+    // JTS:
+    // JTS:   void checkIntersection(String wkt1, String wkt2,
+    // JTS:           int expectedIntersectionNum,
+    // JTS:           String expectedWKT,
+    // JTS:           double distanceTolerance)
+    // JTS:       throws ParseException
+    // JTS:   {
+    // JTS:       LineString l1 = (LineString) reader.read(wkt1);
+    // JTS:       LineString l2 = (LineString) reader.read(wkt2);
+    // JTS:       Coordinate[] pt = new Coordinate[] {
+    // JTS:               l1.getCoordinateN(0), l1.getCoordinateN(1),
+    // JTS:               l2.getCoordinateN(0), l2.getCoordinateN(1)
+    // JTS:       };
+    // JTS:       Geometry g = reader.read(expectedWKT);
+    // JTS:       Coordinate[] intPt = g.getCoordinates();
+    // JTS:       checkIntersection(pt, expectedIntersectionNum, intPt, distanceTolerance);
+    // JTS:   }
+    // JTS:
+    // JTS:   /**
+    // JTS:    * Check that intersection of segment defined by points in pt array
+    // JTS:    * is equal to the expectedIntPt value (up to the given distanceTolerance).
+    // JTS:    *
+    // JTS:    * @param pt
+    // JTS:    * @param expectedIntersectionNum
+    // JTS:    * @param expectedIntPt the expected intersection points (maybe null if not tested)
+    // JTS:    * @param distanceTolerance tolerance to use for equality test
+    // JTS:    */
+    // JTS:   void checkIntersection(Coordinate[] pt,
+    // JTS:           int expectedIntersectionNum,
+    // JTS:           Coordinate[] expectedIntPt,
+    // JTS:           double distanceTolerance)
+    // JTS:   {
+    fn check_intersection<F: Float>(
+        line_1: Line<F>,
+        line_2: Line<F>,
+        intersection: Intersection,
+        interesection_pt: Option<Coordinate<F>>,
+        distance_tolerance: F,
+    ) {
+        // JTS:       LineIntersector li = new RobustLineIntersector();
+        // JTS:       li.computeIntersection(pt[0], pt[1], pt[2], pt[3]);
+        let mut li = RobustLineIntersector::new();
+        li.compute_intersection(line_1.start, line_1.end, line_2.start, line_2.end);
+        // JTS:
+        // JTS:       int intNum = li.getIntersectionNum();
+        // JTS:       assertEquals("Number of intersections not as expected", expectedIntersectionNum, intNum);
+        assert_eq!(li.result(), intersection);
+        // JTS:
+        // JTS:       if (expectedIntPt != null) {
+        // JTS:           assertEquals("Wrong number of expected int pts provided", intNum, expectedIntPt.length);
+        // JTS:           // test that both points are represented here
+        // JTS:           boolean isIntPointsCorrect = true;
+        // JTS:           if (intNum == 1) {
+        // JTS:               checkIntPoints(expectedIntPt[0], li.getIntersection(0), distanceTolerance);
+        // JTS:           }
+        // JTS:           else if (intNum == 2) {
+        // JTS:               checkIntPoints(expectedIntPt[1], li.getIntersection(0), distanceTolerance);
+        // JTS:               checkIntPoints(expectedIntPt[1], li.getIntersection(0), distanceTolerance);
+        // JTS:
+        // JTS:               if (! (equals(expectedIntPt[0],li.getIntersection(0), distanceTolerance)
+        // JTS:                       || equals(expectedIntPt[0],li.getIntersection(1), distanceTolerance) )) {
+        // JTS:                   checkIntPoints(expectedIntPt[0], li.getIntersection(0), distanceTolerance);
+        // JTS:                   checkIntPoints(expectedIntPt[0], li.getIntersection(1), distanceTolerance);
+        // JTS:               }
+        // JTS:               else if (! (equals(expectedIntPt[1],li.getIntersection(0), distanceTolerance)
+        // JTS:                       || equals(expectedIntPt[1],li.getIntersection(1), distanceTolerance) )) {
+        // JTS:                   checkIntPoints(expectedIntPt[1], li.getIntersection(0), distanceTolerance);
+        // JTS:                   checkIntPoints(expectedIntPt[1], li.getIntersection(1), distanceTolerance);
+        // JTS:               }
+        // JTS:           }
+        // JTS:       }
+        // JTS:   }
+        if let Some(interesection_pt) = interesection_pt {
+            match intersection {
+                Intersection::NoIntersection => {
+                    panic!("shouldn't specify point if no intersection is expected")
+                }
+                Intersection::PointIntersection => {
+                    check_intersection_points(
+                        interesection_pt,
+                        LineIntersector::intersection(&li, 0),
+                        distance_tolerance,
+                    );
+                }
+                Intersection::CollinearIntersection => todo!(),
+            }
+        }
+    }
+    // JTS:
+    // JTS:   void checkIntPoints(Coordinate expectedPt, Coordinate actualPt, double distanceTolerance)
+    // JTS:   {
+    // JTS:       boolean isEqual = equals(expectedPt, actualPt, distanceTolerance);
+    // JTS:       assertTrue("Int Pts not equal - "
+    // JTS:               + "expected " + WKTWriter.toPoint(expectedPt) + " VS "
+    // JTS:               + "actual " + WKTWriter.toPoint(actualPt), isEqual);
+    // JTS:   }
+    fn check_intersection_points<F: Float>(
+        expected: Coordinate<F>,
+        actual: Coordinate<F>,
+        distance_tolerance: F,
+    ) {
+        use crate::algorithm::euclidean_distance::EuclideanDistance;
+        let distance = expected.euclidean_distance(&actual);
+        assert!(
+            distance <= distance_tolerance,
+            "expected distance: {} < tolerance: {}",
+            distance,
+            distance_tolerance
+        );
+    }
+
+    // JTS:   public static boolean equals(Coordinate p0, Coordinate p1, double distanceTolerance)
+    // JTS:   {
+    // JTS:       return p0.distance(p1) <= distanceTolerance;
+    // JTS:   }
+    // JTS:
+    // JTS: void checkInputNotAltered(String wkt1, String wkt2, int scaleFactor) throws ParseException
+    // JTS: {
+    // JTS:   LineString l1 = (LineString) reader.read(wkt1);
+    // JTS:   LineString l2 = (LineString) reader.read(wkt2);
+    // JTS:   Coordinate[] pt = new Coordinate[] { l1.getCoordinateN(0),
+    // JTS:       l1.getCoordinateN(1), l2.getCoordinateN(0), l2.getCoordinateN(1) };
+    // JTS:   checkInputNotAltered(pt, scaleFactor);
+    // JTS: }
+    // JTS:
+    // JTS:   public void checkInputNotAltered(Coordinate[] pt, int scaleFactor)
+    // JTS:     {
+    // JTS:       // save input points
+    // JTS:       Coordinate[] savePt = new Coordinate[4];
+    // JTS:       for (int i = 0; i < 4; i++) {
+    // JTS:         savePt[i] = new Coordinate(pt[i]);
+    // JTS:       }
+    // JTS:
+    // JTS:       LineIntersector li = new RobustLineIntersector();
+    // JTS:       li.setPrecisionModel(new PrecisionModel(scaleFactor));
+    // JTS:       li.computeIntersection(pt[0], pt[1], pt[2], pt[3]);
+    // JTS:
+    // JTS:       // check that input points are unchanged
+    // JTS:       for (int i = 0; i < 4; i++) {
+    // JTS:         assertEquals("Input point " + i + " was altered - ", savePt[i], pt[i]);
+    // JTS:       }
+    // JTS:     }
+}
