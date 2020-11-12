@@ -2,6 +2,8 @@ use crate::geomgraph::{
     Coordinate, EdgeEnd, EdgeEndBundle, Float, GeometryGraph, Location, Position,
 };
 
+use crate::algorithm::coordinate_position::CoordinatePosition;
+
 // JTS: /**
 // JTS:  * An ordered list of {@link EdgeEndBundle}s around a {@link RelateNode}.
 // JTS:  * They are maintained in CCW order (starting with the positive x-axis) around the node
@@ -280,7 +282,7 @@ where
         let coordinate = edge_end.coordinate();
         let point_in_area_location = self
             .point_in_area_location
-            .unwrap_or_else(|| self.build_point_in_area_location(coordinate, graph_a, graph_b));
+            .unwrap_or_else(|| self.build_point_in_area_location(&coordinate, graph_a, graph_b));
 
         for edge_end in self.edge_ends_iter_mut() {
             // CLEANUP: unwrap
@@ -345,15 +347,14 @@ where
     // JTS:   }
     fn build_point_in_area_location(
         &mut self,
-        coord: Coordinate<F>,
+        coord: &Coordinate<F>,
         graph_a: &GeometryGraph<F>,
         graph_b: &GeometryGraph<F>,
     ) -> [Location; 2] {
-        todo!()
-        // [
-        //     SimplePointInAreaLocator::locate(coord, graph_a.geometry()),
-        //     SimplePointInAreaLocator::locate(coord, graph_a.geometry()),
-        // ]
+        [
+            graph_a.geometry().coordinate_position(coord).into(),
+            graph_b.geometry().coordinate_position(coord).into(),
+        ]
     }
 
     // JTS:   public boolean isAreaLabelsConsistent(GeometryGraph geomGraph)

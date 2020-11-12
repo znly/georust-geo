@@ -1,9 +1,12 @@
 use crate::{
-    algorithm::{bounding_rect::BoundingRect, dimensions::HasDimensions, intersects::Intersects},
+    bounding_rect::BoundingRect,
+    coordinate_position::{CoordPos, CoordinatePosition},
+    dimensions::HasDimensions,
     geomgraph::{
         algorithm::boundary_node_rule::{BoundaryNodeRule, Mod2BoundaryNodeRule},
         Float, Location,
     },
+    intersects::Intersects,
     Coordinate, Geometry, Line, LineString, Point, Polygon,
 };
 // JTS: /**
@@ -86,6 +89,13 @@ where
     // JTS:   public int locate(Coordinate p, Geometry geom)
     // JTS:   {
     pub fn locate(&mut self, coordinate: &Coordinate<F>, geometry: &Geometry<F>) -> Location {
+        return match geometry.coordinate_position(coordinate) {
+            CoordPos::OnBoundary => Location::Boundary,
+            CoordPos::Inside => Location::Interior,
+            CoordPos::Outside => Location::Exterior,
+        };
+
+        // CLEANUP: remove this class - all the functionality lives in the new coordinate_position module
         // JTS:     if (geom.isEmpty()) return Location.EXTERIOR;
         if geometry.is_empty() {
             return Location::Exterior;

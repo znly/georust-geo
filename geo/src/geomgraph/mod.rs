@@ -86,3 +86,13 @@ impl From<CoordPos> for Location {
         }
     }
 }
+
+impl From<Location> for CoordPos {
+    fn from(coord_pos: Location) -> CoordPos {
+        match coord_pos {
+            Location::Interior => CoordPos::Inside,
+            Location::Exterior => CoordPos::Outside,
+            Location::Boundary => CoordPos::OnBoundary,
+        }
+    }
+}
