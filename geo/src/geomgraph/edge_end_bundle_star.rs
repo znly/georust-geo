@@ -257,7 +257,7 @@ where
         // JTS:           hasDimensionalCollapseEdge[geomi] = true;
         // JTS:       }
         // JTS:     }
-        let mut has_dimensaion_callapse_edge = [false, false];
+        let mut has_dimensional_collapse_edge = [false, false];
         for edge_end in self.edge_ends_iter() {
             // REVIEW: unwrap
             let label = edge_end.label().unwrap();
@@ -265,7 +265,7 @@ where
                 if label.is_line(geom_index)
                     && label.on_location(geom_index) == Some(Location::Boundary)
                 {
-                    has_dimensaion_callapse_edge[geom_index] = true;
+                    has_dimensional_collapse_edge[geom_index] = true;
                 }
             }
         }
@@ -286,7 +286,6 @@ where
 
         for edge_end in self.edge_ends_iter_mut() {
             // CLEANUP: unwrap
-            let coord = edge_end.coordinate();
             let label = edge_end.label_mut().unwrap();
             for geom_index in 0..2 {
                 // JTS:         if (label.isAnyNull(geomi)) {
@@ -301,10 +300,11 @@ where
                 // JTS:           label.setAllLocationsIfNull(geomi, loc);
                 // JTS:         }
                 if label.is_any_empty(geom_index) {
-                    let location: Location = if has_dimensaion_callapse_edge[geom_index] {
+                    let location: Location = if has_dimensional_collapse_edge[geom_index] {
                         Location::Exterior
                     } else {
                         // REVIEW: Borrowing rules forbids this.
+                        // let coord = edge_end.coordinate();
                         // self.get_location(geom_index, coord, graph_a, graph_b)
                         point_in_area_location[geom_index]
                     };
