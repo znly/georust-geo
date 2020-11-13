@@ -96,8 +96,16 @@ impl Label {
     pub fn new_with_geom_on_location(geom_index: usize, location: Option<Location>) -> Label {
         Label {
             elt: [
-                TopologyLocation::new_on(location),
-                TopologyLocation::new_on(location),
+                if geom_index == 0 {
+                    TopologyLocation::new_on(location)
+                } else {
+                    TopologyLocation::new_on(None)
+                },
+                if geom_index == 1 {
+                    TopologyLocation::new_on(location)
+                } else {
+                    TopologyLocation::new_on(None)
+                },
             ],
         }
     }
