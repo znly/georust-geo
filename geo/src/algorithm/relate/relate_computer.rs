@@ -702,7 +702,7 @@ where
 #[cfg(test)]
 mod test {
     use super::*;
-    use geo_types::{polygon, Geometry, GeometryCollection};
+    use geo_types::{polygon, Geometry};
 
     #[test]
     fn test_disjoint() {
@@ -816,52 +816,53 @@ mod test {
         assert_eq!(intersection_matrix, expected);
     }
 
-    #[test]
-    fn test_a_overlaps_itself() {
-        let square_a_1: Geometry<f64> = polygon![
-            (x: 0., y: 0.),
-            (x: 0., y: 20.),
-            (x: 20., y: 20.),
-            (x: 20., y: 0.),
-            (x: 0., y: 0.),
-        ]
-        .into();
-
-        let square_a_2: Geometry<f64> = polygon![
-            (x: 5., y: 5.),
-            (x: 5., y: 30.),
-            (x: 30., y: 30.),
-            (x: 30., y: 5.),
-            (x: 5., y: 5.),
-        ]
-        .into();
-
-        let collection_a: Geometry<f64> =
-            Geometry::GeometryCollection(GeometryCollection(vec![square_a_1, square_a_2]));
-
-        let square_b: Geometry<f64> = polygon![
-            (x: 5., y: 5.),
-            (x: 5., y: 30.),
-            (x: 30., y: 30.),
-            (x: 30., y: 5.),
-            (x: 5., y: 5.),
-        ]
-        .into();
-
-        let mut relate_computer = RelateComputer::new(&collection_a, &square_b);
-        let intersection_matrix = relate_computer.compute_intersection_matrix();
-        // TODO: expected is incorrect
-        let expected = IntersectionMatrix::new([
-            [Dimensions::Empty, Dimensions::Empty, Dimensions::Empty],
-            [Dimensions::Empty, Dimensions::Empty, Dimensions::Empty],
-            [
-                Dimensions::Empty,
-                Dimensions::Empty,
-                Dimensions::TwoDimensional,
-            ],
-        ]);
-        assert_eq!(intersection_matrix, expected);
-    }
+    // geometries that self-intersect are considered invalid, so this test is moot. Same behavior in JTS
+    // #[test]
+    // fn test_a_overlaps_itself() {
+    //     let square_a_1: Geometry<f64> = polygon![
+    //         (x: 0., y: 0.),
+    //         (x: 0., y: 20.),
+    //         (x: 20., y: 20.),
+    //         (x: 20., y: 0.),
+    //         (x: 0., y: 0.),
+    //     ]
+    //     .into();
+    //
+    //     let square_a_2: Geometry<f64> = polygon![
+    //         (x: 5., y: 5.),
+    //         (x: 5., y: 30.),
+    //         (x: 30., y: 30.),
+    //         (x: 30., y: 5.),
+    //         (x: 5., y: 5.),
+    //     ]
+    //     .into();
+    //
+    //     let collection_a: Geometry<f64> =
+    //         Geometry::GeometryCollection(GeometryCollection(vec![square_a_1, square_a_2]));
+    //
+    //     let square_b: Geometry<f64> = polygon![
+    //         (x: 5., y: 5.),
+    //         (x: 5., y: 30.),
+    //         (x: 30., y: 30.),
+    //         (x: 30., y: 5.),
+    //         (x: 5., y: 5.),
+    //     ]
+    //     .into();
+    //
+    //     let mut relate_computer = RelateComputer::new(&collection_a, &square_b);
+    //     let intersection_matrix = relate_computer.compute_intersection_matrix();
+    //     // TODO: expected is incorrect
+    //     let expected = IntersectionMatrix::new([
+    //         [Dimensions::Empty, Dimensions::Empty, Dimensions::Empty],
+    //         [Dimensions::Empty, Dimensions::Empty, Dimensions::Empty],
+    //         [
+    //             Dimensions::Empty,
+    //             Dimensions::Empty,
+    //             Dimensions::TwoDimensional,
+    //         ],
+    //     ]);
+    //     assert_eq!(intersection_matrix, expected);
+    // }
 
     #[test]
     fn test_footch() {
