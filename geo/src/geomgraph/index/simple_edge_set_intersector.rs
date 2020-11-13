@@ -2,6 +2,7 @@ use super::super::{Edge, Float};
 use super::{EdgeSetIntersector, SegmentIntersector};
 
 use std::cell::RefCell;
+use std::rc::Rc;
 
 // JTS: /**
 // JTS:  * Finds all intersections in one or two sets of edges,
@@ -31,7 +32,7 @@ where
     // JTS:   {
     fn compute_intersections(
         &mut self,
-        edges: &[RefCell<Edge<F>>],
+        edges: &[Rc<RefCell<Edge<F>>>],
         segment_intersector: &mut SegmentIntersector<F>,
         test_all_segments: bool,
     ) {
@@ -63,8 +64,8 @@ where
     // JTS:   {
     fn compute_intersections_testing_all_segments(
         &mut self,
-        edges0: &[RefCell<Edge<F>>],
-        edges1: &[RefCell<Edge<F>>],
+        edges0: &[Rc<RefCell<Edge<F>>>],
+        edges1: &[Rc<RefCell<Edge<F>>>],
         segment_intersector: &mut SegmentIntersector<F>,
     ) {
         // JTS:     nOverlaps = 0;
@@ -101,8 +102,8 @@ impl SimpleEdgeSetIntersector {
     // JTS:   {
     fn compute_intersects<'a, F: Float>(
         &mut self,
-        edge0: &RefCell<Edge<F>>,
-        edge1: &RefCell<Edge<F>>,
+        edge0: &Rc<RefCell<Edge<F>>>,
+        edge1: &Rc<RefCell<Edge<F>>>,
         segment_intersector: &mut SegmentIntersector<F>,
     ) {
         // JTS:    Coordinate[] pts0 = e0.getCoordinates();

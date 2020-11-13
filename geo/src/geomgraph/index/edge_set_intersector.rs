@@ -2,6 +2,7 @@ use super::super::{Edge, Float};
 use super::SegmentIntersector;
 
 use std::cell::RefCell;
+use std::rc::Rc;
 
 pub(crate) trait EdgeSetIntersector<F>
 where
@@ -18,7 +19,7 @@ where
     // JTS: abstract public void computeIntersections(List edges, SegmentIntersector si, boolean testAllSegments);
     fn compute_intersections(
         &mut self,
-        edges: &[RefCell<Edge<F>>],
+        edges: &[Rc<RefCell<Edge<F>>>],
         segment_intersector: &mut SegmentIntersector<F>,
         test_all_segments: bool,
     );
@@ -29,8 +30,8 @@ where
     // JTS:  abstract public void computeIntersections(List edges0, List edges1, SegmentIntersector si);
     fn compute_intersections_testing_all_segments(
         &mut self,
-        edges0: &[RefCell<Edge<F>>],
-        edges1: &[RefCell<Edge<F>>],
+        edges0: &[Rc<RefCell<Edge<F>>>],
+        edges1: &[Rc<RefCell<Edge<F>>>],
         segment_intersector: &mut SegmentIntersector<F>,
     );
 }

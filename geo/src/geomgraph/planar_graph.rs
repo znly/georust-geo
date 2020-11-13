@@ -3,6 +3,7 @@ use super::{
 };
 
 use std::cell::RefCell;
+use std::rc::Rc;
 
 // JTS: import org.locationtech.jts.algorithm.Orientation;
 // JTS: import org.locationtech.jts.geom.Coordinate;
@@ -44,7 +45,7 @@ use std::cell::RefCell;
 ///   - Computing the intersections between the edges and nodes of two different graphs
 pub(crate) struct PlanarGraph<F: Float> {
     pub(crate) nodes: NodeMap<F, BasicNodeFactory>,
-    edges: Vec<RefCell<Edge<F>>>,
+    edges: Vec<Rc<RefCell<Edge<F>>>>,
 }
 
 impl<F: Float> PlanarGraph<F> {
@@ -62,7 +63,7 @@ impl<F: Float> PlanarGraph<F> {
     // JTS:   }
     // JTS:
     // JTS:   protected List edges        = new ArrayList();
-    pub fn edges(&self) -> &[RefCell<Edge<F>>] {
+    pub fn edges(&self) -> &[Rc<RefCell<Edge<F>>>] {
         &self.edges
     }
 
@@ -107,7 +108,7 @@ impl<F: Float> PlanarGraph<F> {
     // JTS:     edges.add(e);
     // JTS:   }
     pub fn insert_edge(&mut self, edge: Edge<F>) {
-        self.edges.push(RefCell::new(edge));
+        self.edges.push(Rc::new(RefCell::new(edge)));
     }
 
     // JTS:   public void add(EdgeEnd e)

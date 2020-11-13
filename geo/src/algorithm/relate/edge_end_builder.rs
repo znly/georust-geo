@@ -1,6 +1,7 @@
 use crate::geomgraph::{Edge, EdgeEnd, EdgeIntersection, Float, GraphComponent};
 
 use std::cell::RefCell;
+use std::rc::Rc;
 
 // JTS: /**
 // JTS:  * An EdgeEndBuilder creates EdgeEnds for all the "split edges"
@@ -55,7 +56,7 @@ where
     // JTS:     }
     // JTS:     return l;
     // JTS:   }
-    pub fn compute_ends_for_edges(&self, edges: &[RefCell<Edge<F>>]) -> Vec<EdgeEnd<F>> {
+    pub fn compute_ends_for_edges(&self, edges: &[Rc<RefCell<Edge<F>>>]) -> Vec<EdgeEnd<F>> {
         let mut list = vec![];
         for edge in edges {
             self.compute_ends_for_edge(&mut edge.borrow_mut(), &mut list);

@@ -17,6 +17,7 @@ use crate::algorithm::dimensions::HasDimensions;
 use crate::{Geometry, Line, LineString, Point, Polygon};
 
 use std::cell::RefCell;
+use std::rc::Rc;
 
 // JTS: import org.locationtech.jts.algorithm.BoundaryNodeRule;
 // JTS: import org.locationtech.jts.algorithm.LineIntersector;
@@ -66,7 +67,7 @@ impl<F> GeometryGraph<'_, F>
 where
     F: Float,
 {
-    pub fn edges(&self) -> &[RefCell<Edge<F>>] {
+    pub fn edges(&self) -> &[Rc<RefCell<Edge<F>>>] {
         self.planar_graph.edges()
     }
 
@@ -739,7 +740,7 @@ where
         let locations_and_intersections: Vec<(Option<Location>, Vec<Coordinate<F>>)> = self
             .edges()
             .into_iter()
-            .map(RefCell::borrow)
+            .map(|cell| cell.borrow())
             .map(|edge| {
                 let location = edge.label().and_then(|label| label.on_location(arg_index));
 

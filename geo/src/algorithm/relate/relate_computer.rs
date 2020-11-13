@@ -3,10 +3,12 @@ use crate::algorithm::dimensions::{Dimensions, HasDimensions};
 use crate::geomgraph::{
     algorithm::{PointLocator, RobustLineIntersector},
     index::SegmentIntersector,
-    EdgeEnd, Float, GeometryGraph, GraphComponent, Location, Node, NodeMap,
+    Edge, EdgeEnd, Float, GeometryGraph, GraphComponent, Location, Node, NodeMap,
 };
 
 use geo_types::Geometry;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 // JTS: /**
 // JTS:  * @version 1.7
@@ -57,6 +59,7 @@ where
     graph_b: GeometryGraph<'a, F>,
     nodes: NodeMap<F, RelateNodeFactory>,
     line_intersector: RobustLineIntersector<F>,
+    isolated_edges: Vec<Rc<RefCell<Edge<F>>>>,
     point_locator: PointLocator<F>,
 }
 
@@ -78,6 +81,7 @@ where
             graph_a: GeometryGraph::new(0, geom_a),
             graph_b: GeometryGraph::new(1, geom_b),
             nodes: NodeMap::new(),
+            isolated_edges: vec![],
             line_intersector: RobustLineIntersector::new(),
             point_locator: PointLocator::new(),
         }
@@ -214,7 +218,7 @@ where
         // JTS:
         // JTS:     labelNodeEdges();
         self.label_node_edges();
-        todo!();
+
         // JTS:
         // JTS:   /**
         // JTS:    * Compute the labeling for isolated components
@@ -229,9 +233,12 @@ where
         // JTS:     labelIsolatedEdges(0, 1);
         // JTS: //debugPrintln("Graph B isolated edges - ");
         // JTS:     labelIsolatedEdges(1, 0);
-        // JTS:
+        self.label_isolated_edges(0, 1);
+        self.label_isolated_edges(1, 0);
+
         // JTS:     // update the IM from all components
         // JTS:     updateIM(im);
+        todo!();
         // JTS:     return im;
         // JTS:   }
         intersection_matrix
@@ -606,6 +613,22 @@ where
     // JTS:       }
     // JTS:     }
     // JTS:   }
+    fn label_isolated_edges(&mut self, this_index: usize, target_index: usize) {
+        let (this_graph, target_graph) = if this_index == 0 {
+            (&self.graph_a, &self.graph_b)
+        } else {
+            (&self.graph_b, &self.graph_a)
+        };
+
+        for edge in this_graph.edges() {
+            let mut mut_edge = edge.borrow_mut();
+            if mut_edge.is_isolated() {
+                Self::label_isolated_edge(&mut mut_edge, target_index, target_graph.geometry());
+                self.isolated_edges.push(edge.clone());
+            }
+        }
+    }
+
     // JTS:   /**
     // JTS:    * Label an isolated edge of a graph with its relationship to the target geometry.
     // JTS:    * If the target has dim 2 or 1, the edge can either be in the interior or the exterior.
@@ -626,6 +649,10 @@ where
     // JTS:     }
     // JTS: //System.out.println(e.getLabel());
     // JTS:   }
+    fn label_isolated_edge(edge: &mut Edge<F>, target_index: usize, target: &Geometry<F>) {
+        todo!();
+    }
+
     // JTS:
     // JTS:   /**
     // JTS:    * Isolated nodes are nodes whose labels are incomplete
