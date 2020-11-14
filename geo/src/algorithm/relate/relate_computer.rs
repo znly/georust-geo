@@ -623,7 +623,12 @@ where
         for edge in this_graph.edges() {
             let mut mut_edge = edge.borrow_mut();
             if mut_edge.is_isolated() {
-                Self::label_isolated_edge(&mut mut_edge, target_index, target_graph.geometry());
+                Self::label_isolated_edge(
+                    &self.point_locator,
+                    &mut mut_edge,
+                    target_index,
+                    target_graph.geometry(),
+                );
                 self.isolated_edges.push(edge.clone());
             }
         }
@@ -649,8 +654,26 @@ where
     // JTS:     }
     // JTS: //System.out.println(e.getLabel());
     // JTS:   }
-    fn label_isolated_edge(edge: &mut Edge<F>, target_index: usize, target: &Geometry<F>) {
-        todo!();
+    fn label_isolated_edge(
+        point_locator: &PointLocator<F>,
+        edge: &mut Edge<F>,
+        target_index: usize,
+        target: &Geometry<F>,
+    ) {
+        if target.dimensions() > Dimensions::ZeroDimensional {
+            // REVIEW: unwrap
+            let location = point_locator.locate(&edge.coordinate().unwrap(), target);
+
+            // REVIEW: unwrap
+            edge.label_mut()
+                .unwrap()
+                .set_all_locations(target_index, location);
+        } else {
+            // REVIEW: unwrap
+            edge.label_mut()
+                .unwrap()
+                .set_all_locations(target_index, Location::Exterior);
+        }
     }
 
     // JTS:
@@ -692,9 +715,9 @@ where
             // JTS:       }
             if node.is_isolated() {
                 if label.is_empty(0) {
-                    Self::label_isolated_node(&mut self.point_locator, node, 0, geometry_a)
+                    Self::label_isolated_node(&self.point_locator, node, 0, geometry_a)
                 } else {
-                    Self::label_isolated_node(&mut self.point_locator, node, 1, geometry_b)
+                    Self::label_isolated_node(&self.point_locator, node, 1, geometry_b)
                 }
             }
             // JTS:     }
@@ -708,7 +731,7 @@ where
     // JTS:   private void labelIsolatedNode(Node n, int targetIndex)
     // JTS:   {
     fn label_isolated_node(
-        point_locator: &mut PointLocator<F>,
+        point_locator: &PointLocator<F>,
         node: &mut Node<F>,
         target_index: usize,
         geometry: &Geometry<F>,

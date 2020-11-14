@@ -102,6 +102,10 @@ impl<F: num_traits::Float> Edge<F> {
     // JTS:     if (pts.length > 0) return pts[0];
     // JTS:     return null;
     // JTS:   }
+    pub fn coordinate(&self) -> Option<&Coordinate<F>> {
+        self.coords.get(0)
+    }
+
     // JTS:   public Envelope getEnvelope()
     // JTS:   {
     // JTS:     // compute envelope lazily
