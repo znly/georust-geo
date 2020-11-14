@@ -603,7 +603,10 @@ where
                 .update_intersection_matrix(intersection_matrix);
         }
 
-        todo!()
+        for node in self.nodes.iter() {
+            node.update_intersection_matrix(intersection_matrix);
+            todo!()
+        }
     }
 
     // JTS:   /**

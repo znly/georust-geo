@@ -1,7 +1,12 @@
 // JTS: import org.locationtech.jts.geom.Coordinate;
 // JTS: import org.locationtech.jts.geom.IntersectionMatrix;
 // JTS: import org.locationtech.jts.geom.Location;
-use super::{Coordinate, EdgeEnd, EdgeEndBundleStar, Float, GraphComponent, Label, Location};
+use super::{
+    Coordinate, Dimensions, EdgeEnd, EdgeEndBundleStar, Float, GraphComponent, Label, Location,
+};
+
+// weird circular dependency from GeomGraph to IntersectionMatrix
+use crate::algorithm::relate::IntersectionMatrix;
 
 pub(crate) trait Node<F>: GraphComponent
 where
@@ -218,5 +223,48 @@ where
     // JTS:   {
     // JTS:     out.println("node " + coord + " lbl: " + label);
     // JTS:   }
+    // JTS: }
+}
+
+impl<F: Float> Node<F> {
+    // from JTS#GraphComponent - seems like only node uses this impl, so implementing it directly
+    // onto node rather than the GraphComponent trait
+    // JTS:   /**
+    // JTS:    * Update the IM with the contribution for this component.
+    // JTS:    * A component only contributes if it has a labelling for both parent geometries
+    // JTS:    */
+    // JTS:   public void updateIM(IntersectionMatrix im)
+    // JTS:   {
+    // JTS:     Assert.isTrue(label.getGeometryCount() >= 2, "found partial label");
+    // JTS:     computeIM(im);
+    // JTS:   }
+    pub fn update_intersection_matrix(&self, intersection_matrix: &mut IntersectionMatrix) {
+        // REVIEW: unwrap
+        let label = self.label().unwrap();
+        assert!(label.geometry_count() >= 2, "found partial label");
+        intersection_matrix.set_at_least_if_valid(
+            label.on_location(0),
+            label.on_location(1),
+            Dimensions::ZeroDimensional,
+        );
+    }
+
+    // from JTS#RelateNode, which we've squashed into the base Node class to avoid wrestling OO hierarchies into rust.
+    // JTS:   /**
+    // JTS:    * Update the IM with the contribution for this component.
+    // JTS:    * A component only contributes if it has a labelling for both parent geometries
+    // JTS:    */
+    // JTS:   protected void computeIM(IntersectionMatrix im)
+    // JTS:   {
+    // JTS:     im.setAtLeastIfValid(label.getLocation(0), label.getLocation(1), 0);
+    // JTS:   }
+    // JTS:   /**
+    // JTS:    * Update the IM with the contribution for the EdgeEnds incident on this node.
+    // JTS:    */
+    // JTS:   void updateIMFromEdges(IntersectionMatrix im)
+    // JTS:   {
+    // JTS:     ((EdgeEndBundleStar) edges).updateIM(im);
+    // JTS:   }
+    // JTS:
     // JTS: }
 }
