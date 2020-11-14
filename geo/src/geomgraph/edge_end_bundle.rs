@@ -1,7 +1,9 @@
 use super::{
-    algorithm::boundary_node_rule::Mod2BoundaryNodeRule, Coordinate, EdgeEnd, Float, GeometryGraph,
-    Label, Location, Position,
+    algorithm::boundary_node_rule::Mod2BoundaryNodeRule, Coordinate, Edge, EdgeEnd, Float,
+    GeometryGraph, Label, Location, Position,
 };
+// weird circular dependency from GeomGraph to IntersectionMatrix
+use crate::algorithm::relate::IntersectionMatrix;
 
 // NOTE: in JTS this is in the algorithm::relate package, but because
 // we moved EdgeEndBundleStar into geomgraph, we also must move EdgeEndBundle
@@ -292,6 +294,11 @@ where
     // JTS:   {
     // JTS:     Edge.updateIM(label, im);
     // JTS:   }
+    pub fn update_intersection_matrix(&self, intersection_matrix: &mut IntersectionMatrix) {
+        // REVIEW: unwrap
+        Edge::<F>::update_intersection_matrix(self.label().unwrap(), intersection_matrix);
+    }
+
     // JTS:   public void print(PrintStream out)
     // JTS:   {
     // JTS:     out.println("EdgeEndBundle--> Label: " + label);

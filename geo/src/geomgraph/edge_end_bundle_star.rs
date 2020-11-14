@@ -3,6 +3,8 @@ use crate::geomgraph::{
 };
 
 use crate::algorithm::coordinate_position::CoordinatePosition;
+// weird circular dependency from GeomGraph to IntersectionMatrix
+use crate::algorithm::relate::IntersectionMatrix;
 
 // JTS: /**
 // JTS:  * An ordered list of {@link EdgeEndBundle}s around a {@link RelateNode}.
@@ -77,6 +79,11 @@ where
     // JTS:       esb.updateIM(im);
     // JTS:     }
     // JTS:   }
+    pub fn update_intersection_matrix(&self, intersection_matrix: &mut IntersectionMatrix) {
+        for edge_end_bundle in self.edge_ends_iter() {
+            edge_end_bundle.update_intersection_matrix(intersection_matrix);
+        }
+    }
     // JTS:
     // JTS: }
 }
@@ -173,7 +180,7 @@ where
     // JTS:   {
     // JTS:     return getEdges().iterator();
     // JTS:   }
-    fn edge_ends_iter(&mut self) -> impl Iterator<Item = &EdgeEndBundle<F>> {
+    fn edge_ends_iter(&self) -> impl Iterator<Item = &EdgeEndBundle<F>> {
         self.edge_map.values()
     }
 

@@ -598,14 +598,15 @@ where
     // JTS:   }
     fn update_intersection_matrix(&self, intersection_matrix: &mut IntersectionMatrix) {
         for isolated_edge in &self.isolated_edges {
-            isolated_edge
-                .borrow()
-                .update_intersection_matrix(intersection_matrix);
+            // REVIEW: unwrap
+            let edge = isolated_edge.borrow();
+            let label = edge.label().unwrap();
+            Edge::<F>::update_intersection_matrix(label, intersection_matrix);
         }
 
         for node in self.nodes.iter() {
             node.update_intersection_matrix(intersection_matrix);
-            todo!()
+            node.update_intersection_matrix_from_edges(intersection_matrix);
         }
     }
 

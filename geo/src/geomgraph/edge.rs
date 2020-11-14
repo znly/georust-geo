@@ -52,9 +52,7 @@ impl<F: Float> Edge<F> {
     // JTS:       im.setAtLeastIfValid(label.getLocation(0, Position.RIGHT), label.getLocation(1, Position.RIGHT),  2);
     // JTS:     }
     // JTS:   }
-    pub fn update_intersection_matrix(&self, intersection_matrix: &mut IntersectionMatrix) {
-        // REVIEW: unwrap
-        let label = self.label.as_ref().unwrap();
+    pub fn update_intersection_matrix(label: &Label, intersection_matrix: &mut IntersectionMatrix) {
         intersection_matrix.set_at_least_if_valid(
             label.location(0, Position::On),
             label.location(1, Position::On),

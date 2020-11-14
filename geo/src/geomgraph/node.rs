@@ -265,6 +265,15 @@ impl<F: Float> Node<F> {
     // JTS:   {
     // JTS:     ((EdgeEndBundleStar) edges).updateIM(im);
     // JTS:   }
-    // JTS:
+    pub fn update_intersection_matrix_from_edges(
+        &self,
+        intersection_matrix: &mut IntersectionMatrix,
+    ) {
+        // REVIEW: unwrap
+        self.edges
+            .as_ref()
+            .unwrap()
+            .update_intersection_matrix(intersection_matrix);
+    }
     // JTS: }
 }
