@@ -46,8 +46,31 @@ use crate::geomgraph::Location;
 // JTS:  */
 // JTS: public class IntersectionMatrix implements Cloneable {
 
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq)]
 pub(crate) struct IntersectionMatrix([[Dimensions; 3]; 3]);
+
+impl std::fmt::Debug for IntersectionMatrix {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        fn char_for_dim(dim: &Dimensions) -> &'static str {
+            match dim {
+                Dimensions::Empty => "F",
+                Dimensions::ZeroDimensional => "0",
+                Dimensions::OneDimensional => "1",
+                Dimensions::TwoDimensional => "2",
+            }
+        }
+        let text = self
+            .0
+            .iter()
+            .flat_map(|r| r.iter().map(char_for_dim))
+            .collect::<Vec<&str>>()
+            .join("");
+
+        f.debug_struct("IntersectionMatrix")
+            .field("dims", &text)
+            .finish()
+    }
+}
 
 impl IntersectionMatrix {
     // JTS:   /**

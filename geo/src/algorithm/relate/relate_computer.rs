@@ -832,10 +832,18 @@ mod test {
 
         let mut relate_computer = RelateComputer::new(&square_a, &square_b);
         let intersection_matrix = relate_computer.compute_intersection_matrix();
-        // TODO: expected is incorrect
+        // 212FF1FF2
         let expected = IntersectionMatrix::new([
-            [Dimensions::Empty, Dimensions::Empty, Dimensions::Empty],
-            [Dimensions::Empty, Dimensions::Empty, Dimensions::Empty],
+            [
+                Dimensions::TwoDimensional,
+                Dimensions::OneDimensional,
+                Dimensions::TwoDimensional,
+            ],
+            [
+                Dimensions::Empty,
+                Dimensions::Empty,
+                Dimensions::OneDimensional,
+            ],
             [
                 Dimensions::Empty,
                 Dimensions::Empty,
@@ -867,13 +875,21 @@ mod test {
 
         let mut relate_computer = RelateComputer::new(&square_a, &square_b);
         let intersection_matrix = relate_computer.compute_intersection_matrix();
-        // TODO: expected is incorrect
+        // 212101212
         let expected = IntersectionMatrix::new([
-            [Dimensions::Empty, Dimensions::Empty, Dimensions::Empty],
-            [Dimensions::Empty, Dimensions::Empty, Dimensions::Empty],
             [
-                Dimensions::Empty,
-                Dimensions::Empty,
+                Dimensions::TwoDimensional,
+                Dimensions::OneDimensional,
+                Dimensions::TwoDimensional,
+            ],
+            [
+                Dimensions::OneDimensional,
+                Dimensions::ZeroDimensional,
+                Dimensions::OneDimensional,
+            ],
+            [
+                Dimensions::TwoDimensional,
+                Dimensions::OneDimensional,
                 Dimensions::TwoDimensional,
             ],
         ]);
