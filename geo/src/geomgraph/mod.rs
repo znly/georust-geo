@@ -58,6 +58,8 @@ impl<
 {
 }
 
+use crate::dimensions::Dimensions;
+
 // CLEANUP: use geo::kernels::Orientation instead?
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub(crate) enum Position {

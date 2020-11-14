@@ -1,10 +1,13 @@
 use super::algorithm::LineIntersector;
-use super::{EdgeIntersectionList, GraphComponent, Label};
+use super::{Dimensions, EdgeIntersectionList, Float, GraphComponent, Label, Position};
 use geo_types::Coordinate;
+
+// REVIEW: kind of weird circular dependency on relate module from geomgraph
+use crate::algorithm::relate::IntersectionMatrix;
 
 // TODO: investigate how isEqual should be implented - not sure it makes sense
 // to derive equality, since it compares a bunch of vec's
-pub(crate) struct Edge<F: num_traits::Float> {
+pub(crate) struct Edge<F: Float> {
     coords: Vec<Coordinate<F>>,
     is_isolated: bool,
     edge_intersections: EdgeIntersectionList<F>,
@@ -12,7 +15,7 @@ pub(crate) struct Edge<F: num_traits::Float> {
     label: Option<Label>,
 }
 
-impl<F: num_traits::Float> GraphComponent for Edge<F> {
+impl<F: Float> GraphComponent for Edge<F> {
     fn label(&self) -> Option<&Label> {
         self.label.as_ref()
     }
@@ -36,21 +39,45 @@ impl<F: num_traits::Float> GraphComponent for Edge<F> {
 // JTS: public class Edge
 // JTS:   extends GraphComponent
 // JTS: {
+impl<F: Float> Edge<F> {
+    // JTS:   /**
+    // JTS:    * Updates an IM from the label for an edge.
+    // JTS:    * Handles edges from both L and A geometries.
+    // JTS:    */
+    // JTS:   public static void updateIM(Label label, IntersectionMatrix im)
+    // JTS:   {
+    // JTS:     im.setAtLeastIfValid(label.getLocation(0, Position.ON), label.getLocation(1, Position.ON), 1);
+    // JTS:     if (label.isArea()) {
+    // JTS:       im.setAtLeastIfValid(label.getLocation(0, Position.LEFT),  label.getLocation(1, Position.LEFT),   2);
+    // JTS:       im.setAtLeastIfValid(label.getLocation(0, Position.RIGHT), label.getLocation(1, Position.RIGHT),  2);
+    // JTS:     }
+    // JTS:   }
+    pub fn update_intersection_matrix(&self, intersection_matrix: &mut IntersectionMatrix) {
+        // REVIEW: unwrap
+        let label = self.label.as_ref().unwrap();
+        intersection_matrix.set_at_least_if_valid(
+            label.location(0, Position::On),
+            label.location(1, Position::On),
+            Dimensions::OneDimensional,
+        );
+
+        if label.is_area() {
+            intersection_matrix.set_at_least_if_valid(
+                label.location(0, Position::Left),
+                label.location(1, Position::Left),
+                Dimensions::TwoDimensional,
+            );
+            intersection_matrix.set_at_least_if_valid(
+                label.location(0, Position::Right),
+                label.location(1, Position::Right),
+                Dimensions::TwoDimensional,
+            );
+        }
+    }
+}
+
 // JTS:
-// JTS:   /**
-// JTS:    * Updates an IM from the label for an edge.
-// JTS:    * Handles edges from both L and A geometries.
-// JTS:    */
-// JTS:   public static void updateIM(Label label, IntersectionMatrix im)
-// JTS:   {
-// JTS:     im.setAtLeastIfValid(label.getLocation(0, Position.ON), label.getLocation(1, Position.ON), 1);
-// JTS:     if (label.isArea()) {
-// JTS:       im.setAtLeastIfValid(label.getLocation(0, Position.LEFT),  label.getLocation(1, Position.LEFT),   2);
-// JTS:       im.setAtLeastIfValid(label.getLocation(0, Position.RIGHT), label.getLocation(1, Position.RIGHT),  2);
-// JTS:     }
-// JTS:   }
-// JTS:
-impl<F: num_traits::Float> Edge<F> {
+impl<F: Float> Edge<F> {
     // JTS:   Coordinate[] pts;
     pub fn coords(&self) -> &[Coordinate<F>] {
         &self.coords
@@ -284,7 +311,7 @@ impl<F: num_traits::Float> Edge<F> {
     // JTS:   }
 }
 
-impl<F: num_traits::Float> std::cmp::PartialEq for Edge<F> {
+impl<F: Float> std::cmp::PartialEq for Edge<F> {
     // JTS:   /**
     // JTS:    * equals is defined to be:
     // JTS:    * <p>
@@ -338,7 +365,7 @@ impl<F: num_traits::Float> std::cmp::PartialEq for Edge<F> {
     }
 }
 
-impl<F: num_traits::Float> Edge<F> {
+impl<F: Float> Edge<F> {
     // JTS:   /**
     // JTS:    * @return true if the coordinate sequences of the Edges are identical
     // JTS:    */

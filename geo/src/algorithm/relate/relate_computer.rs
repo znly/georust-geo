@@ -238,7 +238,8 @@ where
 
         // JTS:     // update the IM from all components
         // JTS:     updateIM(im);
-        todo!();
+        self.update_intersection_matrix(&mut intersection_matrix);
+
         // JTS:     return im;
         // JTS:   }
         intersection_matrix
@@ -291,7 +292,7 @@ where
             (Dimensions::TwoDimensional, Dimensions::TwoDimensional) => {
                 // JTS:       if (hasProper) im.setAtLeast("212101212");
                 if has_proper {
-                    intersection_matrix.set_at_least("212101212");
+                    intersection_matrix.set_at_least_from_string("212101212");
                 }
                 // JTS:     }
             }
@@ -314,12 +315,12 @@ where
             (Dimensions::TwoDimensional, Dimensions::OneDimensional) => {
                 // JTS:       if (hasProper)          im.setAtLeast("FFF0FFFF2");
                 if has_proper {
-                    intersection_matrix.set_at_least("FFF0FFFF2");
+                    intersection_matrix.set_at_least_from_string("FFF0FFFF2");
                 }
 
                 // JTS:       if (hasProperInterior)  im.setAtLeast("1FFFFF1FF");
                 if has_proper_interior {
-                    intersection_matrix.set_at_least("1FFFFF1FF");
+                    intersection_matrix.set_at_least_from_string("1FFFFF1FF");
                 }
 
                 // JTS:     }
@@ -329,12 +330,12 @@ where
             (Dimensions::OneDimensional, Dimensions::TwoDimensional) => {
                 // JTS:       if (hasProper)          im.setAtLeast("F0FFFFFF2");
                 if has_proper {
-                    intersection_matrix.set_at_least("F0FFFFFF2");
+                    intersection_matrix.set_at_least_from_string("F0FFFFFF2");
                 }
 
                 // JTS:       if (hasProperInterior)  im.setAtLeast("1F1FFFFFF");
                 if has_proper_interior {
-                    intersection_matrix.set_at_least("1F1FFFFFF");
+                    intersection_matrix.set_at_least_from_string("1F1FFFFFF");
                 }
 
                 // JTS:     }
@@ -361,7 +362,7 @@ where
                 // JTS:       if (hasProperInterior)    im.setAtLeast("0FFFFFFFF");
                 // JTS:     }
                 if has_proper_interior {
-                    intersection_matrix.set_at_least("0FFFFFFFF");
+                    intersection_matrix.set_at_least_from_string("0FFFFFFFF");
                 }
             }
             // JTS:   }
@@ -595,7 +596,16 @@ where
     // JTS: //node.print(System.out);
     // JTS:     }
     // JTS:   }
-    // JTS:
+    fn update_intersection_matrix(&self, intersection_matrix: &mut IntersectionMatrix) {
+        for isolated_edge in &self.isolated_edges {
+            isolated_edge
+                .borrow()
+                .update_intersection_matrix(intersection_matrix);
+        }
+
+        todo!()
+    }
+
     // JTS:   /**
     // JTS:    * Processes isolated edges by computing their labelling and adding them
     // JTS:    * to the isolated edges list.
