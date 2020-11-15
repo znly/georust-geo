@@ -320,10 +320,11 @@ impl IntersectionMatrix {
             todo!("return proper error, or better yet make this a compile time macro")
         }
 
-        let i = 0;
+        let mut i = 0;
         for c in dimensions.chars() {
             let a = i / 3;
             let b = i % 3;
+            i += 1;
             match c {
                 '0' => self.0[a][b] = self.0[a][b].max(Dimensions::ZeroDimensional),
                 '1' => self.0[a][b] = self.0[a][b].max(Dimensions::OneDimensional),
