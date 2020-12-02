@@ -8,13 +8,13 @@ use super::{
 // weird circular dependency from GeomGraph to IntersectionMatrix
 use crate::algorithm::relate::IntersectionMatrix;
 
-pub(crate) trait Node<F>: GraphComponent
-where
-    F: num_traits::Float,
-{
-    fn coordinate(&self) -> &Coordinate<F>;
-    fn add_edge_end(&self, edge_end: EdgeEnd<F>);
-}
+// pub(crate) trait Node<F>: GraphComponent
+// where
+//     F: num_traits::Float,
+// {
+//     fn coordinate(&self) -> &Coordinate<F>;
+//     fn add_edge_end(&self, edge_end: EdgeEnd<F>);
+// }
 
 // JTS: /**
 // JTS:  * @version 1.7

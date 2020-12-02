@@ -22,7 +22,7 @@ use std::cell::RefCell;
 #[derive(Clone)]
 pub(crate) struct EdgeEnd<F>
 where
-    F: num_traits::Float,
+    F: Float,
 {
     // edge: RefCell<Edge<F>>,
     label: Label,
@@ -35,7 +35,7 @@ where
 
 impl<F> EdgeEnd<F>
 where
-    F: num_traits::Float,
+    F: Float,
 {
     // JTS: {
     // JTS:   protected Edge edge;  // the parent edge of this edge end
@@ -226,7 +226,6 @@ where
 #[cfg(test)]
 mod test {
     use super::*;
-    use num_traits::Zero;
 
     #[test]
     fn test_ord() {
