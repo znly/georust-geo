@@ -1,4 +1,4 @@
-use super::Coordinate;
+use super::{Coordinate, Float};
 
 // JTS: /**
 // JTS:  * Represents a point on an
@@ -18,7 +18,7 @@ use super::Coordinate;
 ///
 /// The intersection may either be a single point, or a line segment (in which case this point is
 /// the start of the line segment) The intersection point must be precise.
-pub(crate) struct EdgeIntersection<F: num_traits::Float> {
+pub(crate) struct EdgeIntersection<F: Float> {
     coord: Coordinate<F>,
     segment_index: usize,
     dist: F,
@@ -28,7 +28,7 @@ pub(crate) struct EdgeIntersection<F: num_traits::Float> {
 // JTS:   public int segmentIndex;   // the index of the containing line segment in the parent edge
 // JTS:   public double dist;        // the edge distance of this point along the containing line segment
 // JTS:
-impl<F: num_traits::Float> EdgeIntersection<F> {
+impl<F: Float> EdgeIntersection<F> {
     // JTS:   public EdgeIntersection(Coordinate coord, int segmentIndex, double dist) {
     pub fn new(coord: Coordinate<F>, segment_index: usize, dist: F) -> EdgeIntersection<F> {
         // JTS:     this.coord = new Coordinate(coord);
@@ -58,7 +58,7 @@ impl<F: num_traits::Float> EdgeIntersection<F> {
     }
 }
 
-impl<F: num_traits::Float> std::cmp::PartialEq for EdgeIntersection<F> {
+impl<F: Float> std::cmp::PartialEq for EdgeIntersection<F> {
     fn eq(&self, other: &EdgeIntersection<F>) -> bool {
         // BTreeMap requires nodes to be fully `Ord`, but we're comparing floats. Can we guarantee
         // that all nodes are non-NaN?
@@ -68,15 +68,15 @@ impl<F: num_traits::Float> std::cmp::PartialEq for EdgeIntersection<F> {
     }
 }
 
-impl<F: num_traits::Float> std::cmp::Eq for EdgeIntersection<F> {}
+impl<F: Float> std::cmp::Eq for EdgeIntersection<F> {}
 
-impl<F: num_traits::Float> std::cmp::PartialOrd for EdgeIntersection<F> {
+impl<F: Float> std::cmp::PartialOrd for EdgeIntersection<F> {
     fn partial_cmp(&self, other: &EdgeIntersection<F>) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl<F: num_traits::Float> std::cmp::Ord for EdgeIntersection<F> {
+impl<F: Float> std::cmp::Ord for EdgeIntersection<F> {
     fn cmp(&self, other: &EdgeIntersection<F>) -> std::cmp::Ordering {
         // JTS:   public int compareTo(Object obj)
         // JTS:   {
@@ -117,7 +117,7 @@ impl<F: num_traits::Float> std::cmp::Ord for EdgeIntersection<F> {
     }
 }
 
-impl<F: num_traits::Float> EdgeIntersection<F> {
+impl<F: Float> EdgeIntersection<F> {
     // JTS:
     // JTS:   public boolean isEndPoint(int maxSegmentIndex)
     // JTS:   {

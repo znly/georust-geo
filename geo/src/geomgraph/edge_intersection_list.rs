@@ -1,4 +1,4 @@
-use super::{Coordinate, Edge, EdgeIntersection};
+use super::{Coordinate, Edge, EdgeIntersection, Float};
 
 use std::collections::BTreeSet;
 
@@ -14,14 +14,14 @@ use std::collections::BTreeSet;
 #[derive(PartialEq)]
 pub(crate) struct EdgeIntersectionList<F>
 where
-    F: num_traits::Float,
+    F: Float,
 {
     node_set: BTreeSet<EdgeIntersection<F>>,
 }
 
 impl<F> EdgeIntersectionList<F>
 where
-    F: num_traits::Float,
+    F: Float,
 {
     // JTS:   // a Map <EdgeIntersection, EdgeIntersection>
     // JTS:   private Map nodeMap = new TreeMap();
@@ -75,7 +75,7 @@ where
 // JTS:    * @return an Iterator of EdgeIntersections
 // JTS:    */
 // JTS:   public Iterator iterator() { return nodeMap.values().iterator(); }
-impl<'a, F: num_traits::Float> IntoIterator for &'a EdgeIntersectionList<F> {
+impl<'a, F: Float> IntoIterator for &'a EdgeIntersectionList<F> {
     type Item = &'a EdgeIntersection<F>;
     type IntoIter = std::collections::btree_set::Iter<'a, EdgeIntersection<F>>;
 
@@ -86,7 +86,7 @@ impl<'a, F: num_traits::Float> IntoIterator for &'a EdgeIntersectionList<F> {
 
 impl<F> EdgeIntersectionList<F>
 where
-    F: num_traits::Float,
+    F: Float,
 {
     // JTS:
     // JTS:   /**
