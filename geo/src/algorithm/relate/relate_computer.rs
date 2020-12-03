@@ -790,24 +790,10 @@ mod test {
 
         let mut relate_computer = RelateComputer::new(&square_a, &square_b);
         let intersection_matrix = relate_computer.compute_intersection_matrix();
-        let expected = IntersectionMatrix::new([
-            [
-                Dimensions::Empty,
-                Dimensions::Empty,
-                Dimensions::TwoDimensional,
-            ],
-            [
-                Dimensions::Empty,
-                Dimensions::Empty,
-                Dimensions::OneDimensional,
-            ],
-            [
-                Dimensions::TwoDimensional,
-                Dimensions::OneDimensional,
-                Dimensions::TwoDimensional,
-            ],
-        ]);
-        assert_eq!(intersection_matrix, expected);
+        assert_eq!(
+            intersection_matrix,
+            IntersectionMatrix::from_str("FF2FF1212")
+        );
     }
 
     #[test]
@@ -832,25 +818,10 @@ mod test {
 
         let mut relate_computer = RelateComputer::new(&square_a, &square_b);
         let intersection_matrix = relate_computer.compute_intersection_matrix();
-        // 212FF1FF2
-        let expected = IntersectionMatrix::new([
-            [
-                Dimensions::TwoDimensional,
-                Dimensions::OneDimensional,
-                Dimensions::TwoDimensional,
-            ],
-            [
-                Dimensions::Empty,
-                Dimensions::Empty,
-                Dimensions::OneDimensional,
-            ],
-            [
-                Dimensions::Empty,
-                Dimensions::Empty,
-                Dimensions::TwoDimensional,
-            ],
-        ]);
-        assert_eq!(intersection_matrix, expected);
+        assert_eq!(
+            intersection_matrix,
+            IntersectionMatrix::from_str("212FF1FF2")
+        );
     }
 
     #[test]
@@ -875,24 +846,9 @@ mod test {
 
         let mut relate_computer = RelateComputer::new(&square_a, &square_b);
         let intersection_matrix = relate_computer.compute_intersection_matrix();
-        // 212101212
-        let expected = IntersectionMatrix::new([
-            [
-                Dimensions::TwoDimensional,
-                Dimensions::OneDimensional,
-                Dimensions::TwoDimensional,
-            ],
-            [
-                Dimensions::OneDimensional,
-                Dimensions::ZeroDimensional,
-                Dimensions::OneDimensional,
-            ],
-            [
-                Dimensions::TwoDimensional,
-                Dimensions::OneDimensional,
-                Dimensions::TwoDimensional,
-            ],
-        ]);
-        assert_eq!(intersection_matrix, expected);
+        assert_eq!(
+            intersection_matrix,
+            IntersectionMatrix::from_str("212101212")
+        );
     }
 }

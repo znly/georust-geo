@@ -117,14 +117,20 @@ impl IntersectionMatrix {
     // JTS:     matrix[Location.EXTERIOR][Location.EXTERIOR] = other.matrix[Location.EXTERIOR][Location.EXTERIOR];
     // JTS:   }
 
-    pub fn empty() -> IntersectionMatrix {
+    pub fn empty() -> Self {
         IntersectionMatrix([[Dimensions::Empty; 3]; 3])
     }
 
     // CLEANUP: remove?
     #[allow(dead_code)]
-    pub fn new(dimensions: [[Dimensions; 3]; 3]) -> IntersectionMatrix {
+    pub fn new(dimensions: [[Dimensions; 3]; 3]) -> Self {
         IntersectionMatrix(dimensions)
+    }
+
+    pub fn from_str(str: &str) -> Self {
+        let mut im = IntersectionMatrix::empty();
+        im.set_at_least_from_string(str);
+        im
     }
 
     // JTS:   /**
