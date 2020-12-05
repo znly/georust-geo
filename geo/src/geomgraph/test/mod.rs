@@ -3,20 +3,26 @@
 use crate::algorithm::relate::IntersectionMatrix;
 use geo_types::Geometry;
 
-type Failure = RelateTestCase;
+#[derive(Debug)]
+struct RelateTestFailure {
+    actual_result: IntersectionMatrix,
+    input: RelateTestCase,
+}
 
 #[derive(Debug)]
 struct TestRunner {
     dir_path: String,
-    failures: Vec<Failure>,
+    failures: Vec<RelateTestFailure>,
     successes: Vec<RelateTestCase>,
 }
 
 #[derive(Debug)]
 struct RelateTestCase {
+    expected_result: IntersectionMatrix,
+    test_file_name: String,
+    description: String,
     geometry_a: Geometry<f64>,
     geometry_b: Geometry<f64>,
-    expected_result: IntersectionMatrix,
 }
 
 /// <run>
@@ -107,15 +113,19 @@ impl TestRunner {
         println!("cases.len(): {}", cases.len());
         for case in cases {
             use crate::algorithm::relate::relate_computer::RelateComputer;
-            println!("running case: {:?}", case);
+
             let mut relate_computer = RelateComputer::new(&case.geometry_a, &case.geometry_b);
             let intersection_matrix = relate_computer.compute_intersection_matrix();
             if intersection_matrix == case.expected_result {
-                println!("case succeeded");
+                println!("succeeded: {:?}", case);
                 self.successes.push(case);
             } else {
-                println!("case failed");
-                self.failures.push(case);
+                let failure = RelateTestFailure {
+                    input: case,
+                    actual_result: intersection_matrix,
+                };
+                println!("failed: {:?}", failure);
+                self.failures.push(failure);
             }
         }
         Ok(())
@@ -178,6 +188,13 @@ impl TestRunner {
                                 _ => panic!("unexpected args for relate operation"),
                             };
                             let relate_test_case = RelateTestCase {
+                                test_file_name: entry
+                                    .path()
+                                    .file_name()
+                                    .unwrap()
+                                    .to_string_lossy()
+                                    .to_string(),
+                                description: case.desc.clone(),
                                 geometry_a: geometry_a.clone(),
                                 geometry_b: geometry_b.clone(),
                                 expected_result,
@@ -203,9 +220,13 @@ fn test_general_cases() {
         "successes: {:?}",
         &runner.successes
     );
+
+    let total = runner.successes.len() + runner.failures.len();
     assert!(
         runner.failures.is_empty(),
-        "failures: {:?}",
+        "test runner failed {} of {} cases. Failures: {:?}",
+        runner.failures.len(),
+        total,
         &runner.failures
     );
 }
