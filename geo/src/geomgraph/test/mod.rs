@@ -14,6 +14,8 @@ struct TestRunner {
     dir_path: String,
     failures: Vec<RelateTestFailure>,
     successes: Vec<RelateTestCase>,
+    // If set, only runs the cases matching (test_file_name, desc)
+    filter: Option<(String, String)>,
 }
 
 #[derive(Debug)]
@@ -104,12 +106,18 @@ impl TestRunner {
             dir_path,
             successes: Vec::new(),
             failures: Vec::new(),
+            filter: None,
         }
     }
 
     #[track_caller]
     fn run_all(&mut self) -> Result<(), Box<dyn std::error::Error>> {
-        let cases = self.parse_cases()?;
+        self.run(None)
+    }
+
+    /// `filter`: when specified runs just the test described by `(test_file_name, desc)`, otherwise all tests are run
+    fn run(&mut self, filter: Option<(&str, &str)>) -> Result<(), Box<dyn std::error::Error>> {
+        let cases = self.parse_cases(filter)?;
         println!("cases.len(): {}", cases.len());
         for case in cases {
             use crate::algorithm::relate::relate_computer::RelateComputer;
@@ -132,7 +140,10 @@ impl TestRunner {
     }
 
     #[track_caller]
-    fn parse_cases(&self) -> Result<Vec<RelateTestCase>, Box<dyn std::error::Error>> {
+    fn parse_cases(
+        &self,
+        filter: Option<(&str, &str)>,
+    ) -> Result<Vec<RelateTestCase>, Box<dyn std::error::Error>> {
         use std::convert::TryFrom;
         use std::fs::File;
         use std::io::BufReader;
@@ -156,6 +167,16 @@ impl TestRunner {
                 format!("invalid test input: {:?}. error: {:?}", entry.path(), err)
             })?;
             for case in run.cases {
+                if let Some(filter) = filter {
+                    if (
+                        entry.file_name().to_string_lossy().to_string().as_str(),
+                        case.desc.as_str(),
+                    ) != filter
+                    {
+                        println!("skipping test");
+                        continue;
+                    }
+                }
                 // re: `unwrap` see https://github.com/georust/wkt/issues/49
                 // we could map to our own error or something, but this is just test code anyway
                 let wkt_a = match wkt::Wkt::from_str(&case.a) {
@@ -214,12 +235,11 @@ impl TestRunner {
 fn test_general_cases() {
     let mut runner =
         TestRunner::new("/Users/mkirk/src/georust/geo/geo/resources/testxml/general".to_string());
-    runner.run_all().expect("error while running tests");
-    assert!(
-        !runner.successes.is_empty(),
-        "successes: {:?}",
-        &runner.successes
-    );
+
+    //runner.run_all().expect("error while running tests");
+    runner
+        .run(Some(("TestRelatePP.xml", "same points")))
+        .expect("error while running tests");
 
     let total = runner.successes.len() + runner.failures.len();
     assert!(
@@ -228,5 +248,12 @@ fn test_general_cases() {
         runner.failures.len(),
         total,
         &runner.failures
+    );
+
+    // sanity check
+    assert!(
+        !runner.successes.is_empty(),
+        "successes: {:?}",
+        &runner.successes
     );
 }
