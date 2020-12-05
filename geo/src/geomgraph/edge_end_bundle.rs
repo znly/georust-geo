@@ -78,6 +78,7 @@ where
         self.label.as_mut()
     }
 
+    // CLEANUP: borrow?
     pub fn coordinate(&self) -> Coordinate<F> {
         self.coordinate
     }

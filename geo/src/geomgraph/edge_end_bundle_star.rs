@@ -285,11 +285,17 @@ where
 
         // CLEANUP: in JTS this is built lazily and cached. It'll require a little borrow juggling. Is
         // that worthwhile?
-        let edge_end = self.edge_ends_iter().next().unwrap();
-        let coordinate = edge_end.coordinate();
-        let point_in_area_location = self
-            .point_in_area_location
-            .unwrap_or_else(|| self.build_point_in_area_location(&coordinate, graph_a, graph_b));
+        let point_in_area_location = self.point_in_area_location.or_else(|| {
+            let coord = self
+                .edge_ends_iter()
+                .next()
+                .map(|edge_end_bundle| edge_end_bundle.coordinate());
+
+            coord.map(|coord| self.build_point_in_area_location(&coord, graph_a, graph_b))
+        });
+        if self.point_in_area_location.is_some() && point_in_area_location.is_some() {
+            self.point_in_area_location = point_in_area_location;
+        }
 
         for edge_end in self.edge_ends_iter_mut() {
             // CLEANUP: unwrap
@@ -313,7 +319,7 @@ where
                         // REVIEW: Borrowing rules forbids this.
                         // let coord = edge_end.coordinate();
                         // self.get_location(geom_index, coord, graph_a, graph_b)
-                        point_in_area_location[geom_index]
+                        point_in_area_location.unwrap()[geom_index]
                     };
                     label.set_all_locations_if_empty(geom_index, location);
                 }

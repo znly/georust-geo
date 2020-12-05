@@ -111,7 +111,7 @@ impl TestRunner {
             let mut relate_computer = RelateComputer::new(&case.geometry_a, &case.geometry_b);
             let intersection_matrix = relate_computer.compute_intersection_matrix();
             if intersection_matrix == case.expected_result {
-                println!("case succeeeded");
+                println!("case succeeded");
                 self.successes.push(case);
             } else {
                 println!("case failed");
@@ -195,8 +195,9 @@ impl TestRunner {
 
 #[test]
 fn test_general_cases() {
-    let mut runner = TestRunner::new("resources/testxml/General".to_string());
-    runner.run_all().unwrap();
+    let mut runner =
+        TestRunner::new("/Users/mkirk/src/georust/geo/geo/resources/testxml/general".to_string());
+    runner.run_all().expect("error while running tests");
     assert!(
         !runner.successes.is_empty(),
         "successes: {:?}",
