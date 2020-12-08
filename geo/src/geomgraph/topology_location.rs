@@ -1,6 +1,7 @@
 // JTS: import org.locationtech.jts.geom.Location;
 
 use super::{Location, Position};
+use serde::export::Formatter;
 
 // JTS:
 // JTS: /**
@@ -37,6 +38,20 @@ pub(crate) struct TopologyLocation {
     //     OneLeftRight(Location, Location, Location)
     // }
     location: Vec<Option<Location>>,
+}
+
+impl std::fmt::Debug for TopologyLocation {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for loc in &self.location {
+            match loc {
+                Some(Location::Interior) => write!(f, "i")?,
+                Some(Location::Boundary) => write!(f, "b")?,
+                Some(Location::Exterior) => write!(f, "e")?,
+                None => write!(f, "_")?,
+            }
+        }
+        Ok(())
+    }
 }
 
 impl TopologyLocation {

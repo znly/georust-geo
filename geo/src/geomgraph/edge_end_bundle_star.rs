@@ -341,7 +341,7 @@ where
     // JTS:       ee.computeLabel(boundaryNodeRule);
     // JTS:     }
     // JTS:   }
-    // TODO: support pluggable bondary node rules?
+    // TODO: support pluggable boundary node rules?
     fn compute_edge_end_labels(&mut self) {
         // REVIEW: note EdgeEndBundle is a subclass of EdgeEnd, so it's var name in JTS is a little
         // confusing

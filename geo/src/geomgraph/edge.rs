@@ -53,6 +53,10 @@ impl<F: Float> Edge<F> {
     // JTS:     }
     // JTS:   }
     pub fn update_intersection_matrix(label: &Label, intersection_matrix: &mut IntersectionMatrix) {
+        // FIXME: at this point we're getting:
+        // (location_a: interior, location_b: boundary, 1D)
+        // But it should be:
+        // (location_a: boundary, location_b: interior, 1D)
         intersection_matrix.set_at_least_if_valid(
             label.location(0, Position::On),
             label.location(1, Position::On),
