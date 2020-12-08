@@ -236,10 +236,10 @@ fn test_general_cases() {
     let mut runner =
         TestRunner::new("/Users/mkirk/src/georust/geo/geo/resources/testxml/general".to_string());
 
-    //runner.run_all().expect("error while running tests");
-    runner
-        .run(Some(("TestRelatePP.xml", "same points")))
-        .expect("error while running tests");
+    runner.run_all().expect("error while running tests");
+    //runner
+    //    .run(Some(("TestRelatePP.xml", "same points")))
+    //    .expect("error while running tests");
 
     let total = runner.successes.len() + runner.failures.len();
     assert!(
