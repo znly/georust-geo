@@ -66,9 +66,7 @@ impl std::fmt::Debug for IntersectionMatrix {
             .collect::<Vec<&str>>()
             .join("");
 
-        f.debug_struct("IntersectionMatrix")
-            .field("dims", &text)
-            .finish()
+        write!(f, "IntersectionMatrix({})", &text)
     }
 }
 

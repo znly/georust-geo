@@ -1,5 +1,6 @@
 // JTS: import org.locationtech.jts.geom.Location;
 use super::{Location, Position, TopologyLocation};
+use serde::export::Formatter;
 
 // JTS:
 // JTS:  /**
@@ -49,6 +50,16 @@ use super::{Location, Position, TopologyLocation};
 pub(crate) struct Label {
     // REVIEW: better name? what does this stand for - "element location's topology"?
     elt: [TopologyLocation; 2],
+}
+
+impl std::fmt::Debug for Label {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Label {{ A: {:?}, B: {:?} }}",
+            &self.elt[0], &self.elt[1]
+        )
+    }
 }
 
 impl Label {

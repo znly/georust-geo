@@ -41,13 +41,25 @@ pub(crate) struct TopologyLocation {
 }
 
 impl std::fmt::Debug for TopologyLocation {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for loc in &self.location {
-            match loc {
-                Some(Location::Interior) => write!(f, "i")?,
-                Some(Location::Boundary) => write!(f, "b")?,
-                Some(Location::Exterior) => write!(f, "e")?,
-                None => write!(f, "_")?,
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        fn location_to_str(location: Option<Location>, f: &mut Formatter) -> std::fmt::Result {
+            match location {
+                Some(Location::Interior) => write!(f, "i"),
+                Some(Location::Boundary) => write!(f, "b"),
+                Some(Location::Exterior) => write!(f, "e"),
+                None => write!(f, "_"),
+            }
+        }
+        match self.location.len() {
+            1 => location_to_str(self.location[Position::On as usize], f)?,
+            3 => {
+                location_to_str(self.location[Position::Left as usize], f)?;
+                location_to_str(self.location[Position::On as usize], f)?;
+                location_to_str(self.location[Position::Right as usize], f)?;
+            }
+            _ => {
+                debug_assert!(false, "invalid TopologyLocation");
+                write!(f, "invalid TopologyLocation")?;
             }
         }
         Ok(())

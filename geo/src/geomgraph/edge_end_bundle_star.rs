@@ -1,9 +1,10 @@
+use crate::algorithm::coordinate_position::CoordinatePosition;
 use crate::geomgraph::{
     Coordinate, EdgeEnd, EdgeEndBundle, Float, GeometryGraph, Location, Position,
 };
-
-use crate::algorithm::coordinate_position::CoordinatePosition;
+use crate::Geometry;
 // weird circular dependency from GeomGraph to IntersectionMatrix
+use crate::algorithm::dimensions::Dimensions;
 use crate::algorithm::relate::IntersectionMatrix;
 
 // JTS: /**
@@ -22,7 +23,7 @@ use crate::algorithm::relate::IntersectionMatrix;
 // JTS:   public EdgeEndBundleStar() {
 // JTS:   }
 // JTS:
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub(crate) struct EdgeEndBundleStar<F>
 where
     F: Float,
@@ -82,6 +83,10 @@ where
     pub fn update_intersection_matrix(&self, intersection_matrix: &mut IntersectionMatrix) {
         for edge_end_bundle in self.edge_ends_iter() {
             edge_end_bundle.update_intersection_matrix(intersection_matrix);
+            println!(
+                "updated intersection_matrix: {:?} from edge_end_bundle: {:?}",
+                intersection_matrix, edge_end_bundle
+            );
         }
     }
     // JTS:
@@ -212,6 +217,7 @@ where
         graph_a: &GeometryGraph<F>,
         graph_b: &GeometryGraph<F>,
     ) {
+        println!("edge_end_bundle_star: {:?}", self);
         // JTS:     computeEdgeEndLabels(geomGraph[0].getBoundaryNodeRule());
         self.compute_edge_end_labels();
         // JTS:     // Propagate side labels  around the edges in the star
@@ -331,6 +337,8 @@ where
             // JTS: //Debug.printIfWatch(this);
             // JTS:   }
         }
+
+        println!("edge_end_bundle_star: {:?}", self);
     }
 
     // JTS:   private void computeEdgeEndLabels(BoundaryNodeRule boundaryNodeRule)

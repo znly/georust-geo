@@ -26,14 +26,14 @@ use crate::algorithm::relate::IntersectionMatrix;
 // JTS:  */
 // JTS: public class EdgeEndBundle
 // JTS:   extends EdgeEnd
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub(crate) struct EdgeEndBundle<F>
 where
     F: Float,
 {
     coordinate: Coordinate<F>,
-    edge_ends: Vec<EdgeEnd<F>>,
     label: Option<Label>,
+    edge_ends: Vec<EdgeEnd<F>>,
 }
 
 impl<F> EdgeEndBundle<F>

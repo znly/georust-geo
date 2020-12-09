@@ -21,7 +21,7 @@
 ///        SW ┃ SE
 ///          (-)
 // CLEANUP: can we remove explicit discriminant? It's used in
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub enum Quadrant {
     NE = 0,
     NW = 1,

@@ -1,5 +1,6 @@
 use super::{Coordinate, Edge, Float, Label, Node, Quadrant};
 
+use serde::export::Formatter;
 use std::cell::RefCell;
 
 // JTS: import org.locationtech.jts.algorithm.BoundaryNodeRule;
@@ -31,6 +32,20 @@ where
     delta: Coordinate<F>,
     quadrant: Quadrant,
     node: *const Node<F>,
+}
+
+impl<F: Float> std::fmt::Debug for EdgeEnd<F> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("EdgeEnd")
+            .field("label", &self.label)
+            .field(
+                "coords",
+                &format!("{:?} -> {:?}", &self.coord_0, &self.coord_1),
+            )
+            .field("node", &self.node)
+            .field("quadrant", &self.quadrant)
+            .finish()
+    }
 }
 
 impl<F> EdgeEnd<F>

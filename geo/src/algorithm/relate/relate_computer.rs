@@ -604,6 +604,10 @@ where
             Edge::<F>::update_intersection_matrix(label, intersection_matrix);
         }
 
+        println!(
+            "after updated_intersection_matrix(isolated_edge.label): {:?}",
+            intersection_matrix
+        );
         for node in self.nodes.iter() {
             node.update_intersection_matrix(intersection_matrix);
             node.update_intersection_matrix_from_edges(intersection_matrix);

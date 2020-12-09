@@ -22,12 +22,13 @@ use crate::algorithm::relate::IntersectionMatrix;
 // JTS: public class Node
 // JTS:   extends GraphComponent
 // JTS: {
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub(crate) struct Node<F>
 where
     F: Float,
 {
     coordinate: Coordinate<F>,
+    label: Label,
     // CLEANUP: can we get rid of this Option?
     //  - BasicNodeFactory which is used by GeometryGraph via PlanarGraph passes edges: None
     //  - RelateNodeFactory which is used  by RelateComputer passes edge: EdgeEndBundleStar
@@ -35,7 +36,6 @@ where
     // It becomes very prickly to make it generic or boxed, so sticking with just what we need for
     // relate for now.
     edges: Option<EdgeEndBundleStar<F>>,
-    label: Label,
 }
 
 impl<F> GraphComponent for Node<F>
@@ -246,6 +246,10 @@ impl<F: Float> Node<F> {
             label.on_location(0),
             label.on_location(1),
             Dimensions::ZeroDimensional,
+        );
+        println!(
+            "updated intersection_matrix: {:?} from node: {:?}",
+            intersection_matrix, self
         );
     }
 
