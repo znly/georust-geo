@@ -367,15 +367,25 @@ where
     // JTS:     return ptInAreaLocation[geomIndex];
     // JTS:   }
     fn build_point_in_area_location(
-        &mut self,
+        &self,
         coord: &Coordinate<F>,
         graph_a: &GeometryGraph<F>,
         graph_b: &GeometryGraph<F>,
     ) -> [Location; 2] {
         [
-            graph_a.geometry().coordinate_position(coord).into(),
-            graph_b.geometry().coordinate_position(coord).into(),
+            self.point_in_area(coord, graph_a.geometry()),
+            self.point_in_area(coord, graph_b.geometry()),
         ]
+    }
+
+    fn point_in_area(&self, coord: &Coordinate<F>, geometry: &Geometry<F>) -> Location {
+        use crate::algorithm::dimensions::HasDimensions;
+        if geometry.dimensions() == Dimensions::TwoDimensional {
+            geometry.coordinate_position(coord).into()
+        } else {
+            // if geometry is *not* an area, Coord is always Exterior
+            Location::Exterior
+        }
     }
 
     // JTS:   public boolean isAreaLabelsConsistent(GeometryGraph geomGraph)
