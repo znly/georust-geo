@@ -62,7 +62,7 @@
 </case>
 
 <case>
-  <desc>Line vs line - pointwise equal</desc>
+  <desc>Line vs line - pointwise equal short</desc>
   <a>
     LINESTRING(20 20, 80 80)
   </a>

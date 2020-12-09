@@ -173,7 +173,7 @@ impl TestRunner {
                         case.desc.as_str(),
                     ) != filter
                     {
-                        println!("skipping test");
+                        //println!("skipping test");
                         continue;
                     }
                 }
@@ -238,7 +238,7 @@ fn test_general_cases() {
 
     runner.run_all().expect("error while running tests");
     // runner
-    //     .run(Some(("TestRelatePA.xml", "PmA - point in B: mod-2 I")))
+    //     .run(Some(("TestRelateLL.xml", "Line vs line - pointwise equal short")))
     //     .expect("error while running tests");
 
     let total = runner.successes.len() + runner.failures.len();

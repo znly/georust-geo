@@ -238,6 +238,10 @@ where
 
         // JTS:     // update the IM from all components
         // JTS:     updateIM(im);
+        println!(
+            "before update_intersection_matrix: {:?}",
+            &intersection_matrix
+        );
         self.update_intersection_matrix(&mut intersection_matrix);
 
         // JTS:     return im;
@@ -597,17 +601,22 @@ where
     // JTS:     }
     // JTS:   }
     fn update_intersection_matrix(&self, intersection_matrix: &mut IntersectionMatrix) {
+        println!(
+            "before updated_intersection_matrix(isolated_edges): {:?}",
+            intersection_matrix
+        );
         for isolated_edge in &self.isolated_edges {
             // REVIEW: unwrap
             let edge = isolated_edge.borrow();
             let label = edge.label().unwrap();
             Edge::<F>::update_intersection_matrix(label, intersection_matrix);
+            println!(
+                "after updated_intersection_matrix(isolated_edge.label): {:?}",
+                intersection_matrix
+            );
         }
+        // MJK: same -lines: wrong output by this point
 
-        println!(
-            "after updated_intersection_matrix(isolated_edge.label): {:?}",
-            intersection_matrix
-        );
         for node in self.nodes.iter() {
             node.update_intersection_matrix(intersection_matrix);
             node.update_intersection_matrix_from_edges(intersection_matrix);
