@@ -574,7 +574,7 @@ where
     pub fn compute_self_nodes(
         &mut self,
         line_intersector: Box<dyn LineIntersector<F>>,
-        _compute_ring_self_nodes: bool,
+        compute_ring_self_nodes: bool,
         is_done_when_proper_intersection: bool,
     ) -> SegmentIntersector<F> {
         // JTS:     SegmentIntersector si = new SegmentIntersector(li, true, false);
@@ -594,7 +594,13 @@ where
         // JTS:     boolean computeAllSegments = computeRingSelfNodes || ! isRings;
         // FIXME: I think this will give incorrect answers for some geometries, but
         //        for started I'm only testing polygons, for which this is always true
-        let compute_all_segments = false;
+        let is_rings = match self.geometry() {
+            Geometry::LineString(ls) => ls.is_closed(),
+            Geometry::MultiLineString(ls) => ls.is_closed(),
+            Geometry::Polygon(_) | Geometry::MultiPolygon(_) => true,
+            _ => false,
+        };
+        let compute_all_segments = compute_ring_self_nodes || !is_rings;
 
         // JTS:     esi.computeIntersections(edges, si, computeAllSegments);
         edge_set_intersector.compute_intersections(
