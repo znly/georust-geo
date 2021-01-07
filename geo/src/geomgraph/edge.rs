@@ -7,6 +7,7 @@ use crate::algorithm::relate::IntersectionMatrix;
 
 // TODO: investigate how isEqual should be implented - not sure it makes sense
 // to derive equality, since it compares a bunch of vec's
+#[derive(Debug)]
 pub(crate) struct Edge<F: Float> {
     coords: Vec<Coordinate<F>>,
     is_isolated: bool,

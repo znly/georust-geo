@@ -611,8 +611,8 @@ where
             let label = edge.label().unwrap();
             Edge::<F>::update_intersection_matrix(label, intersection_matrix);
             println!(
-                "after updated_intersection_matrix(isolated_edge.label): {:?}",
-                intersection_matrix
+                "after updated_intersection_matrix(isolated_edge: {:?}, label: {:?}): {:?}",
+                edge, label, intersection_matrix
             );
         }
         // MJK: same -lines: wrong output by this point

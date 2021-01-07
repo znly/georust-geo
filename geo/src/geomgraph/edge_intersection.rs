@@ -18,6 +18,7 @@ use super::{Coordinate, Float};
 ///
 /// The intersection may either be a single point, or a line segment (in which case this point is
 /// the start of the line segment) The intersection point must be precise.
+#[derive(Debug)]
 pub(crate) struct EdgeIntersection<F: Float> {
     coord: Coordinate<F>,
     segment_index: usize,
