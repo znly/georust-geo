@@ -1,6 +1,7 @@
 // JTS: import org.locationtech.jts.geom.Location;
 use super::{Location, Position, TopologyLocation};
-use serde::export::Formatter;
+
+use std::fmt;
 
 // JTS:
 // JTS:  /**
@@ -52,8 +53,8 @@ pub(crate) struct Label {
     elt: [TopologyLocation; 2],
 }
 
-impl std::fmt::Debug for Label {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+impl fmt::Debug for Label {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
             "Label {{ A: {:?}, B: {:?} }}",

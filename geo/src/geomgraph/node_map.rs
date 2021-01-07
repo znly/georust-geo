@@ -1,6 +1,7 @@
 use super::{Coordinate, EdgeEnd, Float, GraphComponent, Location, Node, NodeFactory};
 
 use std::collections::BTreeMap;
+use std::fmt;
 use std::marker::PhantomData;
 
 // JTS: import org.locationtech.jts.geom.Coordinate;
@@ -21,12 +22,12 @@ where
     _node_factory: PhantomData<NF>,
 }
 
-impl<F, NF> std::fmt::Debug for NodeMap<F, NF>
+impl<F, NF> fmt::Debug for NodeMap<F, NF>
 where
     F: Float,
     NF: NodeFactory<F>,
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("NodeMap")
             .field("map.len()", &self.map.len())
             .finish()

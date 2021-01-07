@@ -1,7 +1,7 @@
 use super::{Coordinate, Edge, Float, Label, Node, Quadrant};
 
-use serde::export::Formatter;
 use std::cell::RefCell;
+use std::fmt;
 
 // JTS: import org.locationtech.jts.algorithm.BoundaryNodeRule;
 // JTS: import org.locationtech.jts.algorithm.Orientation;
@@ -34,8 +34,8 @@ where
     node: *const Node<F>,
 }
 
-impl<F: Float> std::fmt::Debug for EdgeEnd<F> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+impl<F: Float> fmt::Debug for EdgeEnd<F> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("EdgeEnd")
             .field("label", &self.label)
             .field(
