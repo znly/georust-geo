@@ -230,7 +230,8 @@ where
     ) {
         // JTS:     if (e0 == e1 && segIndex0 == segIndex1) return;
         // REVIEW: I *think* we want to compare references here, rather than value equality
-        if *edge0.borrow() == *edge1.borrow() && segment_index_0 == segment_index_1 {
+        // if *edge0.borrow() == *edge1.borrow() && segment_index_0 == segment_index_1 {
+        if edge0.as_ptr() == edge1.as_ptr() && segment_index_0 == segment_index_1 {
             return;
         }
 
