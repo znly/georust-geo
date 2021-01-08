@@ -1,9 +1,8 @@
 use super::{EdgeEndBuilder, IntersectionMatrix, RelateNodeFactory};
 use crate::algorithm::dimensions::{Dimensions, HasDimensions};
 use crate::geomgraph::{
-    algorithm::{PointLocator, RobustLineIntersector},
-    index::SegmentIntersector,
-    Edge, EdgeEnd, Float, GeometryGraph, GraphComponent, Location, Node, NodeMap,
+    algorithm::RobustLineIntersector, index::SegmentIntersector, Edge, EdgeEnd, Float,
+    GeometryGraph, GraphComponent, Location, Node, NodeMap,
 };
 
 use geo_types::Geometry;
@@ -60,7 +59,6 @@ where
     nodes: NodeMap<F, RelateNodeFactory>,
     line_intersector: RobustLineIntersector<F>,
     isolated_edges: Vec<Rc<RefCell<Edge<F>>>>,
-    point_locator: PointLocator<F>,
 }
 
 // CLEANUP: remove this.
@@ -83,7 +81,6 @@ where
             nodes: NodeMap::new(),
             isolated_edges: vec![],
             line_intersector: RobustLineIntersector::new(),
-            point_locator: PointLocator::new(),
         }
     }
 
@@ -650,12 +647,7 @@ where
         for edge in this_graph.edges() {
             let mut mut_edge = edge.borrow_mut();
             if mut_edge.is_isolated() {
-                Self::label_isolated_edge(
-                    &self.point_locator,
-                    &mut mut_edge,
-                    target_index,
-                    target_graph.geometry(),
-                );
+                Self::label_isolated_edge(&mut mut_edge, target_index, target_graph.geometry());
                 self.isolated_edges.push(edge.clone());
             }
         }
@@ -681,15 +673,13 @@ where
     // JTS:     }
     // JTS: //System.out.println(e.getLabel());
     // JTS:   }
-    fn label_isolated_edge(
-        point_locator: &PointLocator<F>,
-        edge: &mut Edge<F>,
-        target_index: usize,
-        target: &Geometry<F>,
-    ) {
+    fn label_isolated_edge(edge: &mut Edge<F>, target_index: usize, target: &Geometry<F>) {
         if target.dimensions() > Dimensions::ZeroDimensional {
             // REVIEW: unwrap
-            let location = point_locator.locate(&edge.coordinate().unwrap(), target);
+            use crate::algorithm::coordinate_position::CoordinatePosition;
+            let location = target
+                .coordinate_position(edge.coordinate().unwrap())
+                .into();
 
             // REVIEW: unwrap
             edge.label_mut()
@@ -742,9 +732,9 @@ where
             // JTS:       }
             if node.is_isolated() {
                 if label.is_empty(0) {
-                    Self::label_isolated_node(&self.point_locator, node, 0, geometry_a)
+                    Self::label_isolated_node(node, 0, geometry_a)
                 } else {
-                    Self::label_isolated_node(&self.point_locator, node, 1, geometry_b)
+                    Self::label_isolated_node(node, 1, geometry_b)
                 }
             }
             // JTS:     }
@@ -757,14 +747,10 @@ where
     // JTS:    */
     // JTS:   private void labelIsolatedNode(Node n, int targetIndex)
     // JTS:   {
-    fn label_isolated_node(
-        point_locator: &PointLocator<F>,
-        node: &mut Node<F>,
-        target_index: usize,
-        geometry: &Geometry<F>,
-    ) {
+    fn label_isolated_node(node: &mut Node<F>, target_index: usize, geometry: &Geometry<F>) {
         // JTS:     int loc = ptLocator.locate(n.getCoordinate(), arg[targetIndex].getGeometry());
-        let location = point_locator.locate(node.coordinate(), geometry);
+        use crate::algorithm::coordinate_position::CoordinatePosition;
+        let location = geometry.coordinate_position(node.coordinate()).into();
         // JTS:     n.getLabel().setAllLocations(targetIndex, loc);
         // JTS: //debugPrintln(n.getLabel());
         // JTS:   }
