@@ -592,8 +592,6 @@ where
         // JTS: 			|| parentGeom instanceof Polygon
         // JTS: 			|| parentGeom instanceof MultiPolygon;
         // JTS:     boolean computeAllSegments = computeRingSelfNodes || ! isRings;
-        // FIXME: I think this will give incorrect answers for some geometries, but
-        //        for started I'm only testing polygons, for which this is always true
         let is_rings = match self.geometry() {
             Geometry::LineString(ls) => ls.is_closed(),
             Geometry::MultiLineString(ls) => ls.is_closed(),

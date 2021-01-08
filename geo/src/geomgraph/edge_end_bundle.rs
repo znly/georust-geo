@@ -253,7 +253,6 @@ where
     // JTS:   private void computeLabelSide(int geomIndex, int side)
     // JTS:   {
     fn compute_label_side(&mut self, geom_index: usize, side: Position) {
-        // MJK FIXME: maybe here?
         let mut location = None;
         // JTS:     for (Iterator it = iterator(); it.hasNext(); ) {
         // JTS:       EdgeEnd e = (EdgeEnd) it.next();
