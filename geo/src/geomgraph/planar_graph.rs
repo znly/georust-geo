@@ -95,8 +95,7 @@ impl<F: Float> PlanarGraph<F> {
     pub fn is_boundary_node(&self, geom_index: usize, coord: Coordinate<F>) -> bool {
         self.nodes
             .find(coord)
-            .and_then(Node::label)
-            .and_then(|label: &Label| label.on_location(geom_index))
+            .and_then(|node: &Node<F>| node.label().on_location(geom_index))
             .map(|location| location == Location::Boundary)
             .unwrap_or(false)
     }

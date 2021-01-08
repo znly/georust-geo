@@ -185,7 +185,7 @@ where
             .values()
             .filter(|node| {
                 matches!(
-                    node.label().unwrap().on_location(geom_index),
+                    node.label().on_location(geom_index),
                     Some(Location::Boundary)
                 )
             })

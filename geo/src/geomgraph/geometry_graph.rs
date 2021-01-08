@@ -679,9 +679,8 @@ where
     // JTS:   }
     fn insert_point(&mut self, arg_index: usize, coord: Coordinate<F>, location: Location) {
         let node: &mut Node<F> = self.add_node_with_coordinate(coord);
-        // CLEANUP: can we get rid of the Option? Or do we need Edges to maintain Option and share GraphComponent trait
         // VERIFY: JTS does a null check here, but not for boundary points. Can we safely skip it?
-        let label: &mut Label = node.label_mut().unwrap();
+        let label: &mut Label = node.label_mut();
         label.set_on_location(arg_index, Some(location))
     }
 
@@ -700,9 +699,7 @@ where
 
         // JTS:     // nodes always have labels
         // JTS:     Label lbl = n.getLabel();
-        // nodes always have labels
-        // CLEANUP: can we get rid of the Option? Or do we need Edges to maintain Option and share GraphComponent trait
-        let label: &mut Label = node.label_mut().unwrap();
+        let label: &mut Label = node.label_mut();
 
         // JTS:     // the new point to insert is on a boundary
         // JTS:     int boundaryCount = 1;

@@ -37,14 +37,15 @@ where
 }
 
 impl<F: Float> Node<F> {
-    pub(crate) fn label(&self) -> Option<&Label> {
-        Some(&self.label)
+    pub(crate) fn label(&self) -> &Label {
+        &self.label
     }
 
-    pub(crate) fn label_mut(&mut self) -> Option<&mut Label> {
-        Some(&mut self.label)
+    pub(crate) fn label_mut(&mut self) -> &mut Label {
+        &mut self.label
     }
 
+    // FIXME: see if this is called
     pub(crate) fn set_label(&mut self, new_value: Label) {
         self.label = new_value;
     }
@@ -234,12 +235,10 @@ impl<F: Float> Node<F> {
     // JTS:     computeIM(im);
     // JTS:   }
     pub fn update_intersection_matrix(&self, intersection_matrix: &mut IntersectionMatrix) {
-        // REVIEW: unwrap
-        let label = self.label().unwrap();
-        assert!(label.geometry_count() >= 2, "found partial label");
+        assert!(self.label.geometry_count() >= 2, "found partial label");
         intersection_matrix.set_at_least_if_valid(
-            label.on_location(0),
-            label.on_location(1),
+            self.label.on_location(0),
+            self.label.on_location(1),
             Dimensions::ZeroDimensional,
         );
         println!(

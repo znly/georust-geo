@@ -407,11 +407,10 @@ where
             let new_node = self
                 .nodes
                 .add_node_with_coordinate(*graph_node.coordinate());
-            // CLEANUP: graph_node.labe().unwrap - label is never None for Nodes
             // CLEANUP: on_location().unwrap - can we get rid of it or check for it?
             new_node.set_label_on_location(
                 geom_index,
-                graph_node.label().unwrap().on_location(geom_index).unwrap(),
+                graph_node.label().on_location(geom_index).unwrap(),
             );
         }
     }
@@ -466,8 +465,7 @@ where
                 if edge_location == Some(Location::Boundary) {
                     new_node.set_label_boundary(geom_index);
                 } else {
-                    // CLEANUP: unwrap - label is never null for nodes.
-                    if new_node.label().unwrap().is_empty(geom_index) {
+                    if new_node.label().is_empty(geom_index) {
                         new_node.set_label_on_location(geom_index, Location::Interior);
                     }
                 }
@@ -720,8 +718,7 @@ where
         let geometry_a = self.graph_a.geometry();
         let geometry_b = self.graph_b.geometry();
         for node in self.nodes.iter_mut() {
-            // CLEANUP: remove unwrap?
-            let label = node.label().unwrap();
+            let label = node.label();
             // isolated nodes should always have at least one geometry in their label
             debug_assert!(label.geometry_count() > 0, "node with empty label found");
             // JTS:       if (n.isIsolated()) {
@@ -755,10 +752,7 @@ where
         // JTS: //debugPrintln(n.getLabel());
         // JTS:   }
         // JTS: }
-        // CLEANUP: unwrap
-        node.label_mut()
-            .unwrap()
-            .set_all_locations(target_index, location);
+        node.label_mut().set_all_locations(target_index, location);
     }
 }
 
