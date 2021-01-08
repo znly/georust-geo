@@ -446,8 +446,7 @@ where
             let edge = edge.borrow();
 
             // JTS:       int eLoc = e.getLabel().getLocation(argIndex);
-            // CLEANUP: `unwrap` - I believe label is *always* `Some` for edges.
-            let edge_location = edge.label().unwrap().on_location(geom_index);
+            let edge_location = edge.label().on_location(geom_index);
             // JTS:       for (Iterator eiIt = e.getEdgeIntersectionList().iterator(); eiIt.hasNext(); ) {
             for edge_intersection in edge.edge_intersections() {
                 // JTS:         EdgeIntersection ei = (EdgeIntersection) eiIt.next();
@@ -601,13 +600,13 @@ where
             intersection_matrix
         );
         for isolated_edge in &self.isolated_edges {
-            // REVIEW: unwrap
             let edge = isolated_edge.borrow();
-            let label = edge.label().unwrap();
-            Edge::<F>::update_intersection_matrix(label, intersection_matrix);
+            Edge::<F>::update_intersection_matrix(edge.label(), intersection_matrix);
             println!(
                 "after updated_intersection_matrix(isolated_edge: {:?}, label: {:?}): {:?}",
-                edge, label, intersection_matrix
+                edge,
+                edge.label(),
+                intersection_matrix
             );
         }
         // MJK: same -lines: wrong output by this point
@@ -679,14 +678,9 @@ where
                 .coordinate_position(edge.coordinate().unwrap())
                 .into();
 
-            // REVIEW: unwrap
-            edge.label_mut()
-                .unwrap()
-                .set_all_locations(target_index, location);
+            edge.label_mut().set_all_locations(target_index, location);
         } else {
-            // REVIEW: unwrap
             edge.label_mut()
-                .unwrap()
                 .set_all_locations(target_index, Location::Exterior);
         }
     }

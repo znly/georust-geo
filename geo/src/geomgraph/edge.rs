@@ -12,22 +12,17 @@ pub(crate) struct Edge<F: Float> {
     coords: Vec<Coordinate<F>>,
     is_isolated: bool,
     edge_intersections: EdgeIntersectionList<F>,
-    // CLEANUP: does this need to be Option?
-    label: Option<Label>,
+    label: Label,
 }
 
 /// Graph Component methods
 impl<F: Float> Edge<F> {
-    pub(crate) fn label(&self) -> Option<&Label> {
-        self.label.as_ref()
+    pub(crate) fn label(&self) -> &Label {
+        &self.label
     }
 
-    pub(crate) fn label_mut(&mut self) -> Option<&mut Label> {
-        self.label.as_mut()
-    }
-
-    pub(crate) fn set_label(&mut self, new_value: Label) {
-        self.label = Some(new_value)
+    pub(crate) fn label_mut(&mut self) -> &mut Label {
+        &mut self.label
     }
 }
 
@@ -103,7 +98,7 @@ impl<F: Float> Edge<F> {
     pub fn new(coords: Vec<Coordinate<F>>, label: Label) -> Edge<F> {
         Edge {
             coords,
-            label: Some(label),
+            label: label,
             is_isolated: true,
             edge_intersections: EdgeIntersectionList::new(),
         }

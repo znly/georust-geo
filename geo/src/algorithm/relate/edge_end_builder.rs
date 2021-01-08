@@ -170,8 +170,7 @@ where
         }
 
         // JTS:     Label label = new Label(edge.getLabel());
-        // CLEANUP: unwrap how do we know label is Some?
-        let mut label = edge.label().unwrap().clone();
+        let mut label = edge.label().clone();
         // JTS:     // since edgeStub is oriented opposite to it's parent edge, have to flip sides for edge label
         // JTS:     label.flip();
         // since edgeStub is oriented opposite to it's parent edge, have to flip sides for edge label
@@ -235,8 +234,8 @@ where
         // JTS: //Debug.println(e);
         // JTS:     l.add(e);
         // REVIEW: implementing the reference to Edge like JTS would require Rc<RefCell<Edge>>
-        // REVIEW: let's see if we can avoid it...
-        let label = edge.label().unwrap().clone();
+        //         let's see if we can avoid it.
+        let label = edge.label().clone();
         let edge_end = EdgeEnd::new(ei_curr.coordinate(), coord_next, label);
         list.push(edge_end);
 

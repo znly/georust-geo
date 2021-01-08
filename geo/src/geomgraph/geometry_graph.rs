@@ -743,7 +743,7 @@ where
             .into_iter()
             .map(|cell| cell.borrow())
             .map(|edge| {
-                let location = edge.label().and_then(|label| label.on_location(arg_index));
+                let location = edge.label().on_location(arg_index);
 
                 let coordinates = edge
                     .edge_intersections()

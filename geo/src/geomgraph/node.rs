@@ -45,11 +45,6 @@ impl<F: Float> Node<F> {
         &mut self.label
     }
 
-    // FIXME: see if this is called
-    pub(crate) fn set_label(&mut self, new_value: Label) {
-        self.label = new_value;
-    }
-
     pub(crate) fn is_isolated(&self) -> bool {
         self.label.geometry_count() == 1
     }
