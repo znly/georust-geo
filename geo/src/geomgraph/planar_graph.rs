@@ -1,6 +1,4 @@
-use super::{
-    BasicNodeFactory, Coordinate, Edge, Float, GraphComponent, Label, Location, Node, NodeMap,
-};
+use super::{BasicNodeFactory, Coordinate, Edge, Float, Label, Location, Node, NodeMap};
 
 use std::cell::RefCell;
 use std::rc::Rc;

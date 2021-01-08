@@ -2,7 +2,7 @@ use super::{EdgeEndBuilder, IntersectionMatrix, RelateNodeFactory};
 use crate::algorithm::dimensions::{Dimensions, HasDimensions};
 use crate::geomgraph::{
     algorithm::RobustLineIntersector, index::SegmentIntersector, Edge, EdgeEnd, Float,
-    GeometryGraph, GraphComponent, Location, Node, NodeMap,
+    GeometryGraph, Location, Node, NodeMap,
 };
 
 use geo_types::Geometry;

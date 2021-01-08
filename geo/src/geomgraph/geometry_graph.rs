@@ -9,8 +9,8 @@ use super::{
         LineIntersector,
     },
     index::{EdgeSetIntersector, SegmentIntersector, SimpleEdgeSetIntersector},
-    BasicNodeFactory, Coordinate, Edge, Float, GraphComponent, Label, Location, Node, NodeFactory,
-    PlanarGraph, Position,
+    BasicNodeFactory, Coordinate, Edge, Float, Label, Location, Node, NodeFactory, PlanarGraph,
+    Position,
 };
 
 use crate::algorithm::dimensions::HasDimensions;

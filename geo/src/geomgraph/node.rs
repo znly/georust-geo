@@ -1,9 +1,7 @@
 // JTS: import org.locationtech.jts.geom.Coordinate;
 // JTS: import org.locationtech.jts.geom.IntersectionMatrix;
 // JTS: import org.locationtech.jts.geom.Location;
-use super::{
-    Coordinate, Dimensions, EdgeEnd, EdgeEndBundleStar, Float, GraphComponent, Label, Location,
-};
+use super::{Coordinate, Dimensions, EdgeEnd, EdgeEndBundleStar, Float, Label, Location};
 
 // weird circular dependency from GeomGraph to IntersectionMatrix
 use crate::algorithm::relate::IntersectionMatrix;
@@ -38,23 +36,20 @@ where
     edges: Option<EdgeEndBundleStar<F>>,
 }
 
-impl<F> GraphComponent for Node<F>
-where
-    F: Float,
-{
-    fn label(&self) -> Option<&Label> {
+impl<F: Float> Node<F> {
+    pub(crate) fn label(&self) -> Option<&Label> {
         Some(&self.label)
     }
 
-    fn label_mut(&mut self) -> Option<&mut Label> {
+    pub(crate) fn label_mut(&mut self) -> Option<&mut Label> {
         Some(&mut self.label)
     }
 
-    fn set_label(&mut self, new_value: Label) {
+    pub(crate) fn set_label(&mut self, new_value: Label) {
         self.label = new_value;
     }
 
-    fn is_isolated(&self) -> bool {
+    pub(crate) fn is_isolated(&self) -> bool {
         self.label.geometry_count() == 1
     }
 }

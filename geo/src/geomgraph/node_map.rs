@@ -1,4 +1,4 @@
-use super::{Coordinate, EdgeEnd, Float, GraphComponent, Location, Node, NodeFactory};
+use super::{Coordinate, EdgeEnd, Float, Location, Node, NodeFactory};
 
 use std::collections::BTreeMap;
 use std::fmt;

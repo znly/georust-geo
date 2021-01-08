@@ -1,5 +1,5 @@
 use super::algorithm::LineIntersector;
-use super::{Dimensions, EdgeIntersectionList, Float, GraphComponent, Label, Position};
+use super::{Dimensions, EdgeIntersectionList, Float, Label, Position};
 use geo_types::Coordinate;
 
 // REVIEW: kind of weird circular dependency on relate module from geomgraph
@@ -16,21 +16,18 @@ pub(crate) struct Edge<F: Float> {
     label: Option<Label>,
 }
 
-impl<F: Float> GraphComponent for Edge<F> {
-    fn label(&self) -> Option<&Label> {
+/// Graph Component methods
+impl<F: Float> Edge<F> {
+    pub(crate) fn label(&self) -> Option<&Label> {
         self.label.as_ref()
     }
 
-    fn label_mut(&mut self) -> Option<&mut Label> {
+    pub(crate) fn label_mut(&mut self) -> Option<&mut Label> {
         self.label.as_mut()
     }
 
-    fn set_label(&mut self, new_value: Label) {
+    pub(crate) fn set_label(&mut self, new_value: Label) {
         self.label = Some(new_value)
-    }
-
-    fn is_isolated(&self) -> bool {
-        todo!()
     }
 }
 

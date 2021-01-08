@@ -1,4 +1,4 @@
-use crate::geomgraph::{Edge, EdgeEnd, EdgeIntersection, Float, GraphComponent};
+use crate::geomgraph::{Edge, EdgeEnd, EdgeIntersection, Float};
 
 use std::cell::RefCell;
 use std::rc::Rc;
