@@ -1148,7 +1148,7 @@ mod test {
         let distance = expected.euclidean_distance(&actual);
         assert!(
             distance <= distance_tolerance,
-            "expected distance: {} < tolerance: {}",
+            "expected distance: {:?} < tolerance: {:?}",
             distance,
             distance_tolerance
         );

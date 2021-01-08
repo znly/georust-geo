@@ -44,14 +44,11 @@ use geo_types::{Coordinate, Geometry};
 
 use std::fmt;
 
-pub(crate) trait Float:
-    num_traits::Float + crate::algorithm::kernels::HasKernel + fmt::Debug + fmt::Display
-{
-}
-impl<F> Float for F where
-    F: num_traits::Float + crate::algorithm::kernels::HasKernel + fmt::Debug + fmt::Display
-{
-}
+// TODO: just use GeoFloat?
+//     Related: https://github.com/georust/geo/issues/597 - maybe once CoordinateType: Debug, we could
+//     also make GeoFloat: CoordinateType and inherit std::fmt::Debug that way.
+pub(crate) trait Float: crate::GeoFloat + std::fmt::Debug {}
+impl<F> Float for F where F: crate::GeoFloat + std::fmt::Debug {}
 
 use crate::dimensions::Dimensions;
 
