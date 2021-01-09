@@ -81,7 +81,7 @@ where
     // JTS:     }
     // JTS:   }
     pub fn update_intersection_matrix(&self, intersection_matrix: &mut IntersectionMatrix) {
-        for edge_end_bundle in self.edge_ends_iter() {
+        for edge_end_bundle in self.edge_end_bundles_iter() {
             edge_end_bundle.update_intersection_matrix(intersection_matrix);
             println!(
                 "updated intersection_matrix: {:?} from edge_end_bundle: {:?}",
@@ -185,11 +185,11 @@ where
     // JTS:   {
     // JTS:     return getEdges().iterator();
     // JTS:   }
-    fn edge_ends_iter(&self) -> impl Iterator<Item = &EdgeEndBundle<F>> {
+    fn edge_end_bundles_iter(&self) -> impl Iterator<Item = &EdgeEndBundle<F>> {
         self.edge_map.values()
     }
 
-    fn edge_ends_iter_mut(&mut self) -> impl Iterator<Item = &mut EdgeEndBundle<F>> {
+    fn edge_end_bundles_iter_mut(&mut self) -> impl Iterator<Item = &mut EdgeEndBundle<F>> {
         self.edge_map.values_mut()
     }
 
@@ -271,7 +271,7 @@ where
         // JTS:       }
         // JTS:     }
         let mut has_dimensional_collapse_edge = [false, false];
-        for edge_end in self.edge_ends_iter() {
+        for edge_end in self.edge_end_bundles_iter() {
             // REVIEW: unwrap
             let label = edge_end.label().unwrap();
             for geom_index in 0..2 {
@@ -293,7 +293,7 @@ where
         // that worthwhile?
         let point_in_area_location = self.point_in_area_location.or_else(|| {
             let coord = self
-                .edge_ends_iter()
+                .edge_end_bundles_iter()
                 .next()
                 .map(|edge_end_bundle| edge_end_bundle.coordinate());
 
@@ -303,9 +303,9 @@ where
             self.point_in_area_location = point_in_area_location;
         }
 
-        for edge_end in self.edge_ends_iter_mut() {
+        for edge_end_bundle in self.edge_end_bundles_iter_mut() {
             // CLEANUP: unwrap
-            let label = edge_end.label_mut().unwrap();
+            let label = edge_end_bundle.label_mut().unwrap();
             for geom_index in 0..2 {
                 // JTS:         if (label.isAnyNull(geomi)) {
                 // JTS:           int loc = Location.NONE;
@@ -353,7 +353,7 @@ where
     fn compute_edge_end_labels(&mut self) {
         // REVIEW: note EdgeEndBundle is a subclass of EdgeEnd, so it's var name in JTS is a little
         // confusing
-        for edge_end_bundle in self.edge_ends_iter_mut() {
+        for edge_end_bundle in self.edge_end_bundles_iter_mut() {
             edge_end_bundle.compute_label()
         }
     }
@@ -449,7 +449,7 @@ where
         // JTS:       if (label.isArea(geomIndex) && label.getLocation(geomIndex, Position.LEFT) != Location.NONE)
         // JTS:         startLoc = label.getLocation(geomIndex, Position.LEFT);
         // JTS:     }
-        for edge_ends in self.edge_ends_iter() {
+        for edge_ends in self.edge_end_bundles_iter() {
             // REVIEW: unwrap
             let label = edge_ends.label().unwrap();
             if label.is_geom_area(geom_index) {
@@ -467,7 +467,7 @@ where
 
         // JTS:     int currLoc = startLoc;
         // JTS:     for (Iterator it = iterator(); it.hasNext(); ) {
-        for edge_ends in self.edge_ends_iter_mut() {
+        for edge_ends in self.edge_end_bundles_iter_mut() {
             // JTS:       EdgeEnd e = (EdgeEnd) it.next();
             // JTS:       Label label = e.getLabel();
             let label = edge_ends.label_mut().unwrap();
