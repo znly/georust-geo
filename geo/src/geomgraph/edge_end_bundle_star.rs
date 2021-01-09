@@ -1,6 +1,6 @@
 use crate::algorithm::coordinate_position::CoordinatePosition;
 use crate::geomgraph::{
-    Coordinate, EdgeEnd, EdgeEndBundle, Float, GeometryGraph, Location, Position,
+    Coordinate, EdgeEnd, Float, GeometryGraph, Location, MaybeLabeledEdgeEndBundle, Position,
 };
 use crate::Geometry;
 // weird circular dependency from GeomGraph to IntersectionMatrix
@@ -28,7 +28,7 @@ pub(crate) struct EdgeEndBundleStar<F>
 where
     F: Float,
 {
-    edge_map: std::collections::BTreeMap<EdgeEnd<F>, EdgeEndBundle<F>>,
+    edge_map: std::collections::BTreeMap<EdgeEnd<F>, MaybeLabeledEdgeEndBundle<F>>,
     point_in_area_location: Option<[Location; 2]>,
 }
 
@@ -66,7 +66,7 @@ where
         let bundle = self
             .edge_map
             .entry(edge_end.clone())
-            .or_insert(EdgeEndBundle::new(*edge_end.coordinate()));
+            .or_insert(MaybeLabeledEdgeEndBundle::new(*edge_end.coordinate()));
         bundle.insert(edge_end);
     }
 
@@ -185,11 +185,13 @@ where
     // JTS:   {
     // JTS:     return getEdges().iterator();
     // JTS:   }
-    fn edge_end_bundles_iter(&self) -> impl Iterator<Item = &EdgeEndBundle<F>> {
+    fn edge_end_bundles_iter(&self) -> impl Iterator<Item = &MaybeLabeledEdgeEndBundle<F>> {
         self.edge_map.values()
     }
 
-    fn edge_end_bundles_iter_mut(&mut self) -> impl Iterator<Item = &mut EdgeEndBundle<F>> {
+    fn edge_end_bundles_iter_mut(
+        &mut self,
+    ) -> impl Iterator<Item = &mut MaybeLabeledEdgeEndBundle<F>> {
         self.edge_map.values_mut()
     }
 

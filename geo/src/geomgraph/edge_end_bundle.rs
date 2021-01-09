@@ -27,7 +27,7 @@ use crate::algorithm::relate::IntersectionMatrix;
 // JTS: public class EdgeEndBundle
 // JTS:   extends EdgeEnd
 #[derive(Clone, Debug)]
-pub(crate) struct EdgeEndBundle<F>
+pub(crate) struct MaybeLabeledEdgeEndBundle<F>
 where
     F: Float,
 {
@@ -36,7 +36,7 @@ where
     edge_ends: Vec<EdgeEnd<F>>,
 }
 
-impl<F> EdgeEndBundle<F>
+impl<F> MaybeLabeledEdgeEndBundle<F>
 where
     F: Float,
 {

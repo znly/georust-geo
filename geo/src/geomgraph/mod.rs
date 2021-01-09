@@ -22,7 +22,7 @@ mod topology_location;
 
 pub(crate) use edge::Edge;
 pub(crate) use edge_end::EdgeEnd;
-pub(crate) use edge_end_bundle::EdgeEndBundle;
+pub(crate) use edge_end_bundle::MaybeLabeledEdgeEndBundle;
 pub(crate) use edge_end_bundle_star::EdgeEndBundleStar;
 pub(crate) use edge_intersection::EdgeIntersection;
 pub(crate) use edge_intersection_list::EdgeIntersectionList;
