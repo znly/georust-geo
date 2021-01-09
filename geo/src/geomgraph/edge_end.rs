@@ -31,7 +31,6 @@ where
     coord_1: Coordinate<F>,
     delta: Coordinate<F>,
     quadrant: Quadrant,
-    node: *const Node<F>,
 }
 
 impl<F: Float> fmt::Debug for EdgeEnd<F> {
@@ -42,7 +41,6 @@ impl<F: Float> fmt::Debug for EdgeEnd<F> {
                 "coords",
                 &format!("{:?} -> {:?}", &self.coord_0, &self.coord_1),
             )
-            .field("node", &self.node)
             .field("quadrant", &self.quadrant)
             .finish()
     }
@@ -89,7 +87,6 @@ where
             coord_1,
             delta,
             quadrant,
-            node: std::ptr::null(),
         }
     }
 
@@ -129,9 +126,6 @@ where
     // JTS:
     // JTS:   public void setNode(Node node) { this.node = node; }
     // JTS:   public Node getNode() { return node; }
-    pub fn set_node(&mut self, node: &Node<F>) {
-        self.node = &*node;
-    }
 }
 
 impl<F> std::cmp::Eq for EdgeEnd<F> where F: Float {}

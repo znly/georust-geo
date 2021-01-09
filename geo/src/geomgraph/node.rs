@@ -61,8 +61,7 @@ where
     // JTS:     edges.insert(e);
     // JTS:     e.setNode(this);
     // JTS:   }
-    pub fn add_edge_end(&mut self, mut edge_end: EdgeEnd<F>) {
-        edge_end.set_node(self);
+    pub fn add_edge_end(&mut self, edge_end: EdgeEnd<F>) {
         // REVIEW: get rid of uwrap?
         self.edges.as_mut().unwrap().insert(edge_end);
     }
