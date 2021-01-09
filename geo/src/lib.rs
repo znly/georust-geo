@@ -69,6 +69,9 @@ mod utils;
 #[macro_use]
 extern crate approx;
 
+#[macro_use]
+extern crate log;
+
 /// Mean radius of Earth in meters
 /// This is the value recommended by the IUGG:
 /// Moritz, H. (2000). Geodetic Reference System 1980. Journal of Geodesy, 74(1), 128–133. doi:10.1007/s001900050278
