@@ -14,7 +14,8 @@ pub(crate) trait NodeFactory<F>
 where
     F: Float,
 {
-    fn create_node(coordinate: Coordinate<F>) -> Node<F>;
+    type Edges;
+    fn create_node(coordinate: Coordinate<F>) -> (Node<F>, Self::Edges);
 }
 
 pub(crate) struct BasicNodeFactory;
@@ -24,7 +25,8 @@ impl<F> NodeFactory<F> for BasicNodeFactory
 where
     F: Float,
 {
-    fn create_node(coordinate: Coordinate<F>) -> Node<F> {
-        Node::new(coordinate, None)
+    type Edges = ();
+    fn create_node(coordinate: Coordinate<F>) -> (Node<F>, Self::Edges) {
+        (Node::new(coordinate), ())
     }
 }

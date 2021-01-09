@@ -6,14 +6,6 @@ use super::{Coordinate, Dimensions, EdgeEnd, EdgeEndBundleStar, Float, Label, Lo
 // weird circular dependency from GeomGraph to IntersectionMatrix
 use crate::algorithm::relate::IntersectionMatrix;
 
-// pub(crate) trait Node<F>: GraphComponent
-// where
-//     F: num_traits::Float,
-// {
-//     fn coordinate(&self) -> &Coordinate<F>;
-//     fn add_edge_end(&self, edge_end: EdgeEnd<F>);
-// }
-
 // JTS: /**
 // JTS:  * @version 1.7
 // JTS:  */
@@ -27,13 +19,6 @@ where
 {
     coordinate: Coordinate<F>,
     label: Label,
-    // CLEANUP: can we get rid of this Option?
-    //  - BasicNodeFactory which is used by GeometryGraph via PlanarGraph passes edges: None
-    //  - RelateNodeFactory which is used  by RelateComputer passes edge: EdgeEndBundleStar
-    //  - TODO: in JTS the overlay operation stuff uses DirectedEdgeStar.
-    // It becomes very prickly to make it generic or boxed, so sticking with just what we need for
-    // relate for now.
-    edges: Option<EdgeEndBundleStar<F>>,
 }
 
 impl<F: Float> Node<F> {
@@ -61,10 +46,6 @@ where
     // JTS:     edges.insert(e);
     // JTS:     e.setNode(this);
     // JTS:   }
-    pub fn add_edge_end(&mut self, edge_end: EdgeEnd<F>) {
-        // REVIEW: get rid of uwrap?
-        self.edges.as_mut().unwrap().insert(edge_end);
-    }
 
     // JTS:   protected EdgeEndStar edges;
     // JTS:
@@ -74,10 +55,9 @@ where
     // JTS:     this.edges = edges;
     // JTS:     label = new Label(0, Location.NONE);
     // JTS:   }
-    pub fn new(coordinate: Coordinate<F>, edges: Option<EdgeEndBundleStar<F>>) -> Node<F> {
+    pub fn new(coordinate: Coordinate<F>) -> Node<F> {
         Node {
             coordinate,
-            edges,
             label: Label::new_with_geom_on_location(0, None),
         }
     }
@@ -88,14 +68,6 @@ where
     }
 
     // JTS:   public EdgeEndStar getEdges() { return edges; }
-    // REVIEW: boxed? option?
-    pub fn edges(&self) -> Option<&EdgeEndBundleStar<F>> {
-        self.edges.as_ref()
-    }
-
-    pub fn edges_mut(&mut self) -> Option<&mut EdgeEndBundleStar<F>> {
-        self.edges.as_mut()
-    }
 
     // JTS:
     // JTS:   /**
@@ -257,15 +229,5 @@ impl<F: Float> Node<F> {
     // JTS:   {
     // JTS:     ((EdgeEndBundleStar) edges).updateIM(im);
     // JTS:   }
-    pub fn update_intersection_matrix_from_edges(
-        &self,
-        intersection_matrix: &mut IntersectionMatrix,
-    ) {
-        // REVIEW: we can get rid of unwrap if we specify RelateNode vs Node
-        self.edges
-            .as_ref()
-            .unwrap()
-            .update_intersection_matrix(intersection_matrix);
-    }
     // JTS: }
 }

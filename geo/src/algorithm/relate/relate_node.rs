@@ -75,8 +75,8 @@ impl<F> NodeFactory<F> for RelateNodeFactory
 where
     F: Float,
 {
-    fn create_node(coordinate: Coordinate<F>) -> Node<F> {
-        // TODO: Add RelateNodeDelegate
-        Node::new(coordinate, Some(EdgeEndBundleStar::new()))
+    type Edges = EdgeEndBundleStar<F>;
+    fn create_node(coordinate: Coordinate<F>) -> (Node<F>, Self::Edges) {
+        (Node::new(coordinate), EdgeEndBundleStar::new())
     }
 }

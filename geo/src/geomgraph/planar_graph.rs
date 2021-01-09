@@ -95,7 +95,7 @@ impl<F: Float> PlanarGraph<F> {
     pub fn is_boundary_node(&self, geom_index: usize, coord: Coordinate<F>) -> bool {
         self.nodes
             .find(coord)
-            .and_then(|node: &Node<F>| node.label().on_location(geom_index))
+            .and_then(|(node, _)| node.label().on_location(geom_index))
             .map(|location| location == Location::Boundary)
             .unwrap_or(false)
     }
@@ -119,7 +119,7 @@ impl<F: Float> PlanarGraph<F> {
     // JTS:   public Node addNode(Node node) { return nodes.addNode(node); }
     // JTS:   public Node addNode(Coordinate coord) { return nodes.addNode(coord); }
     pub fn add_node_with_coordinate(&mut self, coord: Coordinate<F>) -> &mut Node<F> {
-        self.nodes.add_node_with_coordinate(coord)
+        &mut self.nodes.add_node_with_coordinate(coord).0
     }
 
     // JTS:   /**

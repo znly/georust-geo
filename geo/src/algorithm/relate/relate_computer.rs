@@ -255,7 +255,8 @@ where
         // JTS:     }
         // JTS:   }
         for edge_end in edge_ends {
-            self.nodes.add_edge_end(edge_end)
+            let (_node, edges) = self.nodes.add_node_with_coordinate(*edge_end.coordinate());
+            edges.insert(edge_end);
         }
     }
 
@@ -408,7 +409,7 @@ where
                 .nodes
                 .add_node_with_coordinate(*graph_node.coordinate());
             // CLEANUP: on_location().unwrap - can we get rid of it or check for it?
-            new_node.set_label_on_location(
+            new_node.0.set_label_on_location(
                 geom_index,
                 graph_node.label().on_location(geom_index).unwrap(),
             );
@@ -451,7 +452,7 @@ where
             for edge_intersection in edge.edge_intersections() {
                 // JTS:         EdgeIntersection ei = (EdgeIntersection) eiIt.next();
                 // JTS:         RelateNode n = (RelateNode) nodes.addNode(ei.coord);
-                let new_node = self
+                let (new_node, _edges) = self
                     .nodes
                     .add_node_with_coordinate(edge_intersection.coordinate());
 
@@ -566,11 +567,8 @@ where
     // JTS:     }
     // JTS:   }
     fn label_node_edges(&mut self) {
-        for node in self.nodes.iter_mut() {
-            // REVIEW: unwrap
-            node.edges_mut()
-                .unwrap()
-                .compute_labeling(&self.graph_a, &self.graph_b);
+        for (_node, edges) in self.nodes.iter_mut() {
+            edges.compute_labeling(&self.graph_a, &self.graph_b);
         }
     }
 
@@ -610,9 +608,9 @@ where
             );
         }
 
-        for node in self.nodes.iter() {
+        for (node, edges) in self.nodes.iter() {
             node.update_intersection_matrix(intersection_matrix);
-            node.update_intersection_matrix_from_edges(intersection_matrix);
+            edges.update_intersection_matrix(intersection_matrix);
         }
     }
 
@@ -710,7 +708,7 @@ where
     fn label_isolated_nodes(&mut self) {
         let geometry_a = self.graph_a.geometry();
         let geometry_b = self.graph_b.geometry();
-        for node in self.nodes.iter_mut() {
+        for (node, _edges) in self.nodes.iter_mut() {
             let label = node.label();
             // isolated nodes should always have at least one geometry in their label
             debug_assert!(label.geometry_count() > 0, "node with empty label found");

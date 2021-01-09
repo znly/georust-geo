@@ -84,7 +84,7 @@ where
     }
 
     pub fn nodes_iter(&self) -> impl Iterator<Item = &Node<F>> {
-        self.planar_graph.nodes.iter()
+        self.planar_graph.nodes.iter().map(|t| &t.0)
     }
 }
 
@@ -239,9 +239,12 @@ where
     // JTS:       boundaryNodes = nodes.getBoundaryNodes(argIndex);
     // JTS:     return boundaryNodes;
     // JTS:   }
-    fn boundary_nodes(&self) -> Vec<&Node<F>> {
+    fn boundary_nodes(&self) -> impl Iterator<Item = &Node<F>> {
         // TODO: should we need to memoize this like JTS does?
-        self.planar_graph.nodes.boundary_nodes(self.arg_index)
+        self.planar_graph
+            .nodes
+            .boundary_nodes(self.arg_index)
+            .map(|(n, _)| n)
     }
     // JTS:
     // JTS:   public Coordinate[] getBoundaryPoints()

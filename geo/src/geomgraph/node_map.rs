@@ -18,7 +18,7 @@ where
     F: Float,
     NF: NodeFactory<F>,
 {
-    map: BTreeMap<NodeKey<F>, Node<F>>,
+    map: BTreeMap<NodeKey<F>, (Node<F>, NF::Edges)>,
     _node_factory: PhantomData<NF>,
 }
 
@@ -109,7 +109,7 @@ where
     // JTS:     }
     // JTS:     return node;
     // JTS:   }
-    pub fn add_node_with_coordinate(&mut self, coord: Coordinate<F>) -> &mut Node<F> {
+    pub fn add_node_with_coordinate(&mut self, coord: Coordinate<F>) -> &mut (Node<F>, NF::Edges) {
         let key = NodeKey(coord);
         self.map.entry(key).or_insert(NF::create_node(coord))
     }
@@ -135,18 +135,13 @@ where
     // JTS:     Node n = addNode(p);
     // JTS:     n.add(e);
     // JTS:   }
-    pub fn add_edge_end(&mut self, edge_end: EdgeEnd<F>) {
-        let coord = edge_end.coordinate();
-        let node = self.add_node_with_coordinate(*coord);
-        node.add_edge_end(edge_end);
-    }
 
     // JTS:   /**
     // JTS:    * @return the node if found; null otherwise
     // JTS:    */
     // JTS:   public Node find(Coordinate coord)  {    return (Node) nodeMap.get(coord);  }
     /// returns the node if found
-    pub fn find(&self, coord: Coordinate<F>) -> Option<&Node<F>> {
+    pub fn find(&self, coord: Coordinate<F>) -> Option<&(Node<F>, NF::Edges)> {
         self.map.get(&NodeKey(coord))
     }
 
@@ -154,11 +149,11 @@ where
     // JTS:   {
     // JTS:     return nodeMap.values().iterator();
     // JTS:   }
-    pub fn iter(&self) -> impl Iterator<Item = &Node<F>> {
+    pub fn iter(&self) -> impl Iterator<Item = &(Node<F>, NF::Edges)> {
         self.map.values()
     }
 
-    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut Node<F>> {
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut (Node<F>, NF::Edges)> {
         self.map.values_mut()
     }
 
@@ -177,19 +172,13 @@ where
     // JTS:     }
     // JTS:     return bdyNodes;
     // JTS:   }
-    pub fn boundary_nodes(&self, geom_index: usize) -> Vec<&Node<F>> {
-        // CLEANUP: `unwrap` - nodes *always* have a label. edges sometimes do not, but they
-        // inherit the same `label` API via GraphComponent. Might be nice to separate them
-        // to remove this unwrap
-        self.map
-            .values()
-            .filter(|node| {
-                matches!(
-                    node.label().on_location(geom_index),
-                    Some(Location::Boundary)
-                )
-            })
-            .collect()
+    pub fn boundary_nodes(&self, geom_index: usize) -> impl Iterator<Item = &(Node<F>, NF::Edges)> {
+        self.map.values().filter(move |(node, _edges)| {
+            matches!(
+                node.label().on_location(geom_index),
+                Some(Location::Boundary)
+            )
+        })
     }
 
     // JTS:
