@@ -62,7 +62,7 @@ where
     // JTS:     }
     // JTS:   }
     pub(crate) fn insert(&mut self, edge_end: EdgeEnd<F>) {
-        // REVIEW: is this clone problemaic? Could the coord be the `key` instead of the edge_end?
+        // REVIEW: is this clone problematic? Could the coord be the `key` instead of the edge_end?
         let bundle = self
             .edge_map
             .entry(edge_end.clone())

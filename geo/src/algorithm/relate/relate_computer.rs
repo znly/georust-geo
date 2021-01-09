@@ -609,7 +609,6 @@ where
                 intersection_matrix
             );
         }
-        // MJK: same -lines: wrong output by this point
 
         for node in self.nodes.iter() {
             node.update_intersection_matrix(intersection_matrix);
