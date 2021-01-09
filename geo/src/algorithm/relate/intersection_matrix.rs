@@ -125,6 +125,7 @@ impl IntersectionMatrix {
         IntersectionMatrix(dimensions)
     }
 
+    #[cfg(test)]
     pub fn from_str(str: &str) -> Self {
         let mut im = IntersectionMatrix::empty();
         im.set_at_least_from_string(str);
