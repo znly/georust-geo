@@ -236,7 +236,7 @@ impl<F: Float> Node<F> {
             self.label.on_location(1),
             Dimensions::ZeroDimensional,
         );
-        println!(
+        debug!(
             "updated intersection_matrix: {:?} from node: {:?}",
             intersection_matrix, self
         );
