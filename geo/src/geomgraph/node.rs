@@ -261,7 +261,7 @@ impl<F: Float> Node<F> {
         &self,
         intersection_matrix: &mut IntersectionMatrix,
     ) {
-        // REVIEW: unwrap
+        // REVIEW: we can get rid of unwrap if we specify RelateNode vs Node
         self.edges
             .as_ref()
             .unwrap()

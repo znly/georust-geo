@@ -180,8 +180,6 @@ where
         // JTS: //e.print(System.out);  System.out.println();
         // JTS:     l.add(e);
         // JTS:   }
-        // REVIEW: implementing the reference to Edge like JTS would require Rc<RefCell<Edge>>
-        // REVIEW: let's see if we can avoid it...
         let edge_end = EdgeEnd::new(ei_curr.coordinate(), coord_prev, label);
         list.push(edge_end);
     }
