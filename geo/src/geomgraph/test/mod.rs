@@ -110,7 +110,6 @@ impl TestRunner {
         }
     }
 
-    #[track_caller]
     fn run_all(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         self.run(None)
     }
@@ -139,7 +138,6 @@ impl TestRunner {
         Ok(())
     }
 
-    #[track_caller]
     fn parse_cases(
         &self,
         filter: Option<(&str, &str)>,
