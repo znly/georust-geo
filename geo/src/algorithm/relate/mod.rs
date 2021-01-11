@@ -9,13 +9,13 @@ pub(crate) use relate_node::RelateNodeFactory;
 
 use crate::{GeoFloat, Geometry};
 
-pub trait Relate<F, T> {
+pub(crate) trait Relate<F, T> {
     fn relate(&self, other: &T) -> IntersectionMatrix;
 }
 
-impl<F: GeoFloat> Relate<F, Geometry<F>> for Geometry<F> {
+impl<F: 'static + GeoFloat> Relate<F, Geometry<F>> for Geometry<F> {
     fn relate(&self, other: &Geometry<F>) -> IntersectionMatrix {
-        let relate_computer = relate_computer::RelateComputer::new(self, other);
-        relate_computer.run()
+        let mut relate_computer = relate_computer::RelateComputer::new(self, other);
+        relate_computer.compute_intersection_matrix()
     }
 }
