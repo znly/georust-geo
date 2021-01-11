@@ -109,9 +109,6 @@ impl<F: Float> LineIntersector<F> for RobustLineIntersector<F> {
         // JTS:     if (! Envelope.intersects(p1, p2, q1, q2))
         // JTS:       return NO_INTERSECTION;
         // first try a fast test to see if the envelopes of the lines intersect
-        // first try a fast test to see if the envelopes of the lines intersect
-        // TODO: This assumes https://github.com/georust/geo/pull/519 is merged
-        // otherwise we need to order points by min/max
         if !Rect::new(p1, p2).intersects(&Rect::new(q1, q2)) {
             return Intersection::NoIntersection;
         }
@@ -128,9 +125,6 @@ impl<F: Float> LineIntersector<F> for RobustLineIntersector<F> {
         // for each endpoint, compute which side of the other segment it lies
         // if both endpoints lie on the same side of the other segment,
         // the segments do not intersect
-        // TODO: might be nicer if robust::orient2d could take a Coordinate directly (e.g. similar
-        // to https://github.com/georust/proj/pull/41, robust::Coord could be a trait, which
-        // geo-types::Coordinate could conform to
         let p_q1 = RobustKernel::orient2d(p1, p2, q1);
         let p_q2 = RobustKernel::orient2d(p1, p2, q2);
         match (p_q1, p_q2) {

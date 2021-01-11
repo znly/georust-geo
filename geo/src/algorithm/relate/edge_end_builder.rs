@@ -26,10 +26,7 @@ use std::rc::Rc;
 // JTS:  *
 // JTS:  * @version 1.7
 // JTS:  */
-pub(crate) struct EdgeEndBuilder<F>
-where
-    F: Float,
-{
+pub(crate) struct EdgeEndBuilder<F: Float> {
     _marker: std::marker::PhantomData<F>,
 }
 
@@ -37,10 +34,7 @@ where
 // JTS:
 // JTS:   public EdgeEndBuilder() {
 // JTS:   }
-impl<F> EdgeEndBuilder<F>
-where
-    F: Float,
-{
+impl<F: Float> EdgeEndBuilder<F> {
     pub fn new() -> Self {
         EdgeEndBuilder {
             _marker: std::marker::PhantomData,
@@ -70,6 +64,8 @@ where
     // JTS:    */
     // JTS:   public void computeEdgeEnds(Edge edge, List l)
     // JTS:   {
+    /// Creates stub edges for all the intersections in this
+    /// Edge (if any) and inserts them into the graph.
     fn compute_ends_for_edge(&self, edge: &mut Edge<F>, list: &mut Vec<EdgeEnd<F>>) {
         // JTS:     EdgeIntersectionList eiList = edge.getEdgeIntersectionList();
         // JTS: //Debug.print(eiList);
@@ -134,6 +130,10 @@ where
     // JTS:                       EdgeIntersection eiCurr,
     // JTS:                       EdgeIntersection eiPrev)
     // JTS:   {
+    /// Create a EdgeStub for the edge before the intersection ei_crr.
+    ///
+    /// The previous intersection is provided in case it is the endpoint for the stub edge.
+    /// Otherwise, the previous point from the parent edge will be the endpoint.
     fn create_edge_end_for_prev(
         &self,
         edge: &Edge<F>,
@@ -198,6 +198,10 @@ where
     // JTS:                       EdgeIntersection eiCurr,
     // JTS:                       EdgeIntersection eiNext)
     // JTS:   {
+    /// Create a StubEdge for the edge after the intersection ei_curr.
+    ///
+    /// The next intersection is provided in case it is the endpoint for the stub edge.
+    /// Otherwise, the next point from the parent edge will be the endpoint.
     fn create_edge_end_for_next(
         &self,
         edge: &Edge<F>,
@@ -231,12 +235,9 @@ where
         // JTS:     EdgeEnd e = new EdgeEnd(edge, eiCurr.coord, pNext, new Label(edge.getLabel()));
         // JTS: //Debug.println(e);
         // JTS:     l.add(e);
-        // REVIEW: implementing the reference to Edge like JTS would require Rc<RefCell<Edge>>
-        //         let's see if we can avoid it.
         let label = edge.label().clone();
         let edge_end = EdgeEnd::new(ei_curr.coordinate(), coord_next, label);
         list.push(edge_end);
-
         // JTS:   }
     }
     // JTS: }
