@@ -44,8 +44,30 @@ use crate::geomgraph::Location;
 // JTS:  *
 // JTS:  *@version 1.7
 // JTS:  */
+/// Models a *Dimensionally Extended Nine-Intersection Model (DE-9IM)* matrix.
+///
+/// DE-9IM matrix values (such as "212FF1FF2") specify the topological relationship between
+/// two [Geometeries](struct.Geometry.html).
+///
+/// TODO: This class can also represent matrix patterns (such as "T*T******")
+/// which are used for matching instances of DE-9IM matrices.
+///
+/// DE-9IM matrices are 3x3 matrices with integer entries.
+/// The matrix indices {0,1,2} represent the topological locations
+/// that occur in a geometry (Interior, Boundary, Exterior).
+/// These are provided by the enum cases
+/// [Location::Interior, Location::Boundary, Location::Exterior](enum.Location.html).
+///
+/// The matrix entries represent the [Dimensions](enum.Dimension.html) of each intersection.
+///
+/// For a description of the DE-9IM and the spatial predicates derived from it,
+/// see the following references:
+/// - [OGC 99-049 OpenGIS Simple Features Specification for SQL](http://portal.opengeospatial.org/files/?artifact_id=829), Section 2.1.13
+/// - [OGC 06-103r4 OpenGIS Implementation Standard for Geographic information - Simple feature access - Part 1: Common architecture](http://portal.opengeospatial.org/files/?artifact_id=25355), Section 6.1.15 (which provides some further details on certain predicate specifications).
+/// - Wikipedia article on [DE-9IM](https://en.wikipedia.org/wiki/DE-9IM)
+///
+/// This implementation is heavily based on that from the [JTS project](https://github.com/locationtech/jts/blob/master/modules/core/src/main/java/org/locationtech/jts/geom/IntersectionMatrix.java).
 // JTS: public class IntersectionMatrix implements Cloneable {
-
 #[derive(PartialEq, Eq)]
 pub(crate) struct IntersectionMatrix([[Dimensions; 3]; 3]);
 

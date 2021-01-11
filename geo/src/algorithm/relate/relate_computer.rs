@@ -61,15 +61,6 @@ where
     isolated_edges: Vec<Rc<RefCell<Edge<F>>>>,
 }
 
-// CLEANUP: remove this.
-pub fn _test_relate_computer() {
-    use crate::{line_string, polygon};
-    let square_a: Geometry<f64> = polygon![].into();
-    let square_b: Geometry<f64> = polygon![].into();
-    let mut relate_computer = RelateComputer::new(&square_a, &square_b);
-    let _intersection_matrix = relate_computer.compute_intersection_matrix();
-}
-
 impl<'a, F> RelateComputer<'a, F>
 where
     F: 'static + Float,
