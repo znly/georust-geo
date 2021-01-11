@@ -379,7 +379,6 @@ mod test {
         assert!(!poly1.contains(&line));
     }
     #[test]
-    #[ignore]
     fn line_in_polygon_edgecases_test() {
         // Some DE-9IM edge cases for checking line is
         // inside polygon The end points of the line can be

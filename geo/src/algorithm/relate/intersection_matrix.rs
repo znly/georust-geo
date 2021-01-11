@@ -516,6 +516,11 @@ impl IntersectionMatrix {
     // JTS:         matrix[Location.EXTERIOR][Location.INTERIOR] == Dimension.FALSE &&
     // JTS:         matrix[Location.EXTERIOR][Location.BOUNDARY] == Dimension.FALSE;
     // JTS:   }
+    pub fn is_contains(&self) -> bool {
+        self.0[Location::Interior as usize][Location::Interior as usize] != Dimensions::Empty
+            && self.0[Location::Interior as usize][Location::Exterior as usize] == Dimensions::Empty
+            && self.0[Location::Boundary as usize][Location::Exterior as usize] == Dimensions::Empty
+    }
     // JTS:
     // JTS:   /**
     // JTS:    * Tests if this matrix matches
