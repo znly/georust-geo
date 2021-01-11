@@ -117,21 +117,21 @@ impl TestRunner {
     /// `filter`: when specified runs just the test described by `(test_file_name, desc)`, otherwise all tests are run
     fn run(&mut self, filter: Option<(&str, &str)>) -> Result<(), Box<dyn std::error::Error>> {
         let cases = self.parse_cases(filter)?;
-        println!("cases.len(): {}", cases.len());
+        debug!("cases.len(): {}", cases.len());
         for case in cases {
             use crate::algorithm::relate::relate_computer::RelateComputer;
 
             let mut relate_computer = RelateComputer::new(&case.geometry_a, &case.geometry_b);
             let intersection_matrix = relate_computer.compute_intersection_matrix();
             if intersection_matrix == case.expected_result {
-                println!("succeeded: {:?}", case);
+                debug!("succeeded: {:?}", case);
                 self.successes.push(case);
             } else {
                 let failure = RelateTestFailure {
                     input: case,
                     actual_result: intersection_matrix,
                 };
-                println!("failed: {:?}", failure);
+                debug!("failed: {:?}", failure);
                 self.failures.push(failure);
             }
         }
@@ -171,7 +171,7 @@ impl TestRunner {
                         case.desc.as_str(),
                     ) != filter
                     {
-                        //println!("skipping test");
+                        //debug!("skipping test");
                         continue;
                     }
                 }
@@ -180,7 +180,7 @@ impl TestRunner {
                 let wkt_a = match wkt::Wkt::from_str(&case.a) {
                     Ok(wkt) => wkt,
                     Err(e) => {
-                        println!("error: {:?}, skipping invalid WKT: {}", e, &case.a);
+                        warn!("error: {:?}, skipping invalid WKT: {}", e, &case.a);
                         continue;
                     }
                 };
@@ -189,7 +189,7 @@ impl TestRunner {
                 let wkt_b = match wkt::Wkt::from_str(&case.b) {
                     Ok(wkt) => wkt,
                     Err(e) => {
-                        println!("error: {:?}, skipping invalid WKT: {}", e, &case.b);
+                        warn!("error: {:?}, skipping invalid WKT: {}", e, &case.b);
                         continue;
                     }
                 };

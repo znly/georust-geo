@@ -83,7 +83,7 @@ where
     pub fn update_intersection_matrix(&self, intersection_matrix: &mut IntersectionMatrix) {
         for edge_end_bundle in self.edge_end_bundles_iter() {
             edge_end_bundle.update_intersection_matrix(intersection_matrix);
-            println!(
+            debug!(
                 "updated intersection_matrix: {:?} from edge_end_bundle: {:?}",
                 intersection_matrix, edge_end_bundle
             );
@@ -219,7 +219,7 @@ where
         graph_a: &GeometryGraph<F>,
         graph_b: &GeometryGraph<F>,
     ) {
-        println!("edge_end_bundle_star: {:?}", self);
+        debug!("edge_end_bundle_star: {:?}", self);
         // JTS:     computeEdgeEndLabels(geomGraph[0].getBoundaryNodeRule());
         self.compute_edge_end_labels();
         // JTS:     // Propagate side labels  around the edges in the star
@@ -340,7 +340,7 @@ where
             // JTS:   }
         }
 
-        println!("edge_end_bundle_star: {:?}", self);
+        debug!("edge_end_bundle_star: {:?}", self);
     }
 
     // JTS:   private void computeEdgeEndLabels(BoundaryNodeRule boundaryNodeRule)

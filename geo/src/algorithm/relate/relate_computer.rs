@@ -235,7 +235,7 @@ where
 
         // JTS:     // update the IM from all components
         // JTS:     updateIM(im);
-        println!(
+        debug!(
             "before update_intersection_matrix: {:?}",
             &intersection_matrix
         );
@@ -593,14 +593,14 @@ where
     // JTS:     }
     // JTS:   }
     fn update_intersection_matrix(&self, intersection_matrix: &mut IntersectionMatrix) {
-        println!(
+        debug!(
             "before updated_intersection_matrix(isolated_edges): {:?}",
             intersection_matrix
         );
         for isolated_edge in &self.isolated_edges {
             let edge = isolated_edge.borrow();
             Edge::<F>::update_intersection_matrix(edge.label(), intersection_matrix);
-            println!(
+            debug!(
                 "after updated_intersection_matrix(isolated_edge: {:?}, label: {:?}): {:?}",
                 edge,
                 edge.label(),
