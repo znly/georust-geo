@@ -1,12 +1,13 @@
-use super::super::{Edge, Float};
+use super::super::Edge;
 use super::SegmentIntersector;
+use crate::{Coordinate, GeoFloat};
 
 use std::cell::RefCell;
 use std::rc::Rc;
 
 pub(crate) trait EdgeSetIntersector<F>
 where
-    F: Float,
+    F: GeoFloat,
 {
     // JTS: /**
     // JTS:  * Computes all self-intersections between edges in a set of edges,

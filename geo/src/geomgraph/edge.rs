@@ -1,6 +1,6 @@
 use super::algorithm::LineIntersector;
-use super::{Dimensions, EdgeIntersectionList, Float, Label, Position};
-use geo_types::Coordinate;
+use super::{Dimensions, EdgeIntersectionList, Label, Position};
+use crate::{Coordinate, GeoFloat};
 
 // REVIEW: kind of weird circular dependency on relate module from geomgraph
 use crate::algorithm::relate::IntersectionMatrix;
@@ -8,7 +8,7 @@ use crate::algorithm::relate::IntersectionMatrix;
 // TODO: investigate how isEqual should be implented - not sure it makes sense
 // to derive equality, since it compares a bunch of vec's
 #[derive(Debug)]
-pub(crate) struct Edge<F: Float> {
+pub(crate) struct Edge<F: GeoFloat> {
     coords: Vec<Coordinate<F>>,
     is_isolated: bool,
     edge_intersections: EdgeIntersectionList<F>,
@@ -16,7 +16,7 @@ pub(crate) struct Edge<F: Float> {
 }
 
 /// Graph Component methods
-impl<F: Float> Edge<F> {
+impl<F: GeoFloat> Edge<F> {
     pub(crate) fn label(&self) -> &Label {
         &self.label
     }
@@ -32,7 +32,7 @@ impl<F: Float> Edge<F> {
 // JTS: public class Edge
 // JTS:   extends GraphComponent
 // JTS: {
-impl<F: Float> Edge<F> {
+impl<F: GeoFloat> Edge<F> {
     // JTS:   /**
     // JTS:    * Updates an IM from the label for an edge.
     // JTS:    * Handles edges from both L and A geometries.
@@ -68,7 +68,7 @@ impl<F: Float> Edge<F> {
 }
 
 // JTS:
-impl<F: Float> Edge<F> {
+impl<F: GeoFloat> Edge<F> {
     // JTS:   Coordinate[] pts;
     pub fn coords(&self) -> &[Coordinate<F>] {
         &self.coords
@@ -302,7 +302,7 @@ impl<F: Float> Edge<F> {
     // JTS:   }
 }
 
-impl<F: Float> std::cmp::PartialEq for Edge<F> {
+impl<F: GeoFloat> std::cmp::PartialEq for Edge<F> {
     // JTS:   /**
     // JTS:    * equals is defined to be:
     // JTS:    * <p>
@@ -356,7 +356,7 @@ impl<F: Float> std::cmp::PartialEq for Edge<F> {
     }
 }
 
-impl<F: Float> Edge<F> {
+impl<F: GeoFloat> Edge<F> {
     // JTS:   /**
     // JTS:    * @return true if the coordinate sequences of the Edges are identical
     // JTS:    */

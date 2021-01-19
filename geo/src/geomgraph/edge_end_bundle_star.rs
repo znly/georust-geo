@@ -1,8 +1,6 @@
 use crate::algorithm::coordinate_position::CoordinatePosition;
-use crate::geomgraph::{
-    Coordinate, EdgeEnd, Float, GeometryGraph, Location, MaybeLabeledEdgeEndBundle, Position,
-};
-use crate::Geometry;
+use crate::geomgraph::{EdgeEnd, GeometryGraph, Location, MaybeLabeledEdgeEndBundle, Position};
+use crate::{Coordinate, GeoFloat, Geometry};
 // weird circular dependency from GeomGraph to IntersectionMatrix
 use crate::algorithm::dimensions::Dimensions;
 use crate::algorithm::relate::IntersectionMatrix;
@@ -26,7 +24,7 @@ use crate::algorithm::relate::IntersectionMatrix;
 #[derive(Clone, Debug)]
 pub(crate) struct EdgeEndBundleStar<F>
 where
-    F: Float,
+    F: GeoFloat,
 {
     edge_map: std::collections::BTreeMap<EdgeEnd<F>, MaybeLabeledEdgeEndBundle<F>>,
     point_in_area_location: Option<[Location; 2]>,
@@ -34,7 +32,7 @@ where
 
 impl<F> EdgeEndBundleStar<F>
 where
-    F: Float,
+    F: GeoFloat,
 {
     pub(crate) fn new() -> Self {
         EdgeEndBundleStar {
@@ -124,7 +122,7 @@ where
 // JTS: {
 impl<F> EdgeEndBundleStar<F>
 where
-    F: Float,
+    F: GeoFloat,
 {
     // JTS:
     // JTS:   /**

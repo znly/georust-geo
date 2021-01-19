@@ -1,4 +1,5 @@
-use super::{BasicNodeFactory, Coordinate, Edge, Float, Label, Location, Node, NodeMap};
+use super::{BasicNodeFactory, Edge, Label, Location, Node, NodeMap};
+use crate::{Coordinate, GeoFloat};
 
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -41,12 +42,12 @@ use std::rc::Rc;
 /// Two fundamental operations are supported by topology graphs:
 ///   - Computing the intersections between all the edges and nodes of a single graph
 ///   - Computing the intersections between the edges and nodes of two different graphs
-pub(crate) struct PlanarGraph<F: Float> {
+pub(crate) struct PlanarGraph<F: GeoFloat> {
     pub(crate) nodes: NodeMap<F, BasicNodeFactory>,
     edges: Vec<Rc<RefCell<Edge<F>>>>,
 }
 
-impl<F: Float> PlanarGraph<F> {
+impl<F: GeoFloat> PlanarGraph<F> {
     // JTS:   /**
     // JTS:    * For nodes in the Collection, link the DirectedEdges at the node that are in the result.
     // JTS:    * This allows clients to link only a subset of nodes in the graph, for

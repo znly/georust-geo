@@ -1,6 +1,6 @@
 use super::Contains;
 use crate::intersects::Intersects;
-use crate::{Coordinate, GeoNum, Geometry, Line, LineString, MultiPolygon, Point, Polygon};
+use crate::{CoordNum, Coordinate, GeoNum, Line, LineString, MultiPolygon, Point, Polygon};
 
 // ┌─────────────────────────────┐
 // │ Implementations for Polygon │
@@ -26,15 +26,19 @@ where
     }
 }
 
+// TODO: ensure DE-9IM compliance: esp., when
+// line.start and line.end is on the boundaries
 impl<T> Contains<Line<T>> for Polygon<T>
 where
     T: GeoNum,
 {
     fn contains(&self, line: &Line<T>) -> bool {
-        use crate::algorithm::relate::Relate;
-        Geometry::Polygon(self.clone())
-            .relate(&Geometry::Line(line.clone()))
-            .is_contains()
+        // both endpoints are contained in the polygon and the line
+        // does NOT intersect the exterior or any of the interior boundaries
+        self.contains(&line.start)
+            && self.contains(&line.end)
+            && !self.exterior().intersects(line)
+            && !self.interiors().iter().any(|inner| inner.intersects(line))
     }
 }
 

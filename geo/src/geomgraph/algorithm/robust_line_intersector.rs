@@ -1,10 +1,9 @@
 use super::{Intersection, LineIntersector};
 use crate::algorithm::kernels::{Kernel, Orientation, RobustKernel};
 use crate::contains::Contains;
-use crate::geomgraph::Float;
 use crate::intersects::Intersects;
 use crate::num_traits::Zero;
-use geo_types::{Coordinate, Rect};
+use crate::{Coordinate, GeoFloat, Rect};
 
 // JTS: /**
 // JTS:  * A robust version of {@link LineIntersector}.
@@ -16,7 +15,7 @@ use geo_types::{Coordinate, Rect};
 // JTS: {
 /// A robust version of [LineIntersector](traits.LineIntersector).
 #[derive(Clone)]
-pub(crate) struct RobustLineIntersector<F: Float> {
+pub(crate) struct RobustLineIntersector<F: GeoFloat> {
     // TODO: JTS captures some state in the LineIntersector. I'm not sure if it's helpful. Roughly it
     // seems to be mid-computation state and result state. Perhaps that could be better modeled and
     // we could leave the LineIntersector less mutable.
@@ -27,7 +26,7 @@ pub(crate) struct RobustLineIntersector<F: Float> {
     int_pt: [Coordinate<F>; 2],
 }
 
-impl<F: Float> RobustLineIntersector<F> {
+impl<F: GeoFloat> RobustLineIntersector<F> {
     // JTS:   public RobustLineIntersector() {
     // JTS:   }
     pub fn new() -> RobustLineIntersector<F> {
@@ -40,7 +39,7 @@ impl<F: Float> RobustLineIntersector<F> {
     }
 }
 
-impl<F: Float> LineIntersector<F> for RobustLineIntersector<F> {
+impl<F: GeoFloat> LineIntersector<F> for RobustLineIntersector<F> {
     fn intersection(&self, intersection_index: usize) -> Coordinate<F> {
         self.int_pt[intersection_index]
     }
@@ -279,7 +278,7 @@ impl<F: Float> LineIntersector<F> for RobustLineIntersector<F> {
     }
 }
 
-impl<F: Float> RobustLineIntersector<F> {
+impl<F: GeoFloat> RobustLineIntersector<F> {
     // JTS:   private int computeCollinearIntersection(Coordinate p1, Coordinate p2,
     // JTS:       Coordinate q1, Coordinate q2) {
     // CLEANUP: take (p: Line<F>, q: Line<F>) instead?
@@ -669,7 +668,7 @@ impl<F: Float> RobustLineIntersector<F> {
 // JTS:    * @see CGAlgorithmsDD#intersection(Coordinate, Coordinate, Coordinate, Coordinate)
 // JTS:    */
 // JTS:   public static Coordinate intersection(Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2) {
-fn line_intersection<F: Float>(
+fn line_intersection<F: GeoFloat>(
     p1: Coordinate<F>,
     p2: Coordinate<F>,
     q1: Coordinate<F>,
@@ -1069,7 +1068,7 @@ mod test {
     // JTS:           Coordinate[] expectedIntPt,
     // JTS:           double distanceTolerance)
     // JTS:   {
-    fn check_intersection<F: Float>(
+    fn check_intersection<F: GeoFloat>(
         line_1: Line<F>,
         line_2: Line<F>,
         intersection: Intersection,
@@ -1133,7 +1132,7 @@ mod test {
     // JTS:               + "expected " + WKTWriter.toPoint(expectedPt) + " VS "
     // JTS:               + "actual " + WKTWriter.toPoint(actualPt), isEqual);
     // JTS:   }
-    fn check_intersection_points<F: Float>(
+    fn check_intersection_points<F: GeoFloat>(
         expected: Coordinate<F>,
         actual: Coordinate<F>,
         distance_tolerance: F,

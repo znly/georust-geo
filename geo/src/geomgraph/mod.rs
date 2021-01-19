@@ -35,18 +35,12 @@ use planar_graph::PlanarGraph;
 pub(crate) use quadrant::Quadrant;
 use topology_location::TopologyLocation;
 
-// in just algorithm is an external pacakage (top level, still part of JTS) - not witin geomgraph
+// REVIEW: can we move this to crate::algorithm, not within geomgraph?
 pub(crate) mod algorithm;
 
 use geo_types::{Coordinate, Geometry};
 
 use std::fmt;
-
-// CLEANUP: just use GeoFloat?
-//     Related: https://github.com/georust/geo/issues/597 - maybe once CoordinateType: Debug, we could
-//     also make GeoFloat: CoordinateType and inherit std::fmt::Debug that way.
-pub(crate) trait Float: crate::GeoFloat + std::fmt::Debug {}
-impl<F> Float for F where F: crate::GeoFloat + std::fmt::Debug {}
 
 use crate::dimensions::Dimensions;
 

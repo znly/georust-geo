@@ -2,7 +2,7 @@
 // JTS: import org.locationtech.jts.geom.PrecisionModel;
 // JTS: import org.locationtech.jts.io.WKTWriter;
 // JTS: import org.locationtech.jts.util.Assert;
-use geo_types::Coordinate;
+use crate::{Coordinate, GeoFloat};
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub enum Intersection {
@@ -47,7 +47,7 @@ pub enum Intersection {
 // JTS: public abstract class LineIntersector
 // JTS: {
 
-pub trait LineIntersector<F: num_traits::Float> {
+pub(crate) trait LineIntersector<F: GeoFloat> {
     // JTS: /**
     // JTS:  * These are deprecated, due to ambiguous naming
     // JTS:  */

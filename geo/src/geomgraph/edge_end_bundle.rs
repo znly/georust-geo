@@ -1,7 +1,8 @@
 use super::{
-    algorithm::boundary_node_rule::Mod2BoundaryNodeRule, Coordinate, Edge, EdgeEnd, Float,
-    GeometryGraph, Label, Location, Position,
+    algorithm::boundary_node_rule::Mod2BoundaryNodeRule, Edge, EdgeEnd, GeometryGraph, Label,
+    Location, Position,
 };
+use crate::{Coordinate, GeoFloat};
 // weird circular dependency from GeomGraph to IntersectionMatrix
 use crate::algorithm::relate::IntersectionMatrix;
 
@@ -29,7 +30,7 @@ use crate::algorithm::relate::IntersectionMatrix;
 #[derive(Clone, Debug)]
 pub(crate) struct MaybeLabeledEdgeEndBundle<F>
 where
-    F: Float,
+    F: GeoFloat,
 {
     coordinate: Coordinate<F>,
     label: Option<Label>,
@@ -38,7 +39,7 @@ where
 
 impl<F> MaybeLabeledEdgeEndBundle<F>
 where
-    F: Float,
+    F: GeoFloat,
 {
     // JTS: {
     // JTS: //  private BoundaryNodeRule boundaryNodeRule;

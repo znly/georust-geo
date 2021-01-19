@@ -1,4 +1,5 @@
-use super::{Coordinate, EdgeEnd, Float, Location, Node, NodeFactory};
+use super::{EdgeEnd, Location, Node, NodeFactory};
+use crate::{Coordinate, GeoFloat};
 
 use std::collections::BTreeMap;
 use std::fmt;
@@ -15,7 +16,7 @@ use std::marker::PhantomData;
 /// A map of nodes, indexed by the coordinate of the node
 pub(crate) struct NodeMap<F, NF>
 where
-    F: Float,
+    F: GeoFloat,
     NF: NodeFactory<F>,
 {
     map: BTreeMap<NodeKey<F>, (Node<F>, NF::Edges)>,
@@ -24,7 +25,7 @@ where
 
 impl<F, NF> fmt::Debug for NodeMap<F, NF>
 where
-    F: Float,
+    F: GeoFloat,
     NF: NodeFactory<F>,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -35,9 +36,9 @@ where
 }
 
 #[derive(Clone)]
-struct NodeKey<F: Float>(Coordinate<F>);
+struct NodeKey<F: GeoFloat>(Coordinate<F>);
 
-impl<F: Float> std::cmp::Ord for NodeKey<F> {
+impl<F: GeoFloat> std::cmp::Ord for NodeKey<F> {
     fn cmp(&self, other: &NodeKey<F>) -> std::cmp::Ordering {
         // TODO: BTree requires Ord - can we guarantee all coords in the graph are non-NaN?
         debug_assert!(!self.0.x.is_nan());
@@ -49,13 +50,13 @@ impl<F: Float> std::cmp::Ord for NodeKey<F> {
     }
 }
 
-impl<F: Float> std::cmp::PartialOrd for NodeKey<F> {
+impl<F: GeoFloat> std::cmp::PartialOrd for NodeKey<F> {
     fn partial_cmp(&self, other: &NodeKey<F>) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl<F: Float> std::cmp::PartialEq for NodeKey<F> {
+impl<F: GeoFloat> std::cmp::PartialEq for NodeKey<F> {
     fn eq(&self, other: &NodeKey<F>) -> bool {
         // TODO: BTree requires Eq - can we guarantee all coords in the graph are non-NaN?
         debug_assert!(!self.0.x.is_nan());
@@ -66,11 +67,11 @@ impl<F: Float> std::cmp::PartialEq for NodeKey<F> {
     }
 }
 
-impl<F: Float> std::cmp::Eq for NodeKey<F> {}
+impl<F: GeoFloat> std::cmp::Eq for NodeKey<F> {}
 
 impl<F, NF> NodeMap<F, NF>
 where
-    F: Float,
+    F: GeoFloat,
     NF: NodeFactory<F>,
 {
     // JTS: {

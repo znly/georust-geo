@@ -1,5 +1,5 @@
-use crate::geomgraph::{EdgeEndBundleStar, Float, Node, NodeFactory};
-use crate::Coordinate;
+use crate::geomgraph::{EdgeEndBundleStar, Node, NodeFactory};
+use crate::{Coordinate, GeoFloat};
 
 // JTS: import org.locationtech.jts.geom.Coordinate;
 // JTS: import org.locationtech.jts.geom.IntersectionMatrix;
@@ -73,7 +73,7 @@ use crate::Coordinate;
 pub(crate) struct RelateNodeFactory;
 impl<F> NodeFactory<F> for RelateNodeFactory
 where
-    F: Float,
+    F: GeoFloat,
 {
     type Edges = EdgeEndBundleStar<F>;
     fn create_node(coordinate: Coordinate<F>) -> (Node<F>, Self::Edges) {

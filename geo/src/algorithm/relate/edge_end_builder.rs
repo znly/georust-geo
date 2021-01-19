@@ -1,4 +1,5 @@
-use crate::geomgraph::{Edge, EdgeEnd, EdgeIntersection, Float};
+use crate::geomgraph::{Edge, EdgeEnd, EdgeIntersection};
+use crate::GeoFloat;
 
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -26,7 +27,7 @@ use std::rc::Rc;
 // JTS:  *
 // JTS:  * @version 1.7
 // JTS:  */
-pub(crate) struct EdgeEndBuilder<F: Float> {
+pub(crate) struct EdgeEndBuilder<F: GeoFloat> {
     _marker: std::marker::PhantomData<F>,
 }
 
@@ -34,7 +35,7 @@ pub(crate) struct EdgeEndBuilder<F: Float> {
 // JTS:
 // JTS:   public EdgeEndBuilder() {
 // JTS:   }
-impl<F: Float> EdgeEndBuilder<F> {
+impl<F: GeoFloat> EdgeEndBuilder<F> {
     pub fn new() -> Self {
         EdgeEndBuilder {
             _marker: std::marker::PhantomData,

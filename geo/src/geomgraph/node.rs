@@ -1,7 +1,8 @@
 // JTS: import org.locationtech.jts.geom.Coordinate;
 // JTS: import org.locationtech.jts.geom.IntersectionMatrix;
 // JTS: import org.locationtech.jts.geom.Location;
-use super::{Coordinate, Dimensions, EdgeEnd, EdgeEndBundleStar, Float, Label, Location};
+use super::{Dimensions, EdgeEnd, EdgeEndBundleStar, Label, Location};
+use crate::{Coordinate, GeoFloat};
 
 // weird circular dependency from GeomGraph to IntersectionMatrix
 use crate::algorithm::relate::IntersectionMatrix;
@@ -15,13 +16,13 @@ use crate::algorithm::relate::IntersectionMatrix;
 #[derive(Debug, Clone)]
 pub(crate) struct Node<F>
 where
-    F: Float,
+    F: GeoFloat,
 {
     coordinate: Coordinate<F>,
     label: Label,
 }
 
-impl<F: Float> Node<F> {
+impl<F: GeoFloat> Node<F> {
     pub(crate) fn label(&self) -> &Label {
         &self.label
     }
@@ -37,7 +38,7 @@ impl<F: Float> Node<F> {
 
 impl<F> Node<F>
 where
-    F: Float,
+    F: GeoFloat,
 {
     // JTS:   protected Coordinate coord; // only non-null if this node is precise
     // JTS:   public void add(EdgeEnd e)
@@ -188,7 +189,7 @@ where
     // JTS: }
 }
 
-impl<F: Float> Node<F> {
+impl<F: GeoFloat> Node<F> {
     // from JTS#GraphComponent - seems like only node uses this impl, so implementing it directly
     // onto node rather than the GraphComponent trait
     // JTS:   /**

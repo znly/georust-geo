@@ -9,12 +9,11 @@ use super::{
         LineIntersector,
     },
     index::{EdgeSetIntersector, SegmentIntersector, SimpleEdgeSetIntersector},
-    BasicNodeFactory, Coordinate, Edge, Float, Label, Location, Node, NodeFactory, PlanarGraph,
-    Position,
+    BasicNodeFactory, Edge, Label, Location, Node, NodeFactory, PlanarGraph, Position,
 };
 
 use crate::algorithm::dimensions::HasDimensions;
-use crate::{Geometry, Line, LineString, Point, Polygon};
+use crate::{Coordinate, GeoFloat, Geometry, Line, LineString, Point, Polygon};
 
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -53,7 +52,7 @@ use std::rc::Rc;
 /// A GeometryGraph is a graph that models a given Geometry
 pub(crate) struct GeometryGraph<'a, F>
 where
-    F: Float,
+    F: GeoFloat,
 {
     arg_index: usize,
     parent_geometry: &'a Geometry<F>,
@@ -65,7 +64,7 @@ where
 // In JTS this is achieved through inheritance - GeometryGraph inherits from PlanarGraph
 impl<F> GeometryGraph<'_, F>
 where
-    F: Float,
+    F: GeoFloat,
 {
     pub fn edges(&self) -> &[Rc<RefCell<Edge<F>>>] {
         self.planar_graph.edges()
@@ -90,7 +89,7 @@ where
 
 impl<'a, F> GeometryGraph<'a, F>
 where
-    F: Float,
+    F: GeoFloat,
 {
     // JTS: /**
     // JTS:  * This method implements the Boundary Determination Rule

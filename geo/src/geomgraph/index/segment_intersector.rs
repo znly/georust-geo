@@ -1,7 +1,7 @@
-use super::super::{Edge, Float, Node};
+use super::super::{Edge, Node};
 use crate::geomgraph::algorithm::{Intersection, LineIntersector};
+use crate::{Coordinate, GeoFloat};
 
-use geo_types::Coordinate;
 use std::cell::{Ref, RefCell};
 
 // JTS: /**
@@ -16,7 +16,7 @@ use std::cell::{Ref, RefCell};
 /// and adds the intersection to the edges containing the segments.
 pub(crate) struct SegmentIntersector<F>
 where
-    F: Float,
+    F: GeoFloat,
 {
     // TODO is it worth making this generic?
     // Though JTS leaves this abstract - we might consider hard coding it to a RobustLineIntersector
@@ -36,7 +36,7 @@ where
 
 impl<F> SegmentIntersector<F>
 where
-    F: Float,
+    F: GeoFloat,
 {
     // JTS:
     // JTS:   public static boolean isAdjacentSegments(int i1, int i2)

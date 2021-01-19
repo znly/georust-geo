@@ -1,9 +1,10 @@
 use super::{EdgeEndBuilder, IntersectionMatrix, RelateNodeFactory};
 use crate::algorithm::dimensions::{Dimensions, HasDimensions};
 use crate::geomgraph::{
-    algorithm::RobustLineIntersector, index::SegmentIntersector, Edge, EdgeEnd, Float,
-    GeometryGraph, Location, Node, NodeMap,
+    algorithm::RobustLineIntersector, index::SegmentIntersector, Edge, EdgeEnd, GeometryGraph,
+    Location, Node, NodeMap,
 };
+use crate::GeoFloat;
 
 use geo_types::Geometry;
 use std::cell::RefCell;
@@ -52,7 +53,7 @@ use std::rc::Rc;
 // JTS: {
 pub(crate) struct RelateComputer<'a, F>
 where
-    F: Float,
+    F: GeoFloat,
 {
     graph_a: GeometryGraph<'a, F>,
     graph_b: GeometryGraph<'a, F>,
@@ -63,7 +64,7 @@ where
 
 impl<'a, F> RelateComputer<'a, F>
 where
-    F: 'static + Float,
+    F: 'static + GeoFloat,
 {
     pub fn new(geom_a: &'a Geometry<F>, geom_b: &'a Geometry<F>) -> RelateComputer<'a, F> {
         Self {

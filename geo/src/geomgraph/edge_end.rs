@@ -1,4 +1,5 @@
-use super::{Coordinate, Edge, Float, Label, Node, Quadrant};
+use super::{Edge, Label, Node, Quadrant};
+use crate::{Coordinate, GeoFloat};
 
 use std::cell::RefCell;
 use std::fmt;
@@ -23,7 +24,7 @@ use std::fmt;
 #[derive(Clone)]
 pub(crate) struct EdgeEnd<F>
 where
-    F: Float,
+    F: GeoFloat,
 {
     // edge: RefCell<Edge<F>>,
     label: Label,
@@ -33,7 +34,7 @@ where
     quadrant: Quadrant,
 }
 
-impl<F: Float> fmt::Debug for EdgeEnd<F> {
+impl<F: GeoFloat> fmt::Debug for EdgeEnd<F> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("EdgeEnd")
             .field("label", &self.label)
@@ -48,7 +49,7 @@ impl<F: Float> fmt::Debug for EdgeEnd<F> {
 
 impl<F> EdgeEnd<F>
 where
-    F: Float,
+    F: GeoFloat,
 {
     // JTS: {
     // JTS:   protected Edge edge;  // the parent edge of this edge end
@@ -128,11 +129,11 @@ where
     // JTS:   public Node getNode() { return node; }
 }
 
-impl<F> std::cmp::Eq for EdgeEnd<F> where F: Float {}
+impl<F> std::cmp::Eq for EdgeEnd<F> where F: GeoFloat {}
 
 impl<F> std::cmp::PartialEq for EdgeEnd<F>
 where
-    F: Float,
+    F: GeoFloat,
 {
     fn eq(&self, other: &EdgeEnd<F>) -> bool {
         self.delta == other.delta
@@ -141,7 +142,7 @@ where
 
 impl<F> std::cmp::PartialOrd for EdgeEnd<F>
 where
-    F: Float,
+    F: GeoFloat,
 {
     fn partial_cmp(&self, other: &EdgeEnd<F>) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))
@@ -150,7 +151,7 @@ where
 
 impl<F> std::cmp::Ord for EdgeEnd<F>
 where
-    F: Float,
+    F: GeoFloat,
 {
     // JTS:   public int compareTo(Object obj)
     // JTS:   {
@@ -164,7 +165,7 @@ where
 
 impl<F> EdgeEnd<F>
 where
-    F: Float,
+    F: GeoFloat,
 {
     // JTS:   /**
     // JTS:    * Implements the total order relation:
