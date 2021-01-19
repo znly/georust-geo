@@ -1,7 +1,6 @@
 use super::Contains;
 use crate::intersects::Intersects;
-use crate::{CoordNum, Coordinate, GeoNum, Line, LineString, MultiPolygon, Point, Polygon};
-use crate::{CoordNum, Coordinate, Geometry, Line, LineString, MultiPolygon, Point, Polygon};
+use crate::{Coordinate, GeoNum, Geometry, Line, LineString, MultiPolygon, Point, Polygon};
 
 // ┌─────────────────────────────┐
 // │ Implementations for Polygon │
