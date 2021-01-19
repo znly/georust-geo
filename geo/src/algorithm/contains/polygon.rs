@@ -1,6 +1,8 @@
 use super::Contains;
 use crate::intersects::Intersects;
-use crate::{CoordNum, Coordinate, GeoFloat, Line, LineString, MultiPolygon, Point, Polygon};
+use crate::{
+    CoordNum, Coordinate, GeoFloat, Geometry, Line, LineString, MultiPolygon, Point, Polygon,
+};
 
 // ┌─────────────────────────────┐
 // │ Implementations for Polygon │
@@ -29,22 +31,21 @@ where
 // line.start and line.end is on the boundaries
 impl<T> Contains<Line<T>> for Polygon<T>
 where
-    T: GeoFloat,
+    T: 'static + GeoFloat,
 {
     fn contains(&self, line: &Line<T>) -> bool {
-        // both endpoints are contained in the polygon and the line
-        // does NOT intersect the exterior or any of the interior boundaries
-        self.contains(&line.start)
-            && self.contains(&line.end)
-            && !self.exterior().intersects(line)
-            && !self.interiors().iter().any(|inner| inner.intersects(line))
+        use crate::algorithm::relate::Relate;
+        // These clones are unfortunate. Can we get something like a GeometryRef type?
+        let polygon = Geometry::Polygon(self.clone());
+        let line = Geometry::Line(line.clone());
+        polygon.relate(&line).is_contains()
     }
 }
 
 // TODO: also check interiors
 impl<T> Contains<Polygon<T>> for Polygon<T>
 where
-    T: GeoFloat,
+    T: 'static + GeoFloat,
 {
     fn contains(&self, poly: &Polygon<T>) -> bool {
         // decompose poly's exterior ring into Lines, and check each for containment

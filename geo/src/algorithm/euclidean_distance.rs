@@ -294,7 +294,7 @@ where
 // Line to Polygon distance
 impl<T> EuclideanDistance<T, Polygon<T>> for Line<T>
 where
-    T: GeoFloat + Signed + RTreeNum + FloatConst,
+    T: 'static + GeoFloat + Signed + RTreeNum + FloatConst,
 {
     fn euclidean_distance(&self, other: &Polygon<T>) -> T {
         if other.contains(self) || self.intersects(other) {
@@ -328,7 +328,7 @@ where
 /// Line to MultiPolygon distance
 impl<T> EuclideanDistance<T, MultiPolygon<T>> for Line<T>
 where
-    T: GeoFloat + FloatConst + Signed + RTreeNum,
+    T: 'static + GeoFloat + FloatConst + Signed + RTreeNum,
 {
     fn euclidean_distance(&self, mpolygon: &MultiPolygon<T>) -> T {
         mpolygon
@@ -431,7 +431,7 @@ where
 // Polygon to Line distance
 impl<T> EuclideanDistance<T, Line<T>> for Polygon<T>
 where
-    T: GeoFloat + FloatConst + Signed + RTreeNum,
+    T: 'static + GeoFloat + FloatConst + Signed + RTreeNum,
 {
     fn euclidean_distance(&self, other: &Line<T>) -> T {
         other.euclidean_distance(self)
@@ -504,7 +504,7 @@ where
 /// MultiPolygon to Line distance
 impl<T> EuclideanDistance<T, Line<T>> for MultiPolygon<T>
 where
-    T: GeoFloat + FloatConst + Signed + RTreeNum,
+    T: 'static + GeoFloat + FloatConst + Signed + RTreeNum,
 {
     fn euclidean_distance(&self, other: &Line<T>) -> T {
         other.euclidean_distance(self)

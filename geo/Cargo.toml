@@ -33,6 +33,7 @@ proj-network = ["use-proj", "proj/network"]
 use-serde = ["serde", "geo-types/serde"]
 
 [dev-dependencies]
+env_logger = "*"
 approx = "0.4.0"
 criterion = { version = "0.3" }
 rand = "0.8.0"

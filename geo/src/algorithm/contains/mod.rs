@@ -394,8 +394,7 @@ mod test {
     fn line_in_polygon_edgecases_test() {
         // Some DE-9IM edge cases for checking line is
         // inside polygon The end points of the line can be
-        // on the boundary of the polygon but we don't allow
-        // that yet.
+        // on the boundary of the polygon.
         let c = |x, y| Coordinate { x, y };
         // A non-convex polygon
         let linestring0 = line_string![
