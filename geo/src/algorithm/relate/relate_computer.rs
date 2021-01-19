@@ -4,9 +4,8 @@ use crate::geomgraph::{
     algorithm::RobustLineIntersector, index::SegmentIntersector, Edge, EdgeEnd, GeometryGraph,
     Location, Node, NodeMap,
 };
-use crate::GeoFloat;
+use crate::{GeoFloat, GeometryCow};
 
-use geo_types::Geometry;
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -66,7 +65,10 @@ impl<'a, F> RelateComputer<'a, F>
 where
     F: 'static + GeoFloat,
 {
-    pub fn new(geom_a: &'a Geometry<F>, geom_b: &'a Geometry<F>) -> RelateComputer<'a, F> {
+    pub fn new(
+        geom_a: &'a GeometryCow<'a, F>,
+        geom_b: &'a GeometryCow<'a, F>,
+    ) -> RelateComputer<'a, F> {
         Self {
             graph_a: GeometryGraph::new(0, geom_a),
             graph_b: GeometryGraph::new(1, geom_b),
@@ -659,7 +661,7 @@ where
     // JTS:     }
     // JTS: //System.out.println(e.getLabel());
     // JTS:   }
-    fn label_isolated_edge(edge: &mut Edge<F>, target_index: usize, target: &Geometry<F>) {
+    fn label_isolated_edge(edge: &mut Edge<F>, target_index: usize, target: &GeometryCow<F>) {
         if target.dimensions() > Dimensions::ZeroDimensional {
             // REVIEW: unwrap
             use crate::algorithm::coordinate_position::CoordinatePosition;
@@ -727,7 +729,7 @@ where
     // JTS:    */
     // JTS:   private void labelIsolatedNode(Node n, int targetIndex)
     // JTS:   {
-    fn label_isolated_node(node: &mut Node<F>, target_index: usize, geometry: &Geometry<F>) {
+    fn label_isolated_node(node: &mut Node<F>, target_index: usize, geometry: &GeometryCow<F>) {
         // JTS:     int loc = ptLocator.locate(n.getCoordinate(), arg[targetIndex].getGeometry());
         use crate::algorithm::coordinate_position::CoordinatePosition;
         let location = geometry.coordinate_position(node.coordinate()).into();
@@ -764,7 +766,9 @@ mod test {
         ]
         .into();
 
-        let mut relate_computer = RelateComputer::new(&square_a, &square_b);
+        let gc1 = GeometryCow::from(&square_a);
+        let gc2 = GeometryCow::from(&square_b);
+        let mut relate_computer = RelateComputer::new(&gc1, &gc2);
         let intersection_matrix = relate_computer.compute_intersection_matrix();
         assert_eq!(
             intersection_matrix,
@@ -792,7 +796,9 @@ mod test {
         ]
         .into();
 
-        let mut relate_computer = RelateComputer::new(&square_a, &square_b);
+        let gca = GeometryCow::from(&square_a);
+        let gcb = GeometryCow::from(&square_b);
+        let mut relate_computer = RelateComputer::new(&gca, &gcb);
         let intersection_matrix = relate_computer.compute_intersection_matrix();
         assert_eq!(
             intersection_matrix,
@@ -820,7 +826,9 @@ mod test {
         ]
         .into();
 
-        let mut relate_computer = RelateComputer::new(&square_a, &square_b);
+        let gca = &GeometryCow::from(&square_a);
+        let gcb = &GeometryCow::from(&square_b);
+        let mut relate_computer = RelateComputer::new(gca, gcb);
         let intersection_matrix = relate_computer.compute_intersection_matrix();
         assert_eq!(
             intersection_matrix,

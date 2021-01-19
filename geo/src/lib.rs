@@ -60,10 +60,13 @@ pub use geo_types::{
 
 /// This module includes all the functions of geometric calculations
 pub mod algorithm;
+mod geometry_cow;
 mod geomgraph;
 mod traits;
 mod types;
 mod utils;
+// Maybe someday make this public and/or move to geo-types?
+pub(crate) use geometry_cow::GeometryCow;
 
 #[cfg(test)]
 #[macro_use]

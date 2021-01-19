@@ -1,7 +1,8 @@
 use super::Contains;
 use crate::intersects::Intersects;
+use crate::relate::Relate;
 use crate::{
-    CoordNum, Coordinate, GeoFloat, Geometry, Line, LineString, MultiPolygon, Point, Polygon,
+    CoordNum, Coordinate, GeoFloat, GeometryCow, Line, LineString, MultiPolygon, Point, Polygon,
 };
 
 // ┌─────────────────────────────┐
@@ -27,17 +28,13 @@ where
     }
 }
 
-// TODO: ensure DE-9IM compliance: esp., when
-// line.start and line.end is on the boundaries
 impl<T> Contains<Line<T>> for Polygon<T>
 where
     T: 'static + GeoFloat,
 {
     fn contains(&self, line: &Line<T>) -> bool {
-        use crate::algorithm::relate::Relate;
-        // These clones are unfortunate. Can we get something like a GeometryRef type?
-        let polygon = Geometry::Polygon(self.clone());
-        let line = Geometry::Line(line.clone());
+        let polygon = GeometryCow::from(self);
+        let line = GeometryCow::from(line);
         polygon.relate(&line).is_contains()
     }
 }

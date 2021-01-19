@@ -1,7 +1,7 @@
 use crate::utils::{partial_max, partial_min};
 use crate::{
-    CoordNum, Coordinate, Geometry, GeometryCollection, Line, LineString, MultiLineString,
-    MultiPoint, MultiPolygon, Point, Polygon, Rect, Triangle,
+    CoordNum, Coordinate, Geometry, GeometryCollection, GeometryCow, Line, LineString,
+    MultiLineString, MultiPoint, MultiPolygon, Point, Polygon, Rect, Triangle,
 };
 use geo_types::private_utils::{get_bounding_rect, line_string_bounding_rect};
 
@@ -163,6 +163,28 @@ where
 
     crate::geometry_delegate_impl! {
        fn bounding_rect(&self) -> Self::Output;
+    }
+}
+
+impl<T> BoundingRect<T> for GeometryCow<'_, T>
+where
+    T: CoordNum,
+{
+    type Output = Option<Rect<T>>;
+
+    fn bounding_rect(&self) -> Self::Output {
+        match self {
+            GeometryCow::Point(g) => Some(g.bounding_rect()),
+            GeometryCow::Line(g) => Some(g.bounding_rect()),
+            GeometryCow::LineString(g) => g.bounding_rect(),
+            GeometryCow::Polygon(g) => g.bounding_rect(),
+            GeometryCow::MultiPoint(g) => g.bounding_rect(),
+            GeometryCow::MultiLineString(g) => g.bounding_rect(),
+            GeometryCow::MultiPolygon(g) => g.bounding_rect(),
+            GeometryCow::GeometryCollection(g) => g.bounding_rect(),
+            GeometryCow::Rect(g) => Some(g.bounding_rect()),
+            GeometryCow::Triangle(g) => Some(g.bounding_rect()),
+        }
     }
 }
 

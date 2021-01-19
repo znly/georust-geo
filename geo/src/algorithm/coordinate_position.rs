@@ -2,8 +2,8 @@ use crate::algorithm::{
     bounding_rect::BoundingRect, dimensions::HasDimensions, intersects::Intersects,
 };
 use crate::{
-    Coordinate, GeoNum, Geometry, GeometryCollection, Line, LineString, MultiLineString,
-    MultiPoint, MultiPolygon, Point, Polygon, Rect, Triangle,
+    Coordinate, GeoNum, Geometry, GeometryCollection, GeometryCow, Line, LineString,
+    MultiLineString, MultiPoint, MultiPolygon, Point, Polygon, Rect, Triangle,
 };
 
 /// The position of a `Coordinate` relative to a `Geometry`
@@ -333,39 +333,51 @@ where
         is_inside: &mut bool,
         boundary_count: &mut usize,
     ) {
+        GeometryCow::from(self).calculate_coordinate_position(coord, is_inside, boundary_count)
+    }
+}
+
+impl<'a, T: GeoNum> CoordinatePosition for GeometryCow<'a, T> {
+    type Scalar = T;
+    fn calculate_coordinate_position(
+        &self,
+        coord: &Coordinate<Self::Scalar>,
+        is_inside: &mut bool,
+        boundary_count: &mut usize,
+    ) {
         if self.is_empty() {
             return;
         }
 
         match self {
-            Geometry::Point(point) => {
+            GeometryCow::Point(point) => {
                 point.calculate_coordinate_position(coord, is_inside, boundary_count)
             }
-            Geometry::Line(line) => {
+            GeometryCow::Line(line) => {
                 line.calculate_coordinate_position(coord, is_inside, boundary_count)
             }
-            Geometry::LineString(line_string) => {
+            GeometryCow::LineString(line_string) => {
                 line_string.calculate_coordinate_position(coord, is_inside, boundary_count)
             }
-            Geometry::Polygon(polygon) => {
+            GeometryCow::Polygon(polygon) => {
                 polygon.calculate_coordinate_position(coord, is_inside, boundary_count)
             }
-            Geometry::Rect(rect) => {
+            GeometryCow::Rect(rect) => {
                 rect.calculate_coordinate_position(coord, is_inside, boundary_count)
             }
-            Geometry::Triangle(triangle) => {
+            GeometryCow::Triangle(triangle) => {
                 triangle.calculate_coordinate_position(coord, is_inside, boundary_count)
             }
-            Geometry::MultiPoint(multi_point) => {
+            GeometryCow::MultiPoint(multi_point) => {
                 multi_point.calculate_coordinate_position(coord, is_inside, boundary_count)
             }
-            Geometry::MultiLineString(multi_line_string) => {
+            GeometryCow::MultiLineString(multi_line_string) => {
                 multi_line_string.calculate_coordinate_position(coord, is_inside, boundary_count)
             }
-            Geometry::MultiPolygon(multi_polygon) => {
+            GeometryCow::MultiPolygon(multi_polygon) => {
                 multi_polygon.calculate_coordinate_position(coord, is_inside, boundary_count)
             }
-            Geometry::GeometryCollection(geometry_collection) => {
+            GeometryCow::GeometryCollection(geometry_collection) => {
                 geometry_collection.calculate_coordinate_position(coord, is_inside, boundary_count)
             }
         }

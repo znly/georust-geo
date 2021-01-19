@@ -119,9 +119,12 @@ impl TestRunner {
         let cases = self.parse_cases(filter)?;
         debug!("cases.len(): {}", cases.len());
         for case in cases {
-            use crate::algorithm::relate::relate_computer::RelateComputer;
+            use crate::relate::relate_computer::RelateComputer;
+            use crate::GeometryCow;
 
-            let mut relate_computer = RelateComputer::new(&case.geometry_a, &case.geometry_b);
+            let gca = &GeometryCow::from(&case.geometry_a);
+            let gcb = &GeometryCow::from(&case.geometry_b);
+            let mut relate_computer = RelateComputer::new(gca, gcb);
             let intersection_matrix = relate_computer.compute_intersection_matrix();
             if intersection_matrix == case.expected_result {
                 debug!("succeeded: {:?}", case);

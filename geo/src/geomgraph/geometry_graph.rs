@@ -13,7 +13,7 @@ use super::{
 };
 
 use crate::algorithm::dimensions::HasDimensions;
-use crate::{Coordinate, GeoFloat, Geometry, Line, LineString, Point, Polygon};
+use crate::{Coordinate, GeoFloat, GeometryCow, Line, LineString, Point, Polygon};
 
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -55,7 +55,7 @@ where
     F: GeoFloat,
 {
     arg_index: usize,
-    parent_geometry: &'a Geometry<F>,
+    parent_geometry: &'a GeometryCow<'a, F>,
     use_boundary_determination_rule: bool,
     planar_graph: PlanarGraph<F>,
 }
@@ -193,7 +193,7 @@ where
     // JTS:       add(parentGeom);
     // JTS:     }
     // JTS:   }
-    pub fn new(arg_index: usize, parent_geometry: &'a Geometry<F>) -> Self {
+    pub fn new(arg_index: usize, parent_geometry: &'a GeometryCow<F>) -> Self {
         let mut graph = GeometryGraph {
             arg_index,
             parent_geometry,
@@ -226,7 +226,7 @@ where
     // JTS:   public Coordinate getInvalidPoint() { return invalidPoint; }
     // JTS:
     // JTS:   public Geometry getGeometry() { return parentGeom; }
-    pub fn geometry(&self) -> &Geometry<F> {
+    pub fn geometry(&self) -> &GeometryCow<F> {
         self.parent_geometry
     }
 
@@ -273,7 +273,7 @@ where
 
     // JTS:   private void add(Geometry g)
     // JTS:   {
-    pub fn add_geometry(&mut self, geometry: &Geometry<F>) {
+    pub fn add_geometry(&mut self, geometry: &GeometryCow<F>) {
         // JTS:     if (g.isEmpty()) return;
         if geometry.is_empty() {
             return;
@@ -290,26 +290,26 @@ where
         // JTS:     else  throw new UnsupportedOperationException(g.getClass().getName());
         // JTS:   }
         match geometry {
-            Geometry::Line(line) => self.add_line(line),
-            Geometry::Rect(rect) => {
+            GeometryCow::Line(line) => self.add_line(line),
+            GeometryCow::Rect(rect) => {
                 // PERF: avoid this conversion/clone?
-                self.add_polygon(&Polygon::from(rect.clone()));
+                self.add_polygon(&Polygon::from(rect.clone().into_owned()).into());
             }
-            Geometry::Point(point) => {
+            GeometryCow::Point(point) => {
                 self.add_point(point);
             }
-            Geometry::Polygon(polygon) => self.add_polygon(polygon),
-            Geometry::Triangle(triangle) => {
+            GeometryCow::Polygon(polygon) => self.add_polygon(polygon),
+            GeometryCow::Triangle(triangle) => {
                 // PERF: avoid this conversion/clone?
-                self.add_polygon(&Polygon::from(triangle.clone()));
+                self.add_polygon(&Polygon::from(triangle.clone().into_owned()));
             }
-            Geometry::LineString(line_string) => self.add_line_string(line_string),
-            Geometry::MultiPoint(multi_point) => {
+            GeometryCow::LineString(line_string) => self.add_line_string(line_string),
+            GeometryCow::MultiPoint(multi_point) => {
                 for point in &multi_point.0 {
                     self.add_point(point);
                 }
             }
-            Geometry::MultiPolygon(multi_polygon) => {
+            GeometryCow::MultiPolygon(multi_polygon) => {
                 // JTS:     // check if this Geometry should obey the Boundary Determination Rule
                 // JTS:     // all collections except MultiPolygons obey the rule
                 // JTS:     if (g instanceof MultiPolygon)
@@ -319,15 +319,15 @@ where
                     self.add_polygon(polygon);
                 }
             }
-            Geometry::MultiLineString(multi_line_string) => {
+            GeometryCow::MultiLineString(multi_line_string) => {
                 for line_string in &multi_line_string.0 {
                     // PERF: can we get rid of these clones?
                     self.add_line_string(line_string);
                 }
             }
-            Geometry::GeometryCollection(geometry_collection) => {
-                for geometry in geometry_collection {
-                    self.add_geometry(geometry);
+            GeometryCow::GeometryCollection(geometry_collection) => {
+                for geometry in geometry_collection.iter() {
+                    self.add_geometry(&GeometryCow::from(geometry));
                 }
             }
         }
@@ -595,9 +595,9 @@ where
         // JTS: 			|| parentGeom instanceof MultiPolygon;
         // JTS:     boolean computeAllSegments = computeRingSelfNodes || ! isRings;
         let is_rings = match self.geometry() {
-            Geometry::LineString(ls) => ls.is_closed(),
-            Geometry::MultiLineString(ls) => ls.is_closed(),
-            Geometry::Polygon(_) | Geometry::MultiPolygon(_) => true,
+            GeometryCow::LineString(ls) => ls.is_closed(),
+            GeometryCow::MultiLineString(ls) => ls.is_closed(),
+            GeometryCow::Polygon(_) | GeometryCow::MultiPolygon(_) => true,
             _ => false,
         };
         let compute_all_segments = compute_ring_self_nodes || !is_rings;

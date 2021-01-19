@@ -1,6 +1,6 @@
 use crate::{
-    CoordNum, Geometry, GeometryCollection, Line, LineString, MultiLineString, MultiPoint,
-    MultiPolygon, Point, Polygon, Rect, Triangle,
+    CoordNum, Geometry, GeometryCollection, GeometryCow, Line, LineString, MultiLineString,
+    MultiPoint, MultiPolygon, Point, Polygon, Rect, Triangle,
 };
 
 /// Geometries can have 0, 1, or two dimensions. Or, in the case of an [`empty`](#is_empty)
@@ -136,6 +136,53 @@ impl<C: CoordNum> HasDimensions for Geometry<C> {
         fn is_empty(&self) -> bool;
         fn dimensions(&self) -> Dimensions;
         fn boundary_dimensions(&self) -> Dimensions;
+    }
+}
+
+impl<C: CoordNum> HasDimensions for GeometryCow<'_, C> {
+    fn is_empty(&self) -> bool {
+        match self {
+            GeometryCow::Point(g) => g.is_empty(),
+            GeometryCow::Line(g) => g.is_empty(),
+            GeometryCow::LineString(g) => g.is_empty(),
+            GeometryCow::Polygon(g) => g.is_empty(),
+            GeometryCow::MultiPoint(g) => g.is_empty(),
+            GeometryCow::MultiLineString(g) => g.is_empty(),
+            GeometryCow::MultiPolygon(g) => g.is_empty(),
+            GeometryCow::GeometryCollection(g) => g.is_empty(),
+            GeometryCow::Rect(g) => g.is_empty(),
+            GeometryCow::Triangle(g) => g.is_empty(),
+        }
+    }
+
+    fn dimensions(&self) -> Dimensions {
+        match self {
+            GeometryCow::Point(g) => g.dimensions(),
+            GeometryCow::Line(g) => g.dimensions(),
+            GeometryCow::LineString(g) => g.dimensions(),
+            GeometryCow::Polygon(g) => g.dimensions(),
+            GeometryCow::MultiPoint(g) => g.dimensions(),
+            GeometryCow::MultiLineString(g) => g.dimensions(),
+            GeometryCow::MultiPolygon(g) => g.dimensions(),
+            GeometryCow::GeometryCollection(g) => g.dimensions(),
+            GeometryCow::Rect(g) => g.dimensions(),
+            GeometryCow::Triangle(g) => g.dimensions(),
+        }
+    }
+
+    fn boundary_dimensions(&self) -> Dimensions {
+        match self {
+            GeometryCow::Point(g) => g.boundary_dimensions(),
+            GeometryCow::Line(g) => g.boundary_dimensions(),
+            GeometryCow::LineString(g) => g.boundary_dimensions(),
+            GeometryCow::Polygon(g) => g.boundary_dimensions(),
+            GeometryCow::MultiPoint(g) => g.boundary_dimensions(),
+            GeometryCow::MultiLineString(g) => g.boundary_dimensions(),
+            GeometryCow::MultiPolygon(g) => g.boundary_dimensions(),
+            GeometryCow::GeometryCollection(g) => g.boundary_dimensions(),
+            GeometryCow::Rect(g) => g.boundary_dimensions(),
+            GeometryCow::Triangle(g) => g.boundary_dimensions(),
+        }
     }
 }
 

@@ -1,6 +1,6 @@
 use crate::algorithm::coordinate_position::CoordinatePosition;
 use crate::geomgraph::{EdgeEnd, GeometryGraph, Location, MaybeLabeledEdgeEndBundle, Position};
-use crate::{Coordinate, GeoFloat, Geometry};
+use crate::{Coordinate, GeoFloat, GeometryCow};
 // weird circular dependency from GeomGraph to IntersectionMatrix
 use crate::algorithm::dimensions::Dimensions;
 use crate::algorithm::relate::IntersectionMatrix;
@@ -378,7 +378,7 @@ where
         ]
     }
 
-    fn point_in_area(&self, coord: &Coordinate<F>, geometry: &Geometry<F>) -> Location {
+    fn point_in_area(&self, coord: &Coordinate<F>, geometry: &GeometryCow<F>) -> Location {
         use crate::algorithm::dimensions::HasDimensions;
         if geometry.dimensions() == Dimensions::TwoDimensional {
             geometry.coordinate_position(coord).into()
