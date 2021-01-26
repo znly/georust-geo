@@ -59,7 +59,7 @@ where
     pub fn new(coordinate: Coordinate<F>) -> Node<F> {
         Node {
             coordinate,
-            label: Label::new_with_geom_on_location(0, None),
+            label: Label::empty_line(),
         }
     }
 

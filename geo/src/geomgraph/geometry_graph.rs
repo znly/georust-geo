@@ -10,6 +10,7 @@ use super::{
     },
     index::{EdgeSetIntersector, SegmentIntersector, SimpleEdgeSetIntersector},
     BasicNodeFactory, Edge, Label, Location, Node, NodeFactory, PlanarGraph, Position,
+    TopologyLocation,
 };
 
 use crate::algorithm::dimensions::HasDimensions;
@@ -408,7 +409,10 @@ where
         // JTS:                         new Label(argIndex, Location.BOUNDARY, left, right));
         let edge = Edge::new(
             coords,
-            Label::new_with_geom_locations(self.arg_index, Location::Boundary, left, right),
+            Label::new(
+                self.arg_index,
+                TopologyLocation::area(Location::Boundary, left, right),
+            ),
         );
         // JTS:     lineEdgeMap.put(lr, e);
         // REVIEW: note we don't implement lineEdgeMap. I don't think we *need* it for the Relate
@@ -477,7 +481,7 @@ where
         // JTS:     Edge e = new Edge(coord, new Label(argIndex, Location.INTERIOR));
         let edge = Edge::new(
             coords,
-            Label::new_with_geom_on_location(self.arg_index, Some(Location::Interior)),
+            Label::new(self.arg_index, TopologyLocation::line(Location::Interior)),
         );
 
         // REVIEW: note we don't implement lineEdgeMap. I don't think we *need* it for the Relate
@@ -505,7 +509,7 @@ where
 
         let edge = Edge::new(
             vec![line.start, line.end],
-            Label::new_with_geom_on_location(self.arg_index, Some(Location::Interior)),
+            Label::new(self.arg_index, TopologyLocation::line(Location::Interior)),
         );
 
         self.insert_edge(edge);

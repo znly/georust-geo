@@ -83,16 +83,32 @@ impl TopologyLocation {
     // JTS:    location[Position.LEFT] = left;
     // JTS:    location[Position.RIGHT] = right;
     // JTS:   }
-    pub fn area(on: Option<Location>, left: Option<Location>, right: Option<Location>) -> Self {
-        Self::Area { on, left, right }
+    pub fn area(on: Location, left: Location, right: Location) -> Self {
+        Self::Area {
+            on: Some(on),
+            left: Some(left),
+            right: Some(right),
+        }
+    }
+
+    pub fn empty_area() -> Self {
+        Self::Area {
+            on: None,
+            left: None,
+            right: None,
+        }
     }
 
     // JTS:   public TopologyLocation(int on) {
     // JTS:    init(1);
     // JTS:    location[Position.ON] = on;
     // JTS:   }
-    pub fn line(on: Option<Location>) -> Self {
-        Self::Line { on }
+    pub fn line(on: Location) -> Self {
+        Self::Line { on: Some(on) }
+    }
+
+    pub fn empty_line() -> Self {
+        Self::Line { on: None }
     }
 
     // JTS:   public TopologyLocation(TopologyLocation gl) {

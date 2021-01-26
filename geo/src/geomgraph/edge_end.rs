@@ -239,7 +239,7 @@ mod test {
 
     #[test]
     fn test_ord() {
-        let fake_label = Label::new_with_geom_on_location(0, None);
+        let fake_label = Label::empty_line();
         let edge_end_1 = EdgeEnd::new(
             Coordinate::zero(),
             Coordinate { x: 1.0, y: 1.0 },

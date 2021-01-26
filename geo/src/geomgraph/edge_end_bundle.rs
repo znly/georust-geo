@@ -130,9 +130,9 @@ where
         // JTS:     else
         // JTS:       label = new Label(Location.NONE);
         if is_area {
-            self.label = Some(Label::new_with_locations(None, None, None));
+            self.label = Some(Label::empty_area());
         } else {
-            self.label = Some(Label::new_with_on_location(None));
+            self.label = Some(Label::empty_line());
         }
 
         // JTS:     // compute the On label, and the side labels if present
