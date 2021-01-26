@@ -89,8 +89,8 @@ impl Label {
     pub fn new_with_on_location(location: Option<Location>) -> Label {
         Label {
             elt: [
-                TopologyLocation::new_on(location),
-                TopologyLocation::new_on(location),
+                TopologyLocation::line(location),
+                TopologyLocation::line(location),
             ],
         }
     }
@@ -109,14 +109,14 @@ impl Label {
         Label {
             elt: [
                 if geom_index == 0 {
-                    TopologyLocation::new_on(location)
+                    TopologyLocation::line(location)
                 } else {
-                    TopologyLocation::new_on(None)
+                    TopologyLocation::line(None)
                 },
                 if geom_index == 1 {
-                    TopologyLocation::new_on(location)
+                    TopologyLocation::line(location)
                 } else {
-                    TopologyLocation::new_on(None)
+                    TopologyLocation::line(None)
                 },
             ],
         }
@@ -138,8 +138,8 @@ impl Label {
     ) -> Label {
         Label {
             elt: [
-                TopologyLocation::new_on_left_right(on_location, left_location, right_location),
-                TopologyLocation::new_on_left_right(on_location, left_location, right_location),
+                TopologyLocation::area(on_location, left_location, right_location),
+                TopologyLocation::area(on_location, left_location, right_location),
             ],
         }
     }
@@ -162,8 +162,8 @@ impl Label {
     ) -> Label {
         let mut label = Label {
             elt: [
-                TopologyLocation::new_on_left_right(None, None, None),
-                TopologyLocation::new_on_left_right(None, None, None),
+                TopologyLocation::area(None, None, None),
+                TopologyLocation::area(None, None, None),
             ],
         };
         label.elt[geom_index].set_locations(on_location, left_location, right_location);

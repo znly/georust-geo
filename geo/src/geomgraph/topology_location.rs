@@ -29,21 +29,20 @@ use std::fmt;
 // JTS: public class TopologyLocation {
 
 #[derive(Clone)]
-pub(crate) struct TopologyLocation {
-    // CLEANUP: location is either 1 or 3, maybe cleaner to just have 3 separate Option<Location>
-    // attributes, one for each: [on_location, left_location, right_location]
-    // CLEANUP: can we make this non-optional (or some of them, if we split up properties)?
-    // Or maybe something like:
-    // pub enum TopologyLocation {
-    //     On(Location),
-    //     OneLeftRight(Location, Location, Location)
-    // }
-    location: Vec<Option<Location>>,
+pub(crate) enum TopologyLocation {
+    Area {
+        on: Option<Location>,
+        left: Option<Location>,
+        right: Option<Location>,
+    },
+    Line {
+        on: Option<Location>,
+    },
 }
 
 impl fmt::Debug for TopologyLocation {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fn location_to_str(location: Option<Location>, f: &mut fmt::Formatter) -> fmt::Result {
+        fn location_to_str(location: &Option<Location>, f: &mut fmt::Formatter) -> fmt::Result {
             match location {
                 Some(Location::Interior) => write!(f, "i"),
                 Some(Location::Boundary) => write!(f, "b"),
@@ -51,16 +50,12 @@ impl fmt::Debug for TopologyLocation {
                 None => write!(f, "_"),
             }
         }
-        match self.location.len() {
-            1 => location_to_str(self.location[Position::On as usize], f)?,
-            3 => {
-                location_to_str(self.location[Position::Left as usize], f)?;
-                location_to_str(self.location[Position::On as usize], f)?;
-                location_to_str(self.location[Position::Right as usize], f)?;
-            }
-            _ => {
-                debug_assert!(false, "invalid TopologyLocation");
-                write!(f, "invalid TopologyLocation")?;
+        match self {
+            Self::Line { on } => location_to_str(on, f)?,
+            Self::Area { on, left, right } => {
+                location_to_str(left, f)?;
+                location_to_str(on, f)?;
+                location_to_str(right, f)?;
             }
         }
         Ok(())
@@ -88,24 +83,16 @@ impl TopologyLocation {
     // JTS:    location[Position.LEFT] = left;
     // JTS:    location[Position.RIGHT] = right;
     // JTS:   }
-    pub fn new_on_left_right(
-        on_location: Option<Location>,
-        left_location: Option<Location>,
-        right_location: Option<Location>,
-    ) -> TopologyLocation {
-        TopologyLocation {
-            location: vec![on_location, left_location, right_location],
-        }
+    pub fn area(on: Option<Location>, left: Option<Location>, right: Option<Location>) -> Self {
+        Self::Area { on, left, right }
     }
 
     // JTS:   public TopologyLocation(int on) {
     // JTS:    init(1);
     // JTS:    location[Position.ON] = on;
     // JTS:   }
-    pub fn new_on(on_location: Option<Location>) -> TopologyLocation {
-        TopologyLocation {
-            location: vec![on_location],
-        }
+    pub fn line(on: Option<Location>) -> Self {
+        Self::Line { on }
     }
 
     // JTS:   public TopologyLocation(TopologyLocation gl) {
@@ -127,10 +114,14 @@ impl TopologyLocation {
     // JTS:     return Location.NONE;
     // JTS:   }
     pub fn get(&self, pos: Position) -> Option<Location> {
-        if (pos as usize) < self.location.len() {
-            return self.location[pos as usize];
-        } else {
-            return None;
+        match (pos, self) {
+            (Position::On, Self::Line { on }) | (Position::On, Self::Area { on, .. }) => *on,
+            (Position::Left, Self::Area { left, .. }) => *left,
+            (Position::Right, Self::Area { right, .. }) => *right,
+            _ => {
+                debug_assert!(false, "does this happen?");
+                return None;
+            }
         }
     }
 
@@ -145,7 +136,15 @@ impl TopologyLocation {
     // JTS:     return true;
     // JTS:   }
     pub fn is_empty(&self) -> bool {
-        self.location.iter().all(Option::is_none)
+        match self {
+            Self::Line { on: None } => true,
+            Self::Area {
+                on: None,
+                left: None,
+                right: None,
+            } => true,
+            _ => false,
+        }
     }
 
     // JTS:   /**
@@ -159,7 +158,15 @@ impl TopologyLocation {
     // JTS:     return false;
     // JTS:   }
     pub fn is_any_empty(&self) -> bool {
-        self.location.iter().any(Option::is_none)
+        match self {
+            Self::Line { on: Some(_) } => false,
+            Self::Area {
+                on: Some(_),
+                left: Some(_),
+                right: Some(_),
+            } => false,
+            _ => true,
+        }
     }
 
     // JTS:   public boolean isEqualOnSide(TopologyLocation le, int locIndex)
@@ -168,12 +175,12 @@ impl TopologyLocation {
     // JTS:   }
     // JTS:   public boolean isArea() { return location.length > 1; }
     pub fn is_area(&self) -> bool {
-        self.location.len() > 1
+        matches!(self, Self::Area { .. })
     }
 
     // JTS:   public boolean isLine() { return location.length == 1; }
     pub fn is_line(&self) -> bool {
-        self.location.len() == 1
+        matches!(self, Self::Line { .. })
     }
 
     // JTS:   public void flip()
@@ -184,11 +191,12 @@ impl TopologyLocation {
     // JTS:     location[Position.RIGHT] = temp;
     // JTS:   }
     pub fn flip(&mut self) {
-        if self.location.len() <= 1 {
-            return;
+        match self {
+            Self::Line { .. } => {}
+            Self::Area { left, right, .. } => {
+                std::mem::swap(left, right);
+            }
         }
-        self.location
-            .swap(Position::Left as usize, Position::Right as usize);
     }
 
     // JTS:   public void setAllLocations(int locValue)
@@ -198,8 +206,15 @@ impl TopologyLocation {
     // JTS:     }
     // JTS:   }
     pub fn set_all_locations(&mut self, location: Location) {
-        for i in 0..self.location.len() {
-            self.location[i] = Some(location)
+        match self {
+            Self::Line { on } => {
+                *on = Some(location);
+            }
+            Self::Area { on, left, right } => {
+                *on = Some(location);
+                *left = Some(location);
+                *right = Some(location);
+            }
         }
     }
 
@@ -210,9 +225,22 @@ impl TopologyLocation {
     // JTS:     }
     // JTS:   }
     pub fn set_all_locations_if_empty(&mut self, location: Location) {
-        for i in 0..self.location.len() {
-            if self.location[i].is_none() {
-                self.location[i] = Some(location)
+        match self {
+            Self::Line { on } => {
+                if on.is_none() {
+                    *on = Some(location);
+                }
+            }
+            Self::Area { on, left, right } => {
+                if on.is_none() {
+                    *on = Some(location);
+                }
+                if left.is_none() {
+                    *left = Some(location);
+                }
+                if right.is_none() {
+                    *right = Some(location);
+                }
             }
         }
     }
@@ -222,8 +250,15 @@ impl TopologyLocation {
     // JTS:       location[locIndex] = locValue;
     // JTS:   }
     pub fn set_location(&mut self, position: Position, location: Location) {
-        // TODO: can we make this non-optional
-        self.location[position as usize] = Some(location);
+        match (position, self) {
+            (Position::On, Self::Line { on }) => *on = Some(location),
+            (_, Self::Line { .. }) => {
+                panic!("invalid assignment dimensions for Self::Line")
+            }
+            (Position::On, Self::Area { on, .. }) => *on = Some(location),
+            (Position::Left, Self::Area { left, .. }) => *left = Some(location),
+            (Position::Right, Self::Area { right, .. }) => *right = Some(location),
+        }
     }
 
     // JTS:   public void setLocation(int locValue)
@@ -231,7 +266,11 @@ impl TopologyLocation {
     // JTS:     setLocation(Position.ON, locValue);
     // JTS:   }
     pub fn set_on_location(&mut self, location: Location) {
-        self.location[Position::On as usize] = Some(location);
+        match self {
+            Self::Line { on } | Self::Area { on, .. } => {
+                *on = Some(location);
+            }
+        }
     }
 
     // JTS:   public int[] getLocations() { return location; }
@@ -240,10 +279,18 @@ impl TopologyLocation {
     // JTS:       location[Position.LEFT] = left;
     // JTS:       location[Position.RIGHT] = right;
     // JTS:   }
-    pub fn set_locations(&mut self, on: Location, left: Location, right: Location) {
-        self.location[Position::On as usize] = Some(on);
-        self.location[Position::Left as usize] = Some(left);
-        self.location[Position::Right as usize] = Some(right);
+    pub fn set_locations(&mut self, new_on: Location, new_left: Location, new_right: Location) {
+        match self {
+            Self::Line { .. } => {
+                error!("invalid assignment dimensions for {:?}", self);
+                debug_assert!(false, "invalid assignment dimensions for {:?}", self);
+            }
+            Self::Area { on, left, right } => {
+                *on = Some(new_on);
+                *left = Some(new_left);
+                *right = Some(new_right);
+            }
+        }
     }
 
     // JTS:   public boolean allPositionsEqual(int loc)
