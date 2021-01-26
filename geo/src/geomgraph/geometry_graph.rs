@@ -683,7 +683,7 @@ where
         let node: &mut Node<F> = self.add_node_with_coordinate(coord);
         // VERIFY: JTS does a null check here, but not for boundary points. Can we safely skip it?
         let label: &mut Label = node.label_mut();
-        label.set_on_location(arg_index, Some(location))
+        label.set_on_location(arg_index, location)
     }
 
     // JTS:   /**
@@ -723,7 +723,7 @@ where
         // determine the boundary status of the point according to the Boundary Determination Rule
         // TODO: accommodate pluggable boundary node rules
         let new_location = Self::determine_boundary(&Mod2BoundaryNodeRule, boundary_count);
-        label.set_on_location(arg_index, Some(new_location));
+        label.set_on_location(arg_index, new_location);
         // JTS:   }
     }
     // JTS:

@@ -203,14 +203,14 @@ impl Label {
     // JTS:     elt[geomIndex].setLocation(posIndex, location);
     // JTS:   }
     pub fn set_location(&mut self, geom_index: usize, position: Position, location: Location) {
-        self.elt[geom_index].set_location(position, Some(location));
+        self.elt[geom_index].set_location(position, location);
     }
 
     // JTS:   public void setLocation(int geomIndex, int location)
     // JTS:   {
     // JTS:     elt[geomIndex].setLocation(Position.ON, location);
     // JTS:   }
-    pub fn set_on_location(&mut self, geom_index: usize, location: Option<Location>) {
+    pub fn set_on_location(&mut self, geom_index: usize, location: Location) {
         self.elt[geom_index].set_location(Position::On, location);
     }
 

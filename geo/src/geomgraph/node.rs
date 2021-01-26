@@ -130,7 +130,7 @@ where
     // JTS:       label.setLocation(argIndex, onLocation);
     // JTS:   }
     pub fn set_label_on_location(&mut self, geom_index: usize, location: Location) {
-        self.label.set_on_location(geom_index, Some(location))
+        self.label.set_on_location(geom_index, location)
     }
 
     // JTS:   /**
@@ -160,7 +160,7 @@ where
             Some(Location::Interior) => Location::Boundary,
             None | Some(Location::Exterior) => Location::Boundary,
         };
-        self.label.set_on_location(geom_index, Some(new_location));
+        self.label.set_on_location(geom_index, new_location);
     }
 
     // JTS:

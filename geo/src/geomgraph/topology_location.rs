@@ -221,9 +221,9 @@ impl TopologyLocation {
     // JTS:   {
     // JTS:       location[locIndex] = locValue;
     // JTS:   }
-    // REVIEW: can we make location non-optional?
-    pub fn set_location(&mut self, position: Position, location: Option<Location>) {
-        self.location[position as usize] = location;
+    pub fn set_location(&mut self, position: Position, location: Location) {
+        // TODO: can we make this non-optional
+        self.location[position as usize] = Some(location);
     }
 
     // JTS:   public void setLocation(int locValue)
