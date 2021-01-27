@@ -685,9 +685,7 @@ where
     // JTS:   }
     fn insert_point(&mut self, arg_index: usize, coord: Coordinate<F>, location: Location) {
         let node: &mut Node<F> = self.add_node_with_coordinate(coord);
-        // VERIFY: JTS does a null check here, but not for boundary points. Can we safely skip it?
-        let label: &mut Label = node.label_mut();
-        label.set_on_location(arg_index, location)
+        node.label_mut().set_on_location(arg_index, location);
     }
 
     // JTS:   /**
