@@ -742,12 +742,13 @@ where
         // JTS:     }
         // JTS:   }
 
-        let locations_and_intersections: Vec<(Option<Location>, Vec<Coordinate<F>>)> = self
+        let locations_and_intersections: Vec<(Location, Vec<Coordinate<F>>)> = self
             .edges()
             .into_iter()
             .map(|cell| cell.borrow())
             .map(|edge| {
-                let location = edge.label().on_location(arg_index);
+                // REVIEW: move up unwrap
+                let location = edge.label().on_location(arg_index).unwrap();
 
                 let coordinates = edge
                     .edge_intersections()
@@ -781,7 +782,7 @@ where
         &mut self,
         arg_index: usize,
         coord: Coordinate<F>,
-        location: Option<Location>,
+        location: Location,
     ) {
         // JTS:     // if this node is already a boundary node, don't change it
         // JTS:     if (isBoundaryNode(argIndex, coord)) return;
@@ -794,14 +795,10 @@ where
         // JTS:         insertBoundaryPoint(argIndex, coord);
         // JTS:     else
         // JTS:       insertPoint(argIndex, coord, loc);
-        if location == Some(Location::Boundary) && self.use_boundary_determination_rule {
+        if location == Location::Boundary && self.use_boundary_determination_rule {
             self.insert_boundary_point(arg_index, coord)
         } else {
-            // This assert might be overzealous (in which case we'll crash on the next line)
-            // but I *think* location will never be None here (JTS doesn't really separate
-            // Location.NONE but doesn't ever seem to assign it except in initializers)
-            debug_assert!(location.is_some());
-            self.insert_point(arg_index, coord, location.unwrap())
+            self.insert_point(arg_index, coord, location)
         }
         // JTS:   }
     }
