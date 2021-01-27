@@ -592,12 +592,12 @@ where
         // JTS:     EdgeSetIntersector esi = createEdgeSetIntersector();
         let mut edge_set_intersector = Self::create_edge_set_intersector();
 
-        // TODO: optimize intersection search for valid Polygons and LinearRings
         // JTS:     // optimize intersection search for valid Polygons and LinearRings
         // JTS:     boolean isRings = parentGeom instanceof LinearRing
         // JTS: 			|| parentGeom instanceof Polygon
         // JTS: 			|| parentGeom instanceof MultiPolygon;
         // JTS:     boolean computeAllSegments = computeRingSelfNodes || ! isRings;
+        // optimize intersection search for valid Polygons and LinearRings
         let is_rings = match self.geometry() {
             GeometryCow::LineString(ls) => ls.is_closed(),
             GeometryCow::MultiLineString(ls) => ls.is_closed(),
