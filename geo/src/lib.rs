@@ -1,4 +1,121 @@
 #![doc(html_logo_url = "https://raw.githubusercontent.com/georust/meta/master/logo/logo.png")]
+
+//! The `geo` crate provides geospatial primitive types and algorithms.
+//!
+//! # Types
+//!
+//! - **[`Coordinate`]**: A two-dimensional coordinate. All geometry types are composed of [`Coordinate`]s, though [`Coordinate`] itself is not a [`Geometry`] type.
+//! - **[`Point`]**: A single point represented by one [`Coordinate`]
+//! - **[`MultiPoint`]**: A collection of [`Point`]s
+//! - **[`Line`]**: A line segment represented by two [`Coordinate`]s
+//! - **[`LineString`]**: A series of contiguous line segments represented by two or more
+//!   [`Coordinate`]s
+//! - **[`MultiLineString`]**: A collection of [`LineString`]s
+//! - **[`Polygon`]**: A bounded area represented by one [`LineString`] exterior ring, and zero or
+//!   more [`LineString`] interior rings
+//! - **[`MultiPolygon`]**: A collection of [`Polygon`]s
+//! - **[`Rect`]**: An axis-aligned bounded rectangle represented by minimum and maximum
+//!   [`Coordinate`]s
+//! - **[`Triangle`]**: A bounded area represented by three [`Coordinate`] vertices
+//! - **[`GeometryCollection`]**: A collection of [`Geometry`]s
+//! - **[`Geometry`]**: An enumeration of all geometry types, excluding [`Coordinate`]
+//!
+//! # Algorithms
+//!
+//! ## Area
+//!
+//! - **[`Area`](algorithm::area::Area)**: Calculate the planar area of a geometry
+//! - **[`ChamberlainDuquetteArea`](algorithm::chamberlain_duquette_area::ChamberlainDuquetteArea)**: Calculate the geodesic area of a geometry
+//!
+//! ## Distance
+//!
+//! - **[`EuclideanDistance`](algorithm::euclidean_distance::EuclideanDistance)**: Calculate the euclidean distance between geometries
+//! - **[`GeodesicDistance`](algorithm::geodesic_distance::GeodesicDistance)**: Calculate the geodesic distance between geometries using the algorithm presented in _Algorithms for geodesics_ by Charles Karney (2013)
+//! - **[`HaversineDistance`](algorithm::haversine_distance::HaversineDistance)**: Calculate the geodesic distance between geometries using the haversine formula
+//! - **[`VincentyDistance`](algorithm::vincenty_distance::VincentyDistance)**: Calculate the geodesic distance between geometries using Vincenty’s formula
+//!
+//! ## Length
+//!
+//! - **[`EuclideanLength`](algorithm::euclidean_length::EuclideanLength)**: Calculate the euclidean length of a geometry
+//! - **[`GeodesicLength`](algorithm::geodesic_length::GeodesicLength)**: Calculate the geodesic length of a geometry using the algorithm presented in _Algorithms for geodesics_ by Charles Karney (2013)
+//! - **[`HaversineLength`](algorithm::haversine_length::HaversineLength)**: Calculate the geodesic length of a geometry using the haversine formula
+//! - **[`VincentyLength`](algorithm::vincenty_length::VincentyLength)**: Calculate the geodesic length of a geometry using Vincenty’s formula
+//!
+//! ## Simplify
+//!
+//! - **[`Simplify`](algorithm::simplify::Simplify)**: Simplify a geometry using the Ramer–Douglas–Peucker algorithm
+//! - **[`SimplifyIdx`](algorithm::simplify::SimplifyIdx)**:
+//! - **[`SimplifyVW`](algorithm::simplifyvw::SimplifyVW)**: Simplify a geometry using the Visvalingam-Whyatt algorithm
+//! - **[`SimplifyVWPreserve`](algorithm::simplifyvw::SimplifyVWPreserve)**: Simplify a geometry with the using a topology-preserving variant of the Visvalingam-Whyatt algorithm
+//! - **[`SimplifyVwIdx`](algorithm::simplifyvw::SimplifyVwIdx)**:
+//!
+//! ## Query
+//!
+//! - **[`Bearing`](algorithm::bearing::Bearing)**:
+//! - **[`ClosestPoint`](algorithm::closest_point::ClosestPoint)**:
+//! - **[`Contains`](algorithm::contains::Contains)**:
+//! - **[`CoordinatePosition`](algorithm::coordinate_position::CoordinatePosition)**:
+//! - **[`Intersects`](algorithm::intersects::Intersects)**:
+//! - **[`IsConvex`](algorithm::is_convex::IsConvex)**:
+//! - **[`LineInterpolatePoint`](algorithm::line_interpolate_point::LineInterpolatePoint)**:
+//! - **[`LineLocatePoint`](algorithm::line_locate_point::LineLocatePoint)**:
+//!
+//! ## Similarity
+//!
+//! - **[`FrechetDistance`](algorithm::frechet_distance::FrechetDistance)**: Calculate the similarity between [`LineString`]s using the Fréchet distance
+//!
+//! ## Winding
+//!
+//! - **[`Orient`](algorithm::orient::Orient)**: Orients the exterior and interior rings of a [`Polygon`] according to convention
+//! - **[`Winding`](algorithm::winding::Winding)**: Calculate and manipulate the winding order of a [`LineString`]
+//!
+//! ## Map
+//!
+//! - **[`MapCoords`](algorithm::map_coords::MapCoords)**:
+//! - **[`MapCoordsInplace`](algorithm::map_coords::MapCoordsInplace)**:
+//! - **[`TryMapCoords`](algorithm::map_coords::TryMapCoords)**:
+//!
+//! ## Boundary
+//!
+//! - **[`BoundingRect`](algorithm::bounding_rect::BoundingRect)**:
+//! - **[`ConcaveHull`](algorithm::concave_hull::ConcaveHull)**:
+//! - **[`ConvexHull`](algorithm::convex_hull::ConvexHull)**:
+//! - **[`ExtremePoints`](algorithm::extreme_points::ExtremePoints)**:
+//! - **[`ExtremeIndices`](algorithm::extreme_indices::ExtremeIndices)**:
+//!
+//! ## Affine transformations
+//!
+//! - **[`Rotate`](algorithm::rotate::Rotate)**
+//! - **[`RotatePoint`](algorithm::rotate::RotatePoint)**:
+//! - **[`Translate`](algorithm::translate::Translate)**:
+//!
+//! ## Unsorted
+//!
+//! - **[`Centroid`](algorithm::centroid::Centroid)**:
+//! - **[`CoordsIter`](algorithm::coords_iter::CoordsIter)**:
+//! - **[`HasDimensions`](algorithm::dimensions::HasDimensions)**:
+//! - **[`HaversineDestination`](algorithm::haversine_destination::HaversineDestination)**:
+//! - **[`HaversineIntermediate`](algorithm::haversine_intermediate::HaversineIntermediate)**:
+//! - **[`Proj`](algorithm::proj::Proj)**:
+//!
+//! # Features
+//!
+//! The following optional [features] are available:
+//!
+//! - `use-proj`: enable coordinate conversion and transformation of `Point` geometries using the [`proj`](https://docs.rs/proj) crate
+//! - `proj-network`: enables functionality for `proj` crate's network grid. After enabling
+//! this feature, some [further
+//! configuration](https://docs.rs/proj/0.20.5/proj/#grid-file-download) is
+//! required to actually use the network grid.
+//! - `use-serde`: enable serialisation of geometries using `serde`.
+//!
+//! [features]: https://doc.rust-lang.org/cargo/reference/features.html
+//!
+//!
+//!
+//!
+//!
+//!
 //! The `geo` crate provides geospatial primitive types such as `Coordinate`, `Point`, `LineString`, and `Polygon` as
 //! well as their `Multi–` equivalents, and provides algorithms and operations such as:
 //!   - Area and centroid calculation
@@ -22,14 +139,6 @@
 //! While `Geo` is primarily intended to operate on **planar** geometries, some other useful algorithms are
 //! provided: Haversine, Frechet, and Vincenty distances, as well as Chamberlain-Duquette area.
 //!
-//! ## Optional Features (these can be activated in your `cargo.toml`)
-//! The following optional features are available:
-//! - `use-proj`: enable coordinate conversion and transformation of `Point` geometries using the [`proj`](https://docs.rs/proj) crate
-//! - `proj-network`: enables functionality for `proj` crate's network grid. After enabling
-//! this feature, some [further
-//! configuration](https://docs.rs/proj/0.20.5/proj/#grid-file-download) is
-//! required to actually use the network grid.
-//! - `use-serde`: enable serialisation of geometries using `serde`.
 //!
 //! ## GeoJSON
 //! If you wish to read or write `GeoJSON`, use the [`geojson`](https://docs.rs/geojson) crate, with the `geo-types` feature activated.
