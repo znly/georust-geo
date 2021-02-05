@@ -47,7 +47,7 @@
 //! - **[`HaversineLength`](algorithm::haversine_length::HaversineLength)**: Calculate the geodesic length of a geometry using the haversine formula
 //! - **[`VincentyLength`](algorithm::vincenty_length::VincentyLength)**: Calculate the geodesic length of a geometry using Vincenty’s formula
 //!
-//! ## Simplify
+//! ## Simplification
 //!
 //! - **[`Simplify`](algorithm::simplify::Simplify)**: Simplify a geometry using the Ramer–Douglas–Peucker algorithm
 //! - **[`SimplifyIdx`](algorithm::simplify::SimplifyIdx)**:
