@@ -100,16 +100,17 @@
 //!
 //! # Features
 //!
-//! The following optional [features] are available:
+//! The following optional [Cargo features] are available:
 //!
-//! - `use-proj`: enable coordinate conversion and transformation of `Point` geometries using the [`proj`](https://docs.rs/proj) crate
-//! - `proj-network`: enables functionality for `proj` crate's network grid. After enabling
-//! this feature, some [further
-//! configuration](https://docs.rs/proj/0.20.5/proj/#grid-file-download) is
-//! required to actually use the network grid.
-//! - `use-serde`: enable serialisation of geometries using `serde`.
+//! - `proj-network`: Enables [network grid] support for the [`proj` crate]. After enabling this feature, [further configuration][proj crate file download] is required to use the network grid
+//! - `use-proj`: Enables coordinate conversion and transformation of `Point` geometries using the [`proj` crate]
+//! - `use-serde`: Allows geometry types to be serialized and deserialized with [Serde]
 //!
-//! [features]: https://doc.rust-lang.org/cargo/reference/features.html
+//! [`proj` crate]: https://github.com/georust/proj
+//! [Cargo features]: https://doc.rust-lang.org/cargo/reference/features.html
+//! [network grid]: https://proj.org/usage/network.html
+//! [proj crate file download][https://docs.rs/proj/*/proj/#grid-file-download]
+//! [Serde]: https://serde.rs/
 //!
 //!
 //!
