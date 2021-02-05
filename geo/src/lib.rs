@@ -118,8 +118,10 @@
 //! [JTS]: https://github.com/locationtech/jts
 //! [network grid]: https://proj.org/usage/network.html
 //! [OGC-SFA]: https://www.ogc.org/standards/sfa
-//! [proj crate file download][https://docs.rs/proj/*/proj/#grid-file-download]
+//! [proj crate file download]: https://docs.rs/proj/*/proj/#grid-file-download
 //! [Serde]: https://serde.rs/
+//!
+//! -------------------
 //!
 //!
 //!
