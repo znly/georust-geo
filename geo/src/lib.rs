@@ -20,6 +20,12 @@
 //! - **[`GeometryCollection`]**: A collection of [`Geometry`]s
 //! - **[`Geometry`]**: An enumeration of all geometry types, excluding [`Coordinate`]
 //!
+//! ## Semantics
+//!
+//! The geospatial types provided here aim to adhere to the [OpenGIS Simple feature access][OGC-SFA]
+//! standards. Thus, the types here are inter-operable with other implementations of the standards:
+//! [JTS], [GEOS], etc.
+//!
 //! # Algorithms
 //!
 //! ## Area
@@ -108,7 +114,10 @@
 //!
 //! [`proj` crate]: https://github.com/georust/proj
 //! [Cargo features]: https://doc.rust-lang.org/cargo/reference/features.html
+//! [GEOS]: https://trac.osgeo.org/geos
+//! [JTS]: https://github.com/locationtech/jts
 //! [network grid]: https://proj.org/usage/network.html
+//! [OGC-SFA]: https://www.ogc.org/standards/sfa
 //! [proj crate file download][https://docs.rs/proj/*/proj/#grid-file-download]
 //! [Serde]: https://serde.rs/
 //!
