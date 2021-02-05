@@ -52,7 +52,7 @@
 //! - **[`Simplify`](algorithm::simplify::Simplify)**: Simplify a geometry using the Ramer–Douglas–Peucker algorithm
 //! - **[`SimplifyIdx`](algorithm::simplify::SimplifyIdx)**:
 //! - **[`SimplifyVW`](algorithm::simplifyvw::SimplifyVW)**: Simplify a geometry using the Visvalingam-Whyatt algorithm
-//! - **[`SimplifyVWPreserve`](algorithm::simplifyvw::SimplifyVWPreserve)**: Simplify a geometry with the using a topology-preserving variant of the Visvalingam-Whyatt algorithm
+//! - **[`SimplifyVWPreserve`](algorithm::simplifyvw::SimplifyVWPreserve)**: Simplify a geometry using a topology-preserving variant of the Visvalingam-Whyatt algorithm
 //! - **[`SimplifyVwIdx`](algorithm::simplifyvw::SimplifyVwIdx)**:
 //!
 //! ## Query
