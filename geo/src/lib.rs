@@ -35,10 +35,10 @@
 //!
 //! ## Distance
 //!
-//! - **[`EuclideanDistance`](algorithm::euclidean_distance::EuclideanDistance)**: Calculate the euclidean distance between geometries
-//! - **[`GeodesicDistance`](algorithm::geodesic_distance::GeodesicDistance)**: Calculate the geodesic distance between geometries using the algorithm presented in _Algorithms for geodesics_ by Charles Karney (2013)
-//! - **[`HaversineDistance`](algorithm::haversine_distance::HaversineDistance)**: Calculate the geodesic distance between geometries using the haversine formula
-//! - **[`VincentyDistance`](algorithm::vincenty_distance::VincentyDistance)**: Calculate the geodesic distance between geometries using Vincenty’s formula
+//! - **[`EuclideanDistance`](algorithm::euclidean_distance::EuclideanDistance)**: Calculate the minimum euclidean distance between geometries
+//! - **[`GeodesicDistance`](algorithm::geodesic_distance::GeodesicDistance)**: Calculate the minimum geodesic distance between geometries using the algorithm presented in _Algorithms for geodesics_ by Charles Karney (2013)
+//! - **[`HaversineDistance`](algorithm::haversine_distance::HaversineDistance)**: Calculate the minimum geodesic distance between geometries using the haversine formula
+//! - **[`VincentyDistance`](algorithm::vincenty_distance::VincentyDistance)**: Calculate the minimum geodesic distance between geometries using Vincenty’s formula
 //!
 //! ## Length
 //!
