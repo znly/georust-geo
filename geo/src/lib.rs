@@ -86,8 +86,7 @@
 //! - **[`BoundingRect`](algorithm::bounding_rect::BoundingRect)**:
 //! - **[`ConcaveHull`](algorithm::concave_hull::ConcaveHull)**:
 //! - **[`ConvexHull`](algorithm::convex_hull::ConvexHull)**:
-//! - **[`ExtremePoints`](algorithm::extreme_points::ExtremePoints)**:
-//! - **[`ExtremeIndices`](algorithm::extreme_indices::ExtremeIndices)**:
+//! - **[`Extremes`](algorithm::extremes::Extremes)**:
 //!
 //! ## Affine transformations
 //!
