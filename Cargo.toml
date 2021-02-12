@@ -3,4 +3,4 @@ members = ["geo", "geo-types", "geo-postgis"]
 
 [patch.crates-io]
 geo-types = { path = 'geo-types' }
-wkt = { git = 'https://github.com/georust/wkt' }
+wkt = { path = "../wkt" }

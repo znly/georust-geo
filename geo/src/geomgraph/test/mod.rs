@@ -61,8 +61,10 @@ mod test_input {
     #[derive(Debug, Deserialize)]
     pub(crate) struct Case {
         pub(crate) desc: String,
-        pub(crate) a: String, // WKT
-        pub(crate) b: String, // WKT
+        #[serde(deserialize_with = "wkt::deserialize::deserialize_wkt_geometry")]
+        pub(crate) a: Geometry<f64>,
+        #[serde(deserialize_with = "wkt::deserialize::deserialize_wkt_geometry")]
+        pub(crate) b: Geometry<f64>,
         #[serde(rename = "test")]
         pub(crate) tests: Vec<Test>,
     }
@@ -164,10 +166,19 @@ impl TestRunner {
 
             let file = File::open(entry.path())?;
             let file_reader = BufReader::new(file);
-            let run: test_input::Run = serde_xml_rs::from_reader(file_reader).map_err(|err| {
-                format!("invalid test input: {:?}. error: {:?}", entry.path(), err)
-            })?;
+            let run: test_input::Run = match serde_xml_rs::from_reader(file_reader) {
+                Ok(r) => r,
+                Err(err) => {
+                    println!(
+                        "skipping invalid test input: {:?}. error: {:?}",
+                        entry.path(),
+                        err
+                    );
+                    continue;
+                }
+            };
             for case in run.cases {
+                println!("running case");
                 if let Some(filter) = filter {
                     if (
                         entry.file_name().to_string_lossy().to_string().as_str(),
@@ -180,23 +191,26 @@ impl TestRunner {
                 }
                 // re: `unwrap` see https://github.com/georust/wkt/issues/49
                 // we could map to our own error or something, but this is just test code anyway
-                let wkt_a = match wkt::Wkt::from_str(&case.a) {
-                    Ok(wkt) => wkt,
-                    Err(e) => {
-                        warn!("error: {:?}, skipping invalid WKT: {}", e, &case.a);
-                        continue;
-                    }
-                };
-                let geometry_a = Geometry::try_from(wkt_a).expect("conversion error");
+                // let wkt_a = match wkt::Wkt::from_str(&case.a) {
+                //     Ok(wkt) => wkt,
+                //     Err(e) => {
+                //         warn!("error: {:?}, skipping invalid WKT: {}", e, &case.a);
+                //         continue;
+                //     }
+                // };
+                // let geometry_a = Geometry::try_from(wkt_a).expect("conversion error");
+                //
+                // let wkt_b = match wkt::Wkt::from_str(&case.b) {
+                //     Ok(wkt) => wkt,
+                //     Err(e) => {
+                //         warn!("error: {:?}, skipping invalid WKT: {}", e, &case.b);
+                //         continue;
+                //     }
+                // };
+                // let geometry_b = Geometry::try_from(wkt_b).expect("conversion error");
 
-                let wkt_b = match wkt::Wkt::from_str(&case.b) {
-                    Ok(wkt) => wkt,
-                    Err(e) => {
-                        warn!("error: {:?}, skipping invalid WKT: {}", e, &case.b);
-                        continue;
-                    }
-                };
-                let geometry_b = Geometry::try_from(wkt_b).expect("conversion error");
+                let geometry_a = case.a;
+                let geometry_b = case.b;
 
                 for test in case.tests {
                     match test.op.name.as_str() {

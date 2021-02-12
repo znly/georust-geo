@@ -39,7 +39,7 @@ criterion = { version = "0.3" }
 rand = "0.8.0"
 serde-xml-rs = "0.4.0"
 serde = { version = "1.0", features = ["derive"] }
-wkt = "0.8"
+wkt = { version = "0.9", features = ["serde"] }
 
 [[bench]]
 name = "area"
